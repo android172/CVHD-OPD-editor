@@ -46,8 +46,6 @@ void MainWindow::on_list_csrs_currentItemChanged(
     _current_csr_path = csr->path;
 }
 
-#include <iostream>
-
 void MainWindow::on_bt_image_to_csr_clicked() {
     if (_current_csr_path.isEmpty()) return;
 
@@ -57,18 +55,15 @@ void MainWindow::on_bt_image_to_csr_clicked() {
     if (!current_image) return;
 
     // Compute current image hex
-    QString image_hex {};
+    std::string image_hex {};
     bool    even = false;
-    char    temp;
+    unsigned char temp;
     for (const auto& row : current_image->pixels()) {
         for (const auto& pixel : row) {
-            // std::cout << (int) pixel << " ";
-            if (even) {
-                image_hex += temp | pixel;
-            } else temp = pixel << 4;
+            if (even) image_hex += temp | pixel;
+            else temp = pixel << 4;
             even = !even;
         }
-        // std::cout << std::endl;
     }
 
     // Open appropriate csr file
@@ -77,7 +72,7 @@ void MainWindow::on_bt_image_to_csr_clicked() {
     if (!csr_file.is_open()) return;
 
     csr_file.seekp(0x230);
-    csr_file.write(image_hex.toStdString().data(), image_hex.size());
+    csr_file.write(image_hex.data(), image_hex.size());
 
     csr_file.close(); // x2B0
 }

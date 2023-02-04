@@ -6,6 +6,7 @@
 
 #include "color.h"
 
+// Image list widget item
 class ImageLWI : public QListWidgetItem {
   public:
     ImageLWI(

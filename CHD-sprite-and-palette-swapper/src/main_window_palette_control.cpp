@@ -3,8 +3,13 @@
 
 #include "image_lwi.h"
 
+#include <fstream>
 #include <QColorDialog>
-#include <QClipboard>
+#include <QFileDialog>
+
+// ///////////////////////// //
+// MAIN WINDOW PALETTE SLOTS //
+// ///////////////////////// //
 
 #define on_click(fun, r_fun, butt)                                             \
     void MainWindow::fun() { on_palette_button_clicked(ui->butt); }            \
@@ -26,6 +31,60 @@ on_click(on_bt_col_C_clicked, on_bt_col_C_right_clicked, bt_col_C);
 on_click(on_bt_col_D_clicked, on_bt_col_D_right_clicked, bt_col_D);
 on_click(on_bt_col_E_clicked, on_bt_col_E_right_clicked, bt_col_E);
 on_click(on_bt_col_F_clicked, on_bt_col_F_right_clicked, bt_col_F);
+
+// ///////////////////// //
+// MAIN WINDOW COL SLOTS //
+// ///////////////////// //
+
+void MainWindow::on_bt_import_col_clicked() {
+    const auto file_path = QFileDialog::getOpenFileName(
+        this, "Import col file", _default_col_import_location, "CHD_col (*.col)"
+    );
+    if (!file_path.isEmpty()) {
+        // Save location
+        const QString file_name      = file_path.split('/').last();
+        const QString file_dir       = file_path.chopped(file_name.size());
+        _default_col_import_location = file_dir;
+        save_app_state();
+
+        ui->label_col->setText(file_name);
+
+        _current_col_path = file_path;
+        ui->bt_palette_to_col->setEnabled(true);
+    }
+}
+
+void MainWindow::on_bt_palette_to_col_clicked() {
+    // Compute current palette hex
+    QString palette_hex {};
+    for (const auto& color_pair : _palette_colors) {
+        Color c = color_pair.display;
+        palette_hex += c.r / 8;
+        palette_hex += c.g / 8;
+        palette_hex += c.b / 8;
+        palette_hex += '\000';
+    }
+    palette_hex.chop(1);
+
+    // Check selected color set
+    int  current_color_set = 0;
+    auto selected_text     = ui->cb_color_set->currentText();
+    if (selected_text.compare("default") != 0)
+        current_color_set = selected_text.toInt();
+
+    // Open col file
+    std::ofstream col_file { _current_col_path.toStdString(),
+                             std::ios::out | std::ios::binary | std::ios::in };
+    col_file.seekp(0x20 + current_color_set * 0x40);
+
+    // Replace color bytes
+    col_file.write(palette_hex.toStdString().data(), palette_hex.size());
+    col_file.close();
+}
+
+// /////////////////////////////////////////// //
+// MAIN WINDOW PALETTE CONTROL PRIVATE METHODS //
+// /////////////////////////////////////////// //
 
 void MainWindow::on_palette_button_clicked(ColorButton* button) {
     if (_palette_colors.size() <= button->color_index) return;
@@ -71,24 +130,6 @@ void MainWindow::on_palette_button_right_clicked(ColorButton* button) {
 
     // Setup button colors
     bt_col_ALL(set_color());
-}
-
-void MainWindow::on_bt_palette_to_clip_clicked() {
-    QString palette_hex {};
-    for (const auto& color_pair : _palette_colors) {
-        Color c = color_pair.display;
-        c.r /= 8;
-        c.g /= 8;
-        c.b /= 8;
-        QString rgb = c.to_hex();
-        QString bgr = rgb.mid(4, 2) + QString(" ") + rgb.mid(2, 2) +
-                      QString(" ") + rgb.chopped(4);
-        palette_hex += bgr + QString(" 00 ");
-    }
-    palette_hex.chop(1);
-
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    clipboard->setText(palette_hex);
 }
 
 void MainWindow::setup_palette(QImage image) {
@@ -147,3 +188,7 @@ void MainWindow::update_palette(QImage image) {
     // Setup button colors
     bt_col_ALL(set_color());
 }
+
+// // Clipboard copy (for reference)
+// QClipboard* clipboard = QGuiApplication::clipboard();
+// clipboard->setText(palette_hex);

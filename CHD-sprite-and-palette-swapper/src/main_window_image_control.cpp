@@ -4,9 +4,9 @@
 #include "image_lwi.h"
 
 #include <iostream>
-
 #include <QClipboard>
 #include <QFileDialog>
+#include <QMimeData>
 
 const QVector<QString> MainWindow::supported_image_formats {
     "png", "jpg", "jpeg", "jpe", "bmp", "tif", "tiff", "tga"
@@ -23,9 +23,16 @@ QString all_supported_formats() {
     return ret;
 }
 
+// /////////////////////// //
+// MAIN WINDOW IMAGE SLOTS //
+// /////////////////////// //
+
 void MainWindow::on_bt_import_images_clicked() {
     auto file_list = QFileDialog::getOpenFileNames(
-        this, "Import images", _default_import_location, all_supported_formats()
+        this,
+        "Import images",
+        _default_image_import_location,
+        all_supported_formats()
     );
     import_images(file_list);
 }
@@ -40,9 +47,8 @@ void MainWindow::on_bt_delete_selected_clicked() {
 
     // Update rest if last
     if (il->count() == 0) {
-        set_editing_enabled(false);
+        set_img_section_enabled(false);
         ui->label_image_view->clear();
-        _image_list_empty = true;
     }
 }
 
@@ -51,9 +57,8 @@ void MainWindow::on_bt_delete_all_clicked() {
     ui->list_images->clear();
 
     // Update other elements
-    set_editing_enabled(false);
+    set_img_section_enabled(false);
     ui->label_image_view->clear();
-    _image_list_empty = true;
 }
 
 void MainWindow::on_list_images_currentItemChanged(
@@ -85,41 +90,58 @@ void MainWindow::on_list_images_currentItemChanged(
     iv->setPixmap(present_image);
 }
 
-void MainWindow::on_bt_image_to_clip_clicked() {
-    auto current_image =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+// ///////////////////////// //
+// MAIN WINDOW DRAG AND DROP //
+// ///////////////////////// //
 
-    if (!current_image) return;
+void MainWindow::dropEvent(QDropEvent* event) {
+    const QMimeData* mime_data { event->mimeData() };
 
-    QString image_hex {};
-
-    for (const auto& row : current_image->pixels()) {
-        for (const auto& pixel : row) {
-            char p = pixel;
-            if (p > 9) p += 'A' - 10;
-            else p += '0';
-            image_hex += p;
-            image_hex += ' ';
-        }
-        image_hex[image_hex.size() - 1] = '\n';
+    if (mime_data->hasUrls() == false) {
+        event->ignore();
+        return;
     }
-    image_hex.chop(1);
 
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    clipboard->setText(image_hex);
+    // Filter urls
+    QStringList image_paths;
+    QStringList csr_paths;
+    for (int i = 0; i < mime_data->urls().size(); ++i) {
+        const QUrl url = mime_data->urls().at(i);
+        if (url.toString().startsWith("file:///")) {
+            const QString path      = url.toLocalFile();
+            const QString extension = path.split('.').last();
+            if (supported_image_formats.contains(extension))
+                image_paths.append(path);
+            else if (extension.compare("csr") == 0) csr_paths.append(path);
+        }
+    }
+
+    // Import files
+    if (image_paths.size() > 0) import_images(image_paths);
+    if (csr_paths.size() > 0) import_csrs(csr_paths);
+
+    event->accept();
 }
 
-// Import
+void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
+    event->acceptProposedAction();
+}
+void MainWindow::dragMoveEvent(QDragMoveEvent* event) {
+    event->acceptProposedAction();
+}
+void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }
+
+// ///////////////////////////////////////// //
+// MAIN WINDOW IMAGE CONTROL PRIVATE METHODS //
+// ///////////////////////////////////////// //
+
 void MainWindow::import_images(QStringList path_list) {
     // Image list
     auto il = ui->list_images;
 
     for (auto& file_path : path_list) {
-        file_path = "/" + file_path;
-
         // Get file name
-        QStringList splits    = file_path.split('/');
-        QString     file_name = splits[splits.size() - 1];
+        const QString file_name = file_path.split('/').last();
 
         // Check size
         auto image = QImage(file_path);
@@ -136,53 +158,20 @@ void MainWindow::import_images(QStringList path_list) {
 
     if (path_list.size() != 0) {
         // Remember last import location
-        QStringList splits       = path_list[0].split('/');
-        QString     file_name    = splits[splits.size() - 1];
-        QString     file_dir     = path_list[0].chopped(file_name.size());
-        _default_import_location = file_dir;
+        const QString file_name        = path_list[0].split('/').last();
+        const QString file_dir         = path_list[0].chopped(file_name.size());
+        _default_image_import_location = file_dir;
         save_app_state();
 
-        ui->list_images->setCurrentRow(0);
+        il->setCurrentRow(0);
     }
 }
 
-// Drag and drop
-
-#include <QMimeData>
-
-void MainWindow::dropEvent(QDropEvent* event) {
-    const QMimeData* mime_data { event->mimeData() };
-
-    if (mime_data->hasUrls() == false) {
-        event->ignore();
-        return;
-    }
-
-    // Filter urls
-    QStringList file_list;
-    for (int i = 0; i < mime_data->urls().size(); ++i) {
-        QUrl url = mime_data->urls().at(i);
-        if (url.toString().startsWith("file:///")) {
-            QString path      = url.toLocalFile();
-            auto    splits    = path.split('.');
-            QString extension = splits[splits.size() - 1];
-            if (supported_image_formats.contains(extension))
-                file_list.append(path);
-        }
-    }
-
-    // Import files
-    import_images(file_list);
-
-    event->accept();
+void MainWindow::set_img_section_enabled(bool is_enabled) {
+    _image_list_empty = !is_enabled;
+    ui->bt_image_to_csr->setEnabled(is_enabled && !_csr_list_empty);
+    ui->label_image_view->setEnabled(is_enabled);
+    ui->cb_color_set->setEnabled(is_enabled);
+    bt_col_ALL(setEnabled(is_enabled));
+    if (!is_enabled) { bt_col_ALL(setStyleSheet(QString(""))); }
 }
-
-void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
-    event->acceptProposedAction();
-}
-
-void MainWindow::dragMoveEvent(QDragMoveEvent* event) {
-    event->acceptProposedAction();
-}
-
-void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }

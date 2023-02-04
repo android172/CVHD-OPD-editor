@@ -29,17 +29,9 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::set_editing_enabled(bool is_enabled) {
-    ui->label_image_view->setEnabled(is_enabled);
-    ui->bt_image_to_clip->setEnabled(is_enabled);
-    ui->bt_palette_to_clip->setEnabled(is_enabled);
-    bt_col_ALL(setEnabled(is_enabled));
-    if (!is_enabled) { bt_col_ALL(setStyleSheet(QString(""))); }
-}
-
 void MainWindow::initial_load(QImage image) {
     // Enable all disabled functionalities
-    set_editing_enabled(true);
+    set_img_section_enabled(true);
 
     // Setup palette
     setup_palette(image);
@@ -50,8 +42,6 @@ void MainWindow::initial_load(QImage image) {
         512, 512, Qt::KeepAspectRatio, Qt::FastTransformation
     );
     ui->label_image_view->setPixmap(present_image);
-
-    _image_list_empty = false;
 }
 
 #include <fstream>
@@ -62,8 +52,18 @@ void MainWindow::save_app_state() {
     std::ofstream file { app_state_file, std::ios::out };
 
     file.write(
-        _default_import_location.toStdString().data(),
-        _default_import_location.size()
+        _default_image_import_location.toStdString().data(),
+        _default_image_import_location.size()
+    );
+    file.write("\n", 1);
+    file.write(
+        _default_col_import_location.toStdString().data(),
+        _default_col_import_location.size()
+    );
+    file.write("\n", 1);
+    file.write(
+        _default_csr_import_location.toStdString().data(),
+        _default_csr_import_location.size()
     );
     file.close();
 }
@@ -75,5 +75,9 @@ void MainWindow::load_app_state() {
 
     std::string line;
     std::getline(file, line);
-    _default_import_location = QString::fromStdString(line);
+    _default_image_import_location = QString::fromStdString(line);
+    std::getline(file, line);
+    _default_col_import_location = QString::fromStdString(line);
+    std::getline(file, line);
+    _default_csr_import_location = QString::fromStdString(line);
 }

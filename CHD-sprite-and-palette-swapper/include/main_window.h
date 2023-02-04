@@ -33,7 +33,6 @@ class MainWindow : public QMainWindow {
     void on_list_images_currentItemChanged(
         QListWidgetItem* current, QListWidgetItem* previous
     );
-    void on_bt_image_to_clip_clicked();
 
     // Drag and drop
     void dropEvent(QDropEvent*);
@@ -74,32 +73,53 @@ class MainWindow : public QMainWindow {
     void on_bt_col_D_right_clicked();
     void on_bt_col_E_right_clicked();
     void on_bt_col_F_right_clicked();
-    void on_bt_palette_to_clip_clicked();
+    // Col
+    void on_bt_import_col_clicked();
+    void on_bt_palette_to_col_clicked();
+
+    // Csr control
+    void on_bt_import_csr_clicked();
+    void on_bt_delete_sel_csr_clicked();
+    void on_bt_delete_all_csr_clicked();
+    void on_list_csrs_currentItemChanged(
+        QListWidgetItem* current, QListWidgetItem* previous
+    );
+    void on_bt_image_to_csr_clicked();
 
   private:
     Ui::MainWindow* ui;
 
     //  Application state info
-    bool    _image_list_empty        = true;
-    QString _default_import_location = QDir::homePath();
+    QString _default_image_import_location = QDir::homePath();
+    QString _default_col_import_location   = QDir::homePath();
+    QString _default_csr_import_location   = QDir::homePath();
+    bool    _image_list_empty              = true;
+    bool    _csr_list_empty                = true;
 
     QVector<ColorPair> _palette_colors {};
     QHash<Color, int>  _color_index {};
 
+    QString _current_col_path = "";
+    QString _current_csr_path = "";
+
     // State
-    void set_editing_enabled(bool is_enabled);
     void initial_load(QImage image);
     void save_app_state();
     void load_app_state();
 
     // Image control
     void import_images(QStringList path_list);
+    void set_img_section_enabled(bool is_enabled);
 
     // Palette control
     void setup_palette(QImage image);
     void update_palette(QImage image);
     void on_palette_button_clicked(ColorButton* button);
     void on_palette_button_right_clicked(ColorButton* button);
+
+    // CSR control
+    void import_csrs(QStringList path_list);
+    void set_csr_section_enabled(bool is_enabled);
 };
 
 #define bt_col_ALL(action)                                                     \

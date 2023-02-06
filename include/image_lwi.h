@@ -15,17 +15,17 @@ class ImageLWI : public QListWidgetItem {
         QHash<Color, int>* const color_map
     );
 
-    void                                   update_color();
-    const QVector<QVector<unsigned char>>& pixels();
+    void                           update_color();
+    const QVector<QVector<uchar>>& pixels();
 
     QString name;
 
   private:
     bool _is_up_to_date = false;
 
-    QHash<Color, int>* const        _color_map;
-    const QImage                    _imported_image;
-    QVector<QVector<unsigned char>> _pixels;
+    QHash<Color, int>* const _color_map;
+    const QImage             _imported_image;
+    QVector<QVector<uchar>>  _pixels;
 
     void compute_pixels();
 };

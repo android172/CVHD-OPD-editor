@@ -30,6 +30,7 @@ class MainWindow : public QMainWindow {
     void on_bt_import_images_clicked();
     void on_bt_delete_selected_clicked();
     void on_bt_delete_all_clicked();
+    void on_list_images_itemPressed(QListWidgetItem* current);
     void on_list_images_currentItemChanged(
         QListWidgetItem* current, QListWidgetItem* previous
     );
@@ -73,18 +74,38 @@ class MainWindow : public QMainWindow {
     void on_bt_col_D_right_clicked();
     void on_bt_col_E_right_clicked();
     void on_bt_col_F_right_clicked();
+    void on_cb_color_set_activated(QString color_set);
     // Col
+    void on_bt_icol_0_clicked();
+    void on_bt_icol_1_clicked();
+    void on_bt_icol_2_clicked();
+    void on_bt_icol_3_clicked();
+    void on_bt_icol_4_clicked();
+    void on_bt_icol_5_clicked();
+    void on_bt_icol_6_clicked();
+    void on_bt_icol_7_clicked();
+    void on_bt_icol_8_clicked();
+    void on_bt_icol_9_clicked();
+    void on_bt_icol_A_clicked();
+    void on_bt_icol_B_clicked();
+    void on_bt_icol_C_clicked();
+    void on_bt_icol_D_clicked();
+    void on_bt_icol_E_clicked();
+    void on_bt_icol_F_clicked();
     void on_bt_import_col_clicked();
     void on_bt_palette_to_col_clicked();
+    void on_bt_save_col_clicked();
 
     // Csr control
     void on_bt_import_csr_clicked();
     void on_bt_delete_sel_csr_clicked();
     void on_bt_delete_all_csr_clicked();
+    void on_bt_image_to_csr_clicked();
+    void on_bt_export_csr_clicked();
+    void on_list_csrs_itemPressed(QListWidgetItem* current);
     void on_list_csrs_currentItemChanged(
         QListWidgetItem* current, QListWidgetItem* previous
     );
-    void on_bt_image_to_csr_clicked();
 
   private:
     Ui::MainWindow* ui;
@@ -95,15 +116,23 @@ class MainWindow : public QMainWindow {
     QString _default_csr_import_location   = QDir::homePath();
     bool    _image_list_empty              = true;
     bool    _csr_list_empty                = true;
+    bool    _csr_image_presented           = false;
 
-    QVector<ColorPair> _palette_colors {};
+    QVector<QVector<ColorPair>> _csr_palettes { 8 };
+    QVector<ColorPair>          _csr_palette {};
+
+    QVector<ColorPair> _image_palette {};
     QHash<Color, int>  _color_index {};
 
-    QString _current_col_path = "";
-    QString _current_csr_path = "";
+    QString _current_col_path       = "";
+    uint    _current_col_set        = 0;
+    uchar   _current_col_multiplier = 1;
 
     // State
-    void initial_load(QImage image);
+    void   initial_load(QImage image);
+    QImage compute_pixel_map(
+        const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
+    );
     void save_app_state();
     void load_app_state();
 
@@ -111,16 +140,19 @@ class MainWindow : public QMainWindow {
     void import_images(QStringList path_list);
     void set_img_section_enabled(bool is_enabled);
 
-    // Palette control
-    void import_col(QString path);
-    void setup_palette(QImage image);
-    void update_palette(QImage image);
-    void on_palette_button_clicked(ColorButton* button);
-    void on_palette_button_right_clicked(ColorButton* button);
-
     // CSR control
     void import_csrs(QStringList path_list);
     void set_csr_section_enabled(bool is_enabled);
+
+    // Image palette control
+    void setup_image_palette(QImage image);
+    void update_image_palette(QImage image);
+    void on_img_palette_button_clicked(ColorButton* button);
+    void on_img_palette_button_right_clicked(ColorButton* button);
+
+    // CSR palette control (col control)
+    void import_col(QString path);
+    void on_csr_palette_button_clicked(ColorButton* button);
 };
 
 #define bt_col_ALL(action)                                                     \
@@ -140,5 +172,23 @@ class MainWindow : public QMainWindow {
     ui->bt_col_D->action;                                                      \
     ui->bt_col_E->action;                                                      \
     ui->bt_col_F->action;
+
+#define bt_icol_ALL(action)                                                    \
+    ui->bt_icol_0->action;                                                     \
+    ui->bt_icol_1->action;                                                     \
+    ui->bt_icol_2->action;                                                     \
+    ui->bt_icol_3->action;                                                     \
+    ui->bt_icol_4->action;                                                     \
+    ui->bt_icol_5->action;                                                     \
+    ui->bt_icol_6->action;                                                     \
+    ui->bt_icol_7->action;                                                     \
+    ui->bt_icol_8->action;                                                     \
+    ui->bt_icol_9->action;                                                     \
+    ui->bt_icol_A->action;                                                     \
+    ui->bt_icol_B->action;                                                     \
+    ui->bt_icol_C->action;                                                     \
+    ui->bt_icol_D->action;                                                     \
+    ui->bt_icol_E->action;                                                     \
+    ui->bt_icol_F->action;
 
 #endif // MAIN_WINDOW_H

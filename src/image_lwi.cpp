@@ -11,7 +11,7 @@ ImageLWI::ImageLWI(
 }
 
 void ImageLWI::update_color() { _is_up_to_date = false; }
-const QVector<QVector<unsigned char>>& ImageLWI::pixels() {
+const QVector<QVector<uchar>>& ImageLWI::pixels() {
     if (!_is_up_to_date) compute_pixels();
     return _pixels;
 }
@@ -20,10 +20,10 @@ void ImageLWI::compute_pixels() {
     for (int i = 0; i < _imported_image.width(); ++i) {
         for (int j = 0; j < _imported_image.height(); ++j) {
             QColor pixel { _imported_image.pixel(j, i) };
-            Color  color  = { (unsigned char) pixel.red(),
-                              (unsigned char) pixel.green(),
-                              (unsigned char) pixel.blue() };
-            _pixels[i][j] = (unsigned char) (*_color_map)[color];
+            Color  color  = { (uchar) pixel.red(),
+                              (uchar) pixel.green(),
+                              (uchar) pixel.blue() };
+            _pixels[i][j] = (uchar) (*_color_map)[color];
         }
     }
     _is_up_to_date = true;

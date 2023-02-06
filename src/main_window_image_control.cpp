@@ -46,10 +46,7 @@ void MainWindow::on_bt_delete_selected_clicked() {
     il->takeItem(current_image.row());
 
     // Update rest if last
-    if (il->count() == 0) {
-        set_img_section_enabled(false);
-        ui->label_image_view->clear();
-    }
+    if (il->count() == 0) set_img_section_enabled(false);
 }
 
 void MainWindow::on_bt_delete_all_clicked() {
@@ -58,36 +55,26 @@ void MainWindow::on_bt_delete_all_clicked() {
 
     // Update other elements
     set_img_section_enabled(false);
-    ui->label_image_view->clear();
 }
 
-void MainWindow::on_list_images_currentItemChanged(
-    QListWidgetItem* current, QListWidgetItem* previous
-) {
-    auto iv = ui->label_image_view;
+void MainWindow::on_list_images_itemPressed(QListWidgetItem* current) {
     auto li = dynamic_cast<ImageLWI*>(current);
-
     if (!li) return;
 
-    // Set selected image
-    auto   pixels = li->pixels();
-    auto   width  = pixels.size();
-    auto   height = pixels[0].size();
-    QImage image  = QImage(width, height, QImage::Format_RGB32);
+    _csr_image_presented = false;
 
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < height; ++j) {
-            Color  c = _palette_colors[pixels[i][j]].display;
-            QColor color { c.r, c.g, c.b };
-            image.setPixel(j, i, color.rgb());
-        }
-    }
-
+    // Present image
+    auto    image         = compute_pixel_map(li->pixels(), _image_palette);
     QPixmap present_image = QPixmap::fromImage(image);
     present_image         = present_image.scaled(
         512, 512, Qt::KeepAspectRatio, Qt::FastTransformation
     );
-    iv->setPixmap(present_image);
+    ui->label_image_view->setPixmap(present_image);
+}
+void MainWindow::on_list_images_currentItemChanged(
+    QListWidgetItem* current, QListWidgetItem* previous
+) {
+    on_list_images_itemPressed(current);
 }
 
 // ///////////////////////// //
@@ -105,7 +92,7 @@ void MainWindow::dropEvent(QDropEvent* event) {
     // Filter urls
     QStringList image_paths;
     QStringList csr_paths;
-    QString col_path = "";
+    QString     col_path = "";
     for (int i = 0; i < mime_data->urls().size(); ++i) {
         const QUrl url = mime_data->urls().at(i);
         if (url.toString().startsWith("file:///")) {
@@ -121,7 +108,7 @@ void MainWindow::dropEvent(QDropEvent* event) {
     // Import files
     if (image_paths.size() > 0) import_images(image_paths);
     if (csr_paths.size() > 0) import_csrs(csr_paths);
-    if (col_path.size()  > 0) import_col(col_path);
+    if (col_path.size() > 0) import_col(col_path);
 
     event->accept();
 }
@@ -152,7 +139,7 @@ void MainWindow::import_images(QStringList path_list) {
 
         // Preform initialization if necessary
         if (_image_list_empty) initial_load(image);
-        else if (_palette_colors.size() < 16) update_palette(image);
+        else if (_image_palette.size() < 16) update_image_palette(image);
 
         // Save to image list
         auto image_item = new ImageLWI(file_name, image, &_color_index);
@@ -172,9 +159,26 @@ void MainWindow::import_images(QStringList path_list) {
 
 void MainWindow::set_img_section_enabled(bool is_enabled) {
     _image_list_empty = !is_enabled;
-    ui->bt_image_to_csr->setEnabled(is_enabled && !_csr_list_empty);
-    ui->label_image_view->setEnabled(is_enabled);
-    ui->cb_color_set->setEnabled(is_enabled);
+
+    // Buttons always toggled
     bt_col_ALL(setEnabled(is_enabled));
-    if (!is_enabled) { bt_col_ALL(setStyleSheet(QString(""))); }
+
+    // Can be true only if csr list is not empty
+    ui->bt_image_to_csr->setEnabled(is_enabled && !_csr_list_empty);
+
+    // Toggles only if col file is present (not present)
+    if (_current_col_path.size() > 0) //
+        ui->bt_palette_to_col->setEnabled(is_enabled);
+    else ui->cb_color_set->setEnabled(is_enabled);
+
+    // On disable
+    if (!is_enabled) {
+        // Clear image palette colors
+        bt_col_ALL(setStyleSheet(QString("")));
+
+        // Clear presented image if no csr is present
+        if (ui->list_csrs->count() > 0)
+            on_list_csrs_itemPressed(ui->list_csrs->currentItem());
+        else ui->label_image_view->clear();
+    }
 }

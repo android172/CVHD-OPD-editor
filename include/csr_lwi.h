@@ -6,11 +6,16 @@
 // CSR list widget item
 class CsrLWI : public QListWidgetItem {
   public:
-    CsrLWI(const QString& name, const QString& path)
-        : QListWidgetItem(name), name(name), path(path) {}
+    CsrLWI(const QString& name, const QString& path);
 
     const QString name;
     const QString path;
+
+    const QVector<QVector<uchar>>& pixels();
+    void                           import_data();
+
+  private:
+    QVector<QVector<uchar>> _pixels { 128 };
 };
 
 #endif // __CSR_LWI_H__

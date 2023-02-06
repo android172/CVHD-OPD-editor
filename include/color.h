@@ -5,9 +5,9 @@
 #include <sstream>
 
 struct Color {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
+    uchar r;
+    uchar g;
+    uchar b;
 
     bool operator==(const Color& other) const {
         return r == other.r && g == other.g && b == other.b;

@@ -32,7 +32,7 @@ on_click(on_bt_col_D_clicked, on_bt_col_D_right_clicked, bt_col_D);
 on_click(on_bt_col_E_clicked, on_bt_col_E_right_clicked, bt_col_E);
 on_click(on_bt_col_F_clicked, on_bt_col_F_right_clicked, bt_col_F);
 
-void MainWindow::on_cb_color_set_activated(QString color_set) {
+void MainWindow::on_cb_color_set_textActivated(QString color_set) {
     // Update current csr pallet
     _current_col_set = 0;
     if (color_set.compare("Default") != 0) _current_col_set = color_set.toInt();
@@ -85,7 +85,7 @@ void MainWindow::on_bt_palette_to_col_clicked() {
     }
 
     // Inform others of this change
-    on_cb_color_set_activated(ui->cb_color_set->currentText());
+    on_cb_color_set_textActivated(ui->cb_color_set->currentText());
 }
 
 void MainWindow::on_bt_save_col_clicked() {
@@ -298,7 +298,7 @@ void MainWindow::import_col(QString file_path) {
     col_file.close();
 
     // === Inform other components ===
-    on_cb_color_set_activated(ui->cb_color_set->currentText());
+    on_cb_color_set_textActivated(ui->cb_color_set->currentText());
 
     // Buttons enabled
     bt_icol_ALL(setEnabled(true));

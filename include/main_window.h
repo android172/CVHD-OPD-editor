@@ -74,7 +74,7 @@ class MainWindow : public QMainWindow {
     void on_bt_col_D_right_clicked();
     void on_bt_col_E_right_clicked();
     void on_bt_col_F_right_clicked();
-    void on_cb_color_set_activated(QString color_set);
+    void on_cb_color_set_textActivated(QString color_set);
     // Col
     void on_bt_icol_0_clicked();
     void on_bt_icol_1_clicked();

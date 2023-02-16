@@ -4,11 +4,12 @@
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QListWidgetItem>
+#include <QTreeWidgetItem>
 #include <QMainWindow>
 #include <QPushButton>
 
-#include "color.h"
 #include "color_button.h"
+#include "opd.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,6 +27,28 @@ class MainWindow : public QMainWindow {
     static const QVector<QString> supported_image_formats;
 
   private slots:
+    // General
+    void on_bt_import_opd_clicked();
+
+    // Animations
+    void on_tree_animations_itemPressed(QTreeWidgetItem* current, int);
+    void on_tree_animations_currentItemChanged(
+        QTreeWidgetItem* current, QTreeWidgetItem* previous
+    );
+    void on_bt_add_animation_clicked();
+    void on_bt_remove_animation_clicked();
+    void on_line_animation_name_textEdited(QString new_text);
+    void on_slider_animation_speed_valueChanged(int new_value);
+    void on_bt_play_animation_clicked();
+
+    // Frame
+    void on_line_frame_name_textEdited(QString new_text);
+    void on_spin_frame_pos_x_valueChanged(int new_value);
+    void on_spin_frame_pos_y_valueChanged(int new_value);
+    void on_spin_frame_off_x_valueChanged(int new_value);
+    void on_spin_frame_off_y_valueChanged(int new_value);
+    void on_spin_frame_delay_valueChanged(int new_value);
+
     // Image control
     void on_bt_import_images_clicked();
     void on_bt_delete_selected_clicked();
@@ -110,7 +133,28 @@ class MainWindow : public QMainWindow {
   private:
     Ui::MainWindow* ui;
 
+    Opd* _opd;
+
+    AnimationPtr      _current_animation;
+    AnimationFramePtr _current_anim_frame;
+    FramePtr          _current_frame;
+    FramePartPtr      _current_frame_part;
+
+    // Animation
+    void load_animations();
+    void load_animation(const AnimationPtr animation);
+    void clear_animation();
+    void load_frame(
+        const FramePtr frame_info_in, const AnimationFramePtr animation_info_in
+    );
+    void clear_frame();
+    void animate_frame(const Animation& animation, ushort frame_count);
+    void stop_animation();
+
+    bool _in_animation = false;
+
     //  Application state info
+    QString _default_opd_import_location   = QDir::homePath();
     QString _default_image_import_location = QDir::homePath();
     QString _default_col_import_location   = QDir::homePath();
     QString _default_csr_import_location   = QDir::homePath();

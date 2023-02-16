@@ -1,6 +1,10 @@
 #include "main_window.h"
 #include "./ui_main_window.h"
 
+#include "gui/frame_twi.h"
+#include "gui/animation_twi.h"
+#include <QFileDialog>
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
@@ -47,6 +51,31 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow() { delete ui; }
 
+// ///////////////// //
+// MAIN WINDOW SLOTS //
+// ///////////////// //
+
+void MainWindow::on_bt_import_opd_clicked() {
+    // Load OPD
+    const auto opd_path = QFileDialog::getOpenFileName(
+        this, "Import CSR file", _default_opd_import_location, "CHD_opd (*.opd)"
+    );
+    if (opd_path.isEmpty()) return;
+    _opd = Opd::open(opd_path);
+
+    // Save default_location
+    const auto opd_name          = opd_path.split('/').last();
+    _default_opd_import_location = opd_path.chopped(opd_name.size());
+    save_app_state();
+
+    // Load animations
+    load_animations();
+}
+
+// /////////////////////////// //
+// MAIN WINDOW PRIVATE METHODS //
+// /////////////////////////// //
+
 void MainWindow::initial_load(QImage image) {
     // Enable all disabled functionalities
     set_img_section_enabled(true);
@@ -90,23 +119,21 @@ QImage MainWindow::compute_pixel_map(
 
 #define app_state_file "app.state"
 
+#define write_state(state)                                                     \
+    file.write(state.toStdString().data(), state.size());                      \
+    file.write("\n", 1);
+#define read_state(state)                                                      \
+    std::getline(file, line);                                                  \
+    state = QString::fromStdString(line);
+
 void MainWindow::save_app_state() {
     std::ofstream file { app_state_file, std::ios::out };
 
-    file.write(
-        _default_image_import_location.toStdString().data(),
-        _default_image_import_location.size()
-    );
-    file.write("\n", 1);
-    file.write(
-        _default_col_import_location.toStdString().data(),
-        _default_col_import_location.size()
-    );
-    file.write("\n", 1);
-    file.write(
-        _default_csr_import_location.toStdString().data(),
-        _default_csr_import_location.size()
-    );
+    write_state(_default_opd_import_location);
+    write_state(_default_image_import_location);
+    write_state(_default_col_import_location);
+    write_state(_default_csr_import_location);
+
     file.close();
 }
 
@@ -116,10 +143,10 @@ void MainWindow::load_app_state() {
     if (file.is_open() == false) return;
 
     std::string line;
-    std::getline(file, line);
-    _default_image_import_location = QString::fromStdString(line);
-    std::getline(file, line);
-    _default_col_import_location = QString::fromStdString(line);
-    std::getline(file, line);
-    _default_csr_import_location = QString::fromStdString(line);
+    read_state(_default_opd_import_location);
+    read_state(_default_image_import_location);
+    read_state(_default_col_import_location);
+    read_state(_default_csr_import_location);
+
+    file.close();
 }

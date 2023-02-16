@@ -3,7 +3,7 @@
 
 #include <QPushButton>
 
-#include "color.h"
+#include "opd_types.h"
 
 class ColorButton : public QPushButton {
     Q_OBJECT

@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="icons_general">
+    <file>add.png</file>
+    <file>down-arrow.png</file>
+    <file>pause_button.png</file>
+    <file>play-buttton.png</file>
+    <file>redo-arrow-symbol.png</file>
+    <file>trash-can.png</file>
+    <file>undo-circular-arrow.png</file>
+    <file>up-arrow.png</file>
+  </qresource>
+</RCC>

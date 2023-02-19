@@ -131,7 +131,7 @@ Opd* Opd::open(const QString& path) {
             // Set sprite
             auto sprite_i = std::find(sprites->begin(), sprites->end(), sprite);
             if (sprite_i == sprites->end()) {
-                sprite.index = sprites->size();
+                sprite.index = (ushort) sprites->size();
                 sprite.initialize();
                 sprites->push_back(sprite);
                 sprite_i = sprites->end();

@@ -27,7 +27,11 @@ set(PROJECT_SOURCES
 )
 
 # Add resources
-qt5_add_resources(RESOURCE_FILES ${PROJECT_SOURCE_DIR}/assets/icons/icons.qrc)
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_resources(RESOURCE_FILES ${PROJECT_SOURCE_DIR}/assets/icons/icons.qrc)
+else()
+    qt5_add_resources(RESOURCE_FILES ${PROJECT_SOURCE_DIR}/assets/icons/icons.qrc)
+endif()
 
 # Generate executable
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

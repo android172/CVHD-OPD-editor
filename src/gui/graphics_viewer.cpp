@@ -12,7 +12,7 @@ GraphicsViewer::~GraphicsViewer() {}
 // ///////////////////// //
 
 void GraphicsViewer::wheelEvent(QWheelEvent* event) {
-    if (event->delta() > 0) scale(1.1, 1.1);
+    if (event->angleDelta().y() > 0) scale(1.1, 1.1);
     else scale(0.9, 0.9);
 }
 

@@ -150,7 +150,7 @@ void MainWindow::on_ch_frame_part_flip_x_toggled(bool new_value) {
 void MainWindow::on_ch_frame_part_flip_y_toggled(bool new_value) {
     check_if_valid(_current_frame_part);
     _current_frame_part->flip_mode &= 0b10;
-    _current_frame_part->flip_mode |= new_value;
+    _current_frame_part->flip_mode |= (uchar) new_value;
     ui->gv_frame->show_frame(*_current_frame);
 }
 void MainWindow::on_cb_frame_part_color_set_currentIndexChanged(int new_index) {

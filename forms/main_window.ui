@@ -557,8 +557,11 @@ border: none;</string>
                         <property name="correctionMode">
                          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                         </property>
+                        <property name="minimum">
+                         <number>-32767</number>
+                        </property>
                         <property name="maximum">
-                         <number>65535</number>
+                         <number>32767</number>
                         </property>
                        </widget>
                       </item>
@@ -579,8 +582,11 @@ border: none;</string>
                         <property name="correctionMode">
                          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                         </property>
+                        <property name="minimum">
+                         <number>-32767</number>
+                        </property>
                         <property name="maximum">
-                         <number>65535</number>
+                         <number>32767</number>
                         </property>
                        </widget>
                       </item>
@@ -1069,7 +1075,7 @@ border: none;</string>
                       <item>
                        <layout class="QGridLayout" name="gridLayout_4">
                         <item row="0" column="4">
-                         <widget class="ColorButton" name="bt_frame_part_col_4">
+                         <widget class="PaletteButton" name="bt_frame_part_col_4">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1091,7 +1097,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="0">
-                         <widget class="ColorButton" name="bt_frame_part_col_0">
+                         <widget class="PaletteButton" name="bt_frame_part_col_0">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1113,7 +1119,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="5">
-                         <widget class="ColorButton" name="bt_frame_part_col_D">
+                         <widget class="PaletteButton" name="bt_frame_part_col_D">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1135,7 +1141,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="7">
-                         <widget class="ColorButton" name="bt_frame_part_col_F">
+                         <widget class="PaletteButton" name="bt_frame_part_col_F">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1157,7 +1163,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="5">
-                         <widget class="ColorButton" name="bt_frame_part_col_5">
+                         <widget class="PaletteButton" name="bt_frame_part_col_5">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1179,7 +1185,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="3">
-                         <widget class="ColorButton" name="bt_frame_part_col_3">
+                         <widget class="PaletteButton" name="bt_frame_part_col_3">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1201,7 +1207,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="7">
-                         <widget class="ColorButton" name="bt_frame_part_col_7">
+                         <widget class="PaletteButton" name="bt_frame_part_col_7">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1223,7 +1229,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="6">
-                         <widget class="ColorButton" name="bt_frame_part_col_6">
+                         <widget class="PaletteButton" name="bt_frame_part_col_6">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1245,7 +1251,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="3">
-                         <widget class="ColorButton" name="bt_frame_part_col_B">
+                         <widget class="PaletteButton" name="bt_frame_part_col_B">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1267,7 +1273,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="0">
-                         <widget class="ColorButton" name="bt_frame_part_col_8">
+                         <widget class="PaletteButton" name="bt_frame_part_col_8">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1289,7 +1295,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="1">
-                         <widget class="ColorButton" name="bt_frame_part_col_1">
+                         <widget class="PaletteButton" name="bt_frame_part_col_1">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1311,7 +1317,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="6">
-                         <widget class="ColorButton" name="bt_frame_part_col_E">
+                         <widget class="PaletteButton" name="bt_frame_part_col_E">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1333,7 +1339,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="2">
-                         <widget class="ColorButton" name="bt_frame_part_col_A">
+                         <widget class="PaletteButton" name="bt_frame_part_col_A">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1355,7 +1361,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="2">
-                         <widget class="ColorButton" name="bt_frame_part_col_2">
+                         <widget class="PaletteButton" name="bt_frame_part_col_2">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1377,7 +1383,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="4">
-                         <widget class="ColorButton" name="bt_frame_part_col_C">
+                         <widget class="PaletteButton" name="bt_frame_part_col_C">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1399,7 +1405,7 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="1">
-                         <widget class="ColorButton" name="bt_frame_part_col_9">
+                         <widget class="PaletteButton" name="bt_frame_part_col_9">
                           <property name="enabled">
                            <bool>true</bool>
                           </property>
@@ -1663,8 +1669,11 @@ border: none;</string>
                         <property name="correctionMode">
                          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                         </property>
+                        <property name="minimum">
+                         <number>-32767</number>
+                        </property>
                         <property name="maximum">
-                         <number>65535</number>
+                         <number>32767</number>
                         </property>
                        </widget>
                       </item>
@@ -1692,8 +1701,11 @@ border: none;</string>
                         <property name="correctionMode">
                          <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                         </property>
+                        <property name="minimum">
+                         <number>-32767</number>
+                        </property>
                         <property name="maximum">
-                         <number>65535</number>
+                         <number>32767</number>
                         </property>
                        </widget>
                       </item>
@@ -2861,6 +2873,11 @@ border: none;</string>
    <class>GraphicsViewer</class>
    <extends>QGraphicsView</extends>
    <header location="global">gui/graphics_viewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PaletteButton</class>
+   <extends>QPushButton</extends>
+   <header>gui/palette_button.h</header>
   </customwidget>
  </customwidgets>
  <resources>

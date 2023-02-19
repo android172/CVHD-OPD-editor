@@ -105,8 +105,8 @@ Opd* Opd::open(const QString& path) {
         for (auto i = 0; i < hit_box_count; i++) {
             Frame::HitBox hit_box {};
             hit_box.index      = i;
-            hit_box.x_position = read_type<ushort>(opd_file);
-            hit_box.y_position = read_type<ushort>(opd_file);
+            hit_box.x_position = read_type<short>(opd_file);
+            hit_box.y_position = read_type<short>(opd_file);
             hit_box.width      = read_type<ushort>(opd_file);
             hit_box.height     = read_type<ushort>(opd_file);
             frame.hitboxes.push_back(hit_box);

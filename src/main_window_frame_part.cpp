@@ -229,7 +229,6 @@ void MainWindow::clear_frame_part() {
     ui->cb_frame_part_color_set->setCurrentIndex(0);
 
     // Load palette colors
-    _current_palette.clear();
     bt_frame_part_col_ALL(setStyleSheet(""));
 
     // Disable editing
@@ -238,21 +237,19 @@ void MainWindow::clear_frame_part() {
 
 void MainWindow::load_palette() {
     check_if_valid(_current_frame_part);
-    _current_palette.clear();
-    for (const auto& color : *_current_frame_part->palette)
-        _current_palette.push_back({ color, color });
+    _current_palette = *_current_frame_part->palette;
     bt_frame_part_col_ALL(set_color());
 }
 
-void MainWindow::on_bt_frame_part_col_clicked(ColorButton* const button) {
-    if (_current_palette.size() == 0) return;
+void MainWindow::on_bt_frame_part_col_clicked(PaletteButton* const button) {
+    if (_current_palette.size == 0) return;
 
     // Get new color
-    update_color(_current_palette[button->color_index].display);
+    update_color(_current_palette[button->color_index]);
 
     // Set palette
     (*_current_frame_part->palette)[button->color_index] =
-        _current_palette[button->color_index].display;
+        _current_palette[button->color_index];
 
     // Setup button color
     button->set_color();

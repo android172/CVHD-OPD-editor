@@ -9,6 +9,7 @@
 #include <QPushButton>
 
 #include "color_button.h"
+#include "gui/palette_button.h"
 #include "opd.h"
 
 QT_BEGIN_NAMESPACE
@@ -186,12 +187,12 @@ class MainWindow : public QMainWindow {
 
     Opd* _opd;
 
-    AnimationPtr       _current_animation  = Invalid::animation;
-    AnimationFramePtr  _current_anim_frame = Invalid::animation_frame;
-    FramePtr           _current_frame      = Invalid::frame;
-    FramePartPtr       _current_frame_part = Invalid::frame_part;
-    HitBoxPtr          _current_hitbox     = Invalid::hitbox;
-    QVector<ColorPair> _current_palette {};
+    AnimationPtr      _current_animation  = Invalid::animation;
+    AnimationFramePtr _current_anim_frame = Invalid::animation_frame;
+    FramePtr          _current_frame      = Invalid::frame;
+    FramePartPtr      _current_frame_part = Invalid::frame_part;
+    HitBoxPtr         _current_hitbox     = Invalid::hitbox;
+    Palette           _current_palette {};
 
     // General
     void import_opd(const QString opd_path);
@@ -219,7 +220,7 @@ class MainWindow : public QMainWindow {
     void load_frame_part(const FramePartPtr frame_part);
     void clear_frame_part();
     void load_palette();
-    void on_bt_frame_part_col_clicked(ColorButton* const button);
+    void on_bt_frame_part_col_clicked(PaletteButton* const button);
     void set_frame_part_edit_enabled(bool enabled);
     void set_frame_part_movement_enabled(bool enabled);
 

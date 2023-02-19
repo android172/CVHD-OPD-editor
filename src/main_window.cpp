@@ -1,5 +1,5 @@
 #include "main_window.h"
-#include "./ui_main_window.h"
+#include "../forms/ui_main_window.h"
 
 #include "gui/frame_twi.h"
 #include "gui/animation_twi.h"
@@ -11,6 +11,35 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("CHD sprite and palette swapper");
     setAcceptDrops(true);
     load_app_state();
+
+    // Initially disable editing
+    set_general_editing_enabled(false);
+    set_animation_edit_enabled(false);
+    set_frame_edit_enabled(false);
+    set_frame_part_edit_enabled(false);
+    set_hitbox_edit_enabled(false);
+
+    // TODO: Temporary
+    ui->bt_add_animation->setEnabled(false);
+    ui->bt_remove_animation->setEnabled(false);
+
+    // Setup frame part color buttons
+    ui->bt_frame_part_col_0->setup(0, &_current_palette);
+    ui->bt_frame_part_col_1->setup(1, &_current_palette);
+    ui->bt_frame_part_col_2->setup(2, &_current_palette);
+    ui->bt_frame_part_col_3->setup(3, &_current_palette);
+    ui->bt_frame_part_col_4->setup(4, &_current_palette);
+    ui->bt_frame_part_col_5->setup(5, &_current_palette);
+    ui->bt_frame_part_col_6->setup(6, &_current_palette);
+    ui->bt_frame_part_col_7->setup(7, &_current_palette);
+    ui->bt_frame_part_col_8->setup(8, &_current_palette);
+    ui->bt_frame_part_col_9->setup(9, &_current_palette);
+    ui->bt_frame_part_col_A->setup(10, &_current_palette);
+    ui->bt_frame_part_col_B->setup(11, &_current_palette);
+    ui->bt_frame_part_col_C->setup(12, &_current_palette);
+    ui->bt_frame_part_col_D->setup(13, &_current_palette);
+    ui->bt_frame_part_col_E->setup(14, &_current_palette);
+    ui->bt_frame_part_col_F->setup(15, &_current_palette);
 
     // Setup image color buttons
     ui->bt_col_0->setup(0, &_image_palette);
@@ -60,6 +89,16 @@ void MainWindow::on_bt_import_opd_clicked() {
     const auto opd_path = QFileDialog::getOpenFileName(
         this, "Import CSR file", _default_opd_import_location, "CHD_opd (*.opd)"
     );
+    import_opd(opd_path);
+}
+
+// /////////////////////////// //
+// MAIN WINDOW PRIVATE METHODS //
+// /////////////////////////// //
+
+#include <QColorDialog>
+
+void MainWindow::import_opd(const QString opd_path) {
     if (opd_path.isEmpty()) return;
     _opd = Opd::open(opd_path);
 
@@ -68,13 +107,35 @@ void MainWindow::on_bt_import_opd_clicked() {
     _default_opd_import_location = opd_path.chopped(opd_name.size());
     save_app_state();
 
+    // Update palette count
+    ui->cb_frame_part_color_set->clear();
+    ui->cb_frame_part_color_set->addItem("Default");
+    for (auto i = 1; i < _opd->palettes.size(); i++)
+        ui->cb_frame_part_color_set->addItem(QString::number(i));
+
     // Load animations
     load_animations();
+
+    // Enable editing
+    set_general_editing_enabled(true);
 }
 
-// /////////////////////////// //
-// MAIN WINDOW PRIVATE METHODS //
-// /////////////////////////// //
+void MainWindow::update_color(Color& color) {
+    QColor initial_color { color.r, color.g, color.b };
+    QColor new_color = QColorDialog::getColor(initial_color);
+    if (new_color.isValid() == false) return;
+    color = { (uchar) new_color.red(),
+              (uchar) new_color.green(),
+              (uchar) new_color.blue() };
+}
+
+void MainWindow::set_general_editing_enabled(bool enabled) {
+    ui->tab_main->setTabEnabled(1, enabled);
+    ui->tab_main->setTabEnabled(2, enabled);
+    ui->bt_add_frame->setEnabled(enabled);
+}
+
+// TODO: OLD
 
 void MainWindow::initial_load(QImage image) {
     // Enable all disabled functionalities

@@ -1,5 +1,5 @@
 #include "main_window.h"
-#include "./ui_main_window.h"
+#include "../forms/ui_main_window.h"
 
 #include "image_lwi.h"
 

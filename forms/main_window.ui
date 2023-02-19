@@ -37,40 +37,28 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="tab_main">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="minimumSize">
        <size>
         <width>130</width>
         <height>0</height>
        </size>
       </property>
-      <property name="tabPosition">
-       <enum>QTabWidget::North</enum>
-      </property>
-      <property name="tabShape">
-       <enum>QTabWidget::Rounded</enum>
-      </property>
       <property name="currentIndex">
        <number>0</number>
-      </property>
-      <property name="elideMode">
-       <enum>Qt::ElideNone</enum>
       </property>
       <property name="documentMode">
        <bool>true</bool>
       </property>
-      <property name="tabsClosable">
-       <bool>false</bool>
-      </property>
       <property name="movable">
-       <bool>false</bool>
-      </property>
-      <property name="tabBarAutoHide">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <widget class="QWidget" name="MAIN">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>Animations</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
@@ -241,8 +229,7 @@
                  </palette>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">
-</string>
+                 <string notr="true"/>
                 </property>
                 <property name="text">
                  <string/>
@@ -263,7 +250,7 @@
                </spacer>
               </item>
               <item>
-               <widget class="QCheckBox" name="cb_repeat_animation">
+               <widget class="QCheckBox" name="ch_repeat_animation">
                 <property name="text">
                  <string>Repeat</string>
                 </property>
@@ -544,35 +531,6 @@ border: none;</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="3" column="0">
-                     <widget class="QLabel" name="label_4">
-                      <property name="text">
-                       <string>Delay</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="QSpinBox" name="spin_frame_delay">
-                      <property name="minimumSize">
-                       <size>
-                        <width>265</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>300</width>
-                        <height>16777215</height>
-                       </size>
-                      </property>
-                      <property name="correctionMode">
-                       <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-                      </property>
-                      <property name="maximum">
-                       <number>65535</number>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="1" column="0">
                      <widget class="QLabel" name="label_5">
                       <property name="text">
@@ -689,12 +647,41 @@ border: none;</string>
                       </item>
                      </layout>
                     </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_4">
+                      <property name="text">
+                       <string>Delay</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QSpinBox" name="spin_frame_delay">
+                      <property name="minimumSize">
+                       <size>
+                        <width>265</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>300</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="correctionMode">
+                       <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+                      </property>
+                      <property name="maximum">
+                       <number>65535</number>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </item>
                  </layout>
                 </item>
                 <item>
-                 <widget class="QToolBox" name="toolBox">
+                 <widget class="QToolBox" name="tool_box_frame">
                   <property name="styleSheet">
                    <string notr="true"/>
                   </property>
@@ -707,15 +694,15 @@ border: none;</string>
                      <x>0</x>
                      <y>0</y>
                      <width>399</width>
-                     <height>352</height>
+                     <height>310</height>
                     </rect>
                    </property>
                    <attribute name="label">
-                    <string>Page 1</string>
+                    <string>Parts</string>
                    </attribute>
                    <layout class="QHBoxLayout" name="horizontalLayout_15">
                     <item>
-                     <widget class="QListWidget" name="list_imgs_2">
+                     <widget class="QListWidget" name="list_frame_parts">
                       <property name="minimumSize">
                        <size>
                         <width>95</width>
@@ -737,7 +724,7 @@ border: none;</string>
                         <item>
                          <layout class="QVBoxLayout" name="verticalLayout_5">
                           <item>
-                           <widget class="QPushButton" name="pushButton_11">
+                           <widget class="QPushButton" name="bt_add_frame_part">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -776,7 +763,7 @@ border: none;</string>
                            </widget>
                           </item>
                           <item>
-                           <widget class="QPushButton" name="pushButton_9">
+                           <widget class="QPushButton" name="bt_remove_frame_part">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -815,7 +802,7 @@ border: none;</string>
                            </widget>
                           </item>
                           <item>
-                           <widget class="QPushButton" name="pushButton_8">
+                           <widget class="QPushButton" name="bt_frame_part_up">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -854,7 +841,7 @@ border: none;</string>
                            </widget>
                           </item>
                           <item>
-                           <widget class="QPushButton" name="pushButton_10">
+                           <widget class="QPushButton" name="bt_frame_part_down">
                             <property name="enabled">
                              <bool>true</bool>
                             </property>
@@ -912,14 +899,14 @@ border: none;</string>
                           <item>
                            <layout class="QHBoxLayout" name="horizontalLayout_12">
                             <item>
-                             <widget class="QPushButton" name="pushButton">
+                             <widget class="QPushButton" name="bt_merge_frame_parts">
                               <property name="text">
                                <string>Merge</string>
                               </property>
                              </widget>
                             </item>
                             <item>
-                             <widget class="QPushButton" name="pushButton_2">
+                             <widget class="QPushButton" name="bt_edit_frame_part">
                               <property name="text">
                                <string>Edit</string>
                               </property>
@@ -943,7 +930,7 @@ border: none;</string>
                              </widget>
                             </item>
                             <item row="0" column="1">
-                             <widget class="QSpinBox" name="spinBox_12">
+                             <widget class="QSpinBox" name="spin_frame_part_off_x">
                               <property name="minimumSize">
                                <size>
                                 <width>132</width>
@@ -975,7 +962,7 @@ border: none;</string>
                              </widget>
                             </item>
                             <item row="1" column="1">
-                             <widget class="QSpinBox" name="spinBox_3">
+                             <widget class="QSpinBox" name="spin_frame_part_off_y">
                               <property name="minimumSize">
                                <size>
                                 <width>132</width>
@@ -1000,14 +987,14 @@ border: none;</string>
                              </widget>
                             </item>
                             <item row="2" column="0">
-                             <widget class="QCheckBox" name="checkBox_2">
+                             <widget class="QCheckBox" name="ch_frame_part_flip_x">
                               <property name="text">
                                <string>Flip X</string>
                               </property>
                              </widget>
                             </item>
                             <item row="2" column="1">
-                             <widget class="QCheckBox" name="checkBox_3">
+                             <widget class="QCheckBox" name="ch_frame_part_flip_y">
                               <property name="text">
                                <string>Flip Y</string>
                               </property>
@@ -1027,9 +1014,9 @@ border: none;</string>
                              </widget>
                             </item>
                             <item row="3" column="1">
-                             <widget class="QComboBox" name="cb_color_set_2">
+                             <widget class="QComboBox" name="cb_frame_part_color_set">
                               <property name="enabled">
-                               <bool>false</bool>
+                               <bool>true</bool>
                               </property>
                               <item>
                                <property name="text">
@@ -1081,142 +1068,10 @@ border: none;</string>
                       </item>
                       <item>
                        <layout class="QGridLayout" name="gridLayout_4">
-                        <item row="0" column="5">
-                         <widget class="ColorButton" name="bt_icol_18">
+                        <item row="0" column="4">
+                         <widget class="ColorButton" name="bt_frame_part_col_4">
                           <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="0">
-                         <widget class="ColorButton" name="bt_icol_11">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="2">
-                         <widget class="ColorButton" name="bt_icol_12">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="1">
-                         <widget class="ColorButton" name="bt_icol_14">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="2">
-                         <widget class="ColorButton" name="bt_icol_A_2">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="3">
-                         <widget class="ColorButton" name="bt_icol_B_2">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="6">
-                         <widget class="ColorButton" name="bt_icol_E_2">
-                          <property name="enabled">
-                           <bool>false</bool>
+                           <bool>true</bool>
                           </property>
                           <property name="minimumSize">
                            <size>
@@ -1236,141 +1091,9 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="0">
-                         <widget class="ColorButton" name="bt_icol_16">
+                         <widget class="ColorButton" name="bt_frame_part_col_0">
                           <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="4">
-                         <widget class="ColorButton" name="bt_icol_C_2">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="1">
-                         <widget class="ColorButton" name="bt_icol_17">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="3">
-                         <widget class="ColorButton" name="bt_icol_10">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="7">
-                         <widget class="ColorButton" name="bt_icol_15">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="1" column="7">
-                         <widget class="ColorButton" name="bt_icol_F_2">
-                          <property name="enabled">
-                           <bool>false</bool>
-                          </property>
-                          <property name="minimumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="maximumSize">
-                           <size>
-                            <width>30</width>
-                            <height>30</height>
-                           </size>
-                          </property>
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="4">
-                         <widget class="ColorButton" name="bt_icol_13">
-                          <property name="enabled">
-                           <bool>false</bool>
+                           <bool>true</bool>
                           </property>
                           <property name="minimumSize">
                            <size>
@@ -1390,9 +1113,97 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="1" column="5">
-                         <widget class="ColorButton" name="bt_icol_D_2">
+                         <widget class="ColorButton" name="bt_frame_part_col_D">
                           <property name="enabled">
-                           <bool>false</bool>
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="7">
+                         <widget class="ColorButton" name="bt_frame_part_col_F">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="5">
+                         <widget class="ColorButton" name="bt_frame_part_col_5">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="3">
+                         <widget class="ColorButton" name="bt_frame_part_col_3">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="7">
+                         <widget class="ColorButton" name="bt_frame_part_col_7">
+                          <property name="enabled">
+                           <bool>true</bool>
                           </property>
                           <property name="minimumSize">
                            <size>
@@ -1412,9 +1223,185 @@ border: none;</string>
                          </widget>
                         </item>
                         <item row="0" column="6">
-                         <widget class="ColorButton" name="bt_icol_19">
+                         <widget class="ColorButton" name="bt_frame_part_col_6">
                           <property name="enabled">
-                           <bool>false</bool>
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="3">
+                         <widget class="ColorButton" name="bt_frame_part_col_B">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="ColorButton" name="bt_frame_part_col_8">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="ColorButton" name="bt_frame_part_col_1">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="6">
+                         <widget class="ColorButton" name="bt_frame_part_col_E">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="2">
+                         <widget class="ColorButton" name="bt_frame_part_col_A">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="2">
+                         <widget class="ColorButton" name="bt_frame_part_col_2">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="4">
+                         <widget class="ColorButton" name="bt_frame_part_col_C">
+                          <property name="enabled">
+                           <bool>true</bool>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>30</width>
+                            <height>30</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="ColorButton" name="bt_frame_part_col_9">
+                          <property name="enabled">
+                           <bool>true</bool>
                           </property>
                           <property name="minimumSize">
                            <size>
@@ -1434,13 +1421,6 @@ border: none;</string>
                          </widget>
                         </item>
                        </layout>
-                      </item>
-                      <item>
-                       <widget class="QPushButton" name="pushButton_3">
-                        <property name="text">
-                         <string>Save plette</string>
-                        </property>
-                       </widget>
                       </item>
                       <item>
                        <spacer name="verticalSpacer_4">
@@ -1465,15 +1445,15 @@ border: none;</string>
                      <x>0</x>
                      <y>0</y>
                      <width>399</width>
-                     <height>214</height>
+                     <height>287</height>
                     </rect>
                    </property>
                    <attribute name="label">
-                    <string>Page 2</string>
+                    <string>Hitboxes</string>
                    </attribute>
                    <layout class="QHBoxLayout" name="horizontalLayout_16">
                     <item>
-                     <widget class="QListWidget" name="list_imgs_3">
+                     <widget class="QListWidget" name="list_hitboxes">
                       <property name="minimumSize">
                        <size>
                         <width>95</width>
@@ -1491,7 +1471,7 @@ border: none;</string>
                     <item>
                      <layout class="QVBoxLayout" name="verticalLayout_10">
                       <item>
-                       <widget class="QPushButton" name="pushButton_16">
+                       <widget class="QPushButton" name="bt_add_hitbox">
                         <property name="enabled">
                          <bool>true</bool>
                         </property>
@@ -1530,7 +1510,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="pushButton_17">
+                       <widget class="QPushButton" name="bt_remove_hitbox">
                         <property name="enabled">
                          <bool>true</bool>
                         </property>
@@ -1569,7 +1549,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="pushButton_18">
+                       <widget class="QPushButton" name="bt_hitbox_up">
                         <property name="enabled">
                          <bool>true</bool>
                         </property>
@@ -1608,7 +1588,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item>
-                       <widget class="QPushButton" name="pushButton_19">
+                       <widget class="QPushButton" name="bt_hitbox_down">
                         <property name="enabled">
                          <bool>true</bool>
                         </property>
@@ -1667,7 +1647,7 @@ border: none;</string>
                        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                       </property>
                       <item row="0" column="1">
-                       <widget class="QSpinBox" name="spinBox_15">
+                       <widget class="QSpinBox" name="spin_hitbox_pos_x">
                         <property name="minimumSize">
                          <size>
                           <width>132</width>
@@ -1696,7 +1676,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item row="1" column="1">
-                       <widget class="QSpinBox" name="spinBox_16">
+                       <widget class="QSpinBox" name="spin_hitbox_pos_y">
                         <property name="minimumSize">
                          <size>
                           <width>132</width>
@@ -1725,7 +1705,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item row="2" column="1">
-                       <widget class="QSpinBox" name="spinBox_17">
+                       <widget class="QSpinBox" name="spin_hitbox_width">
                         <property name="minimumSize">
                          <size>
                           <width>132</width>
@@ -1754,7 +1734,7 @@ border: none;</string>
                        </widget>
                       </item>
                       <item row="3" column="1">
-                       <widget class="QSpinBox" name="spinBox_18">
+                       <widget class="QSpinBox" name="spin_hitbox_height">
                         <property name="minimumSize">
                          <size>
                           <width>132</width>
@@ -1823,9 +1803,14 @@ border: none;</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="Sprites">
+       <attribute name="title">
+        <string>Sprites</string>
+       </attribute>
+      </widget>
       <widget class="QWidget" name="CSR">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>CSR</string>
        </attribute>
        <widget class="QPushButton" name="bt_palette_to_col">
         <property name="enabled">

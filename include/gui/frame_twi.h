@@ -7,8 +7,8 @@
 
 class FrameTwi : public QTreeWidgetItem {
   public:
-    const FramePtr          frame_info;
-    const AnimationFramePtr animation_info;
+    const FramePtr    frame_info;
+    AnimationFramePtr animation_info;
 
     FrameTwi(FramePtr frame_info, AnimationFramePtr animation_info)
         : QTreeWidgetItem(), frame_info(frame_info),

@@ -2,7 +2,7 @@
 #define __OPD_TYPES_H__
 
 #include <QVector>
-#include <QLinkedList>
+#include <list>
 
 struct Color {
     uchar r;
@@ -24,8 +24,8 @@ struct ColorPair {
 };
 
 struct Palette {
-    ushort index;
-    uchar  size = 0;
+    ushort index = (ushort) -1;
+    uchar  size  = 0;
 
     typedef std::array<Color, 16>::iterator       iterator;
     typedef std::array<Color, 16>::const_iterator const_iterator;
@@ -42,11 +42,11 @@ struct Palette {
   private:
     std::array<Color, 16> _colors;
 };
-typedef QLinkedList<Palette>::iterator PalettePtr;
+typedef std::list<Palette>::iterator PalettePtr;
 
 struct GFXPage {
   public:
-    ushort  index;
+    ushort  index = (ushort) -1;
     QString name;
     QString dir;
     ushort  width;
@@ -60,10 +60,10 @@ struct GFXPage {
     ushort _previous_width  = 0;
     ushort _previous_height = 0;
 };
-typedef QLinkedList<GFXPage>::iterator GFXPagePtr;
+typedef std::list<GFXPage>::iterator GFXPagePtr;
 
 struct Sprite {
-    ushort     index;
+    ushort     index = (ushort) -1;
     GFXPagePtr gfx_page;
     ushort     gfx_x_pos;
     ushort     gfx_y_pos;
@@ -80,11 +80,11 @@ struct Sprite {
     ushort _previous_width;
     ushort _previous_height;
 };
-typedef QLinkedList<Sprite>::iterator SpritePtr;
+typedef std::list<Sprite>::iterator SpritePtr;
 
 struct Frame {
     struct Part {
-        ushort     index;
+        ushort     index = (ushort) -1;
         SpritePtr  sprite;
         PalettePtr palette;
         short      x_offset;
@@ -93,56 +93,80 @@ struct Frame {
     };
 
     struct HitBox {
-        ushort index;
+        ushort index = (ushort) -1;
         ushort x_position;
         ushort y_position;
         ushort width;
         ushort height;
     };
 
-    ushort  index;
+    ushort  index = (ushort) -1;
     QString name;
     short   x_offset;
     short   y_offset;
 
-    QLinkedList<Part>   parts;
-    QLinkedList<HitBox> hit_boxes;
+    std::list<Part>   parts;
+    std::list<HitBox> hitboxes;
 
-    bool used = false;
+    uint uses = 0;
 
     void initialize();
 };
-typedef QLinkedList<Frame>::iterator FramePtr;
+typedef std::list<Frame>::iterator FramePtr;
 
 struct Animation {
     struct Frame {
-        ushort   index;
+        ushort   index = (ushort) -1;
         FramePtr data;
         ushort   delay;
         short    x_offset;
         short    y_offset;
     };
 
-    ushort             index;
-    QString            name;
-    QLinkedList<Frame> frames;
+    ushort           index = (ushort) -1;
+    QString          name;
+    std::list<Frame> frames;
 };
 
-typedef QLinkedList<Animation>::iterator        AnimationPtr;
-typedef QLinkedList<Animation::Frame>::iterator AnimationFramePtr;
-typedef QLinkedList<Frame::Part>::iterator      FramePartPtr;
+typedef std::list<Animation>::iterator        AnimationPtr;
+typedef std::list<Animation::Frame>::iterator AnimationFramePtr;
+typedef std::list<Frame::Part>::iterator      FramePartPtr;
+typedef std::list<Frame::HitBox>::iterator    HitBoxPtr;
 
-class InvalidPtr {
+class Invalid {
   public:
+    static const ushort            index = (ushort) -1;
     static const AnimationPtr      animation;
     static const FramePtr          frame;
     static const AnimationFramePtr animation_frame;
     static const FramePartPtr      frame_part;
+    static const HitBoxPtr         hitbox;
+    static const SpritePtr         sprite;
+    static const PalettePtr        palette;
+
+  private:
+    static std::list<Animation>        animations_d;
+    static std::list<Frame>            frames_d;
+    static std::list<Animation::Frame> animation_frames_d;
+    static std::list<Frame::Part>      frame_parts_d;
+    static std::list<Frame::HitBox>    hitbox_d;
+    static std::list<Sprite>           sprite_d;
+    static std::list<Palette>          palette_d;
 };
 
-inline const auto InvalidPtr::animation       = AnimationPtr();
-inline const auto InvalidPtr::frame           = FramePtr();
-inline const auto InvalidPtr::animation_frame = AnimationFramePtr();
-inline const auto InvalidPtr::frame_part      = FramePartPtr();
+#define define_invalid(type, name, dummy_list)                                 \
+    inline std::list<type> Invalid::dummy_list { {} };                         \
+    inline const auto      Invalid::name = dummy_list.begin();
+
+define_invalid(Animation, animation, animations_d);
+define_invalid(Frame, frame, frames_d);
+define_invalid(Animation::Frame, animation_frame, animation_frames_d);
+define_invalid(Frame::Part, frame_part, frame_parts_d);
+define_invalid(Frame::HitBox, hitbox, hitbox_d);
+define_invalid(Sprite, sprite, sprite_d);
+define_invalid(Palette, palette, palette_d);
+
+#define check_if_valid(opd_type)                                               \
+    if (opd_type->index == Invalid::index) return
 
 #endif // __OPD_TYPES_H__

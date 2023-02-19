@@ -7,21 +7,21 @@ class Opd {
   public:
     ~Opd();
 
-    QLinkedList<GFXPage>   gfx_pages;
-    QLinkedList<Sprite>    sprites;
-    QLinkedList<Frame>     frames;
-    QLinkedList<Animation> animations;
+    std::list<GFXPage>&   gfx_pages;
+    std::list<Sprite>&    sprites;
+    std::list<Frame>&     frames;
+    std::list<Animation>& animations;
 
-    QLinkedList<Palette> palettes;
+    std::list<Palette>& palettes;
 
     static Opd* open(QString const& path);
 
   private:
-    Opd(const QLinkedList<GFXPage>&   gfx_pages,
-        const QLinkedList<Sprite>&    sprites,
-        const QLinkedList<Frame>&     frames,
-        const QLinkedList<Animation>& animations,
-        const QLinkedList<Palette>&   palettes);
+    Opd(std::list<GFXPage>&   gfx_pages,
+        std::list<Sprite>&    sprites,
+        std::list<Frame>&     frames,
+        std::list<Animation>& animations,
+        std::list<Palette>&   palettes);
 };
 
 #endif // __OPD_H__

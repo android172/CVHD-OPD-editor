@@ -2,13 +2,7 @@
 
 GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
     setDragMode(QGraphicsView::ScrollHandDrag);
-
-    QGraphicsPixmapItem* pixmapItem =
-        new QGraphicsPixmapItem(QPixmap("../.test_files/r1.png"));
-    pixmapItem->setTransformationMode(Qt::FastTransformation);
-
     QGraphicsScene* scene = new QGraphicsScene();
-    scene->addItem(pixmapItem);
     setScene(scene);
 }
 GraphicsViewer::~GraphicsViewer() {}
@@ -32,13 +26,16 @@ void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
 // ////////////////////////////// //
 
 QPixmap compute_pixel_map(
-    const QVector<QVector<uchar>>& pixels, const Palette& palette
+    const QVector<QVector<uchar>>& pixels,
+    const Palette&                 palette,
+    bool                           with_background = false
 );
 
 void GraphicsViewer::show_frame(const Frame& frame) {
     auto scene = this->scene();
     scene->clear();
 
+    // Draw all frame parts
     for (auto const& part : frame.parts) {
         const auto& sprite  = *part.sprite;
         const auto& palette = *part.palette;
@@ -59,11 +56,40 @@ void GraphicsViewer::show_frame(const Frame& frame) {
 
         scene->addItem(pixmap_gpi);
     }
+
+    // Draw hitboxes
+    if (hitbox_visible) {
+        for (auto const& hitbox : frame.hitboxes) {
+            auto hitbox_rectangle = new QGraphicsRectItem(
+                hitbox.x_position,
+                hitbox.y_position,
+                hitbox.width,
+                hitbox.height
+            );
+            hitbox_rectangle->setOpacity(0.2);
+            hitbox_rectangle->setBrush(Qt::red);
+            scene->addItem(hitbox_rectangle);
+        }
+    }
+
+    // Set into postion
     translate(frame.x_offset, frame.y_offset);
 }
 
+void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
+    auto scene = this->scene();
+    scene->clear();
+
+    const auto pixmap     = compute_pixel_map(sprite.pixels, palette, true);
+    const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
+
+    scene->addItem(pixmap_gpi);
+}
+
 QPixmap compute_pixel_map(
-    const QVector<QVector<uchar>>& pixels, const Palette& palette
+    const QVector<QVector<uchar>>& pixels,
+    const Palette&                 palette,
+    bool                           with_background
 ) {
     auto   height = pixels.size();
     auto   width  = pixels[0].size();
@@ -73,12 +99,12 @@ QPixmap compute_pixel_map(
         for (int j = 0; j < width; ++j) {
             auto  color_index = pixels[i][j];
             Color color;
-            if (color_index < palette.size) color = palette[color_index];
+            if (color_index <= palette.size) color = palette[color_index];
             else
                 color = { (uchar) (color_index * 17),
                           (uchar) (color_index * 17),
                           (uchar) (color_index * 17) };
-            uchar  alpha = (color_index) ? 0xff : 0x00;
+            uchar  alpha = (with_background || color_index) ? 0xff : 0x00;
             QColor q_color { color.r, color.g, color.b, alpha };
             image.setPixel(j, i, q_color.rgba());
         }

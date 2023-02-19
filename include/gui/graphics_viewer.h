@@ -14,6 +14,9 @@ class GraphicsViewer : public QGraphicsView {
     ~GraphicsViewer();
 
     void show_frame(const Frame& frame);
+    void show_sprite(const Sprite& sprite, const Palette& palette);
+
+    bool hitbox_visible = false;
 
   protected Q_SLOTS:
     void wheelEvent(QWheelEvent* event);

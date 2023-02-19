@@ -1,4 +1,4 @@
-#include "./ui_main_window.h"
+#include "../forms/ui_main_window.h"
 #include "main_window.h"
 
 #include "image_lwi.h"
@@ -93,6 +93,7 @@ void MainWindow::dropEvent(QDropEvent* event) {
     QStringList image_paths;
     QStringList csr_paths;
     QString     col_path = "";
+    QString     opd_path = "";
     for (int i = 0; i < mime_data->urls().size(); ++i) {
         const QUrl url = mime_data->urls().at(i);
         if (url.toString().startsWith("file:///")) {
@@ -102,6 +103,7 @@ void MainWindow::dropEvent(QDropEvent* event) {
                 image_paths.append(path);
             else if (extension.compare("csr") == 0) csr_paths.append(path);
             else if (extension.compare("col") == 0) col_path = path;
+            else if (extension.compare("opd") == 0) opd_path = path;
         }
     }
 
@@ -109,6 +111,7 @@ void MainWindow::dropEvent(QDropEvent* event) {
     if (image_paths.size() > 0) import_images(image_paths);
     if (csr_paths.size() > 0) import_csrs(csr_paths);
     if (col_path.size() > 0) import_col(col_path);
+    if (opd_path.size() > 0) import_opd(col_path);
 
     event->accept();
 }

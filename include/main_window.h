@@ -42,12 +42,63 @@ class MainWindow : public QMainWindow {
     void on_bt_play_animation_clicked();
 
     // Frame
+    void on_tool_box_frame_currentChanged(int current);
+    void on_bt_add_frame_clicked();
+    void on_bt_remove_frame_clicked();
+    void on_bt_frame_up_clicked();
+    void on_bt_frame_down_clicked();
     void on_line_frame_name_textEdited(QString new_text);
     void on_spin_frame_pos_x_valueChanged(int new_value);
     void on_spin_frame_pos_y_valueChanged(int new_value);
     void on_spin_frame_off_x_valueChanged(int new_value);
     void on_spin_frame_off_y_valueChanged(int new_value);
     void on_spin_frame_delay_valueChanged(int new_value);
+
+    // Frame part
+    void on_list_frame_parts_itemPressed(QListWidgetItem* current);
+    void on_list_frame_parts_currentItemChanged(
+        QListWidgetItem* current, QListWidgetItem* previous
+    );
+    void on_bt_add_frame_part_clicked();
+    void on_bt_remove_frame_part_clicked();
+    void on_bt_frame_part_up_clicked();
+    void on_bt_frame_part_down_clicked();
+    void on_spin_frame_part_off_x_valueChanged(int new_value);
+    void on_spin_frame_part_off_y_valueChanged(int new_value);
+    void on_ch_frame_part_flip_x_toggled(bool new_value);
+    void on_ch_frame_part_flip_y_toggled(bool new_value);
+    void on_cb_frame_part_color_set_currentIndexChanged(int new_index);
+    // Frame palette buttons
+    void on_bt_frame_part_col_0_clicked();
+    void on_bt_frame_part_col_1_clicked();
+    void on_bt_frame_part_col_2_clicked();
+    void on_bt_frame_part_col_3_clicked();
+    void on_bt_frame_part_col_4_clicked();
+    void on_bt_frame_part_col_5_clicked();
+    void on_bt_frame_part_col_6_clicked();
+    void on_bt_frame_part_col_7_clicked();
+    void on_bt_frame_part_col_8_clicked();
+    void on_bt_frame_part_col_9_clicked();
+    void on_bt_frame_part_col_A_clicked();
+    void on_bt_frame_part_col_B_clicked();
+    void on_bt_frame_part_col_C_clicked();
+    void on_bt_frame_part_col_D_clicked();
+    void on_bt_frame_part_col_E_clicked();
+    void on_bt_frame_part_col_F_clicked();
+
+    // Hitboxes
+    void on_list_hitboxes_itemPressed(QListWidgetItem* current);
+    void on_list_hitboxes_currentItemChanged(
+        QListWidgetItem* current, QListWidgetItem* previous
+    );
+    void on_bt_add_hitbox_clicked();
+    void on_bt_remove_hitbox_clicked();
+    void on_bt_hitbox_up_clicked();
+    void on_bt_hitbox_down_clicked();
+    void on_spin_hitbox_pos_x_valueChanged(int new_value);
+    void on_spin_hitbox_pos_y_valueChanged(int new_value);
+    void on_spin_hitbox_width_valueChanged(int new_value);
+    void on_spin_hitbox_height_valueChanged(int new_value);
 
     // Image control
     void on_bt_import_images_clicked();
@@ -135,21 +186,49 @@ class MainWindow : public QMainWindow {
 
     Opd* _opd;
 
-    AnimationPtr      _current_animation;
-    AnimationFramePtr _current_anim_frame;
-    FramePtr          _current_frame;
-    FramePartPtr      _current_frame_part;
+    AnimationPtr       _current_animation  = Invalid::animation;
+    AnimationFramePtr  _current_anim_frame = Invalid::animation_frame;
+    FramePtr           _current_frame      = Invalid::frame;
+    FramePartPtr       _current_frame_part = Invalid::frame_part;
+    HitBoxPtr          _current_hitbox     = Invalid::hitbox;
+    QVector<ColorPair> _current_palette {};
+
+    // General
+    void import_opd(const QString opd_path);
+    void update_color(Color& color);
+    void set_general_editing_enabled(bool enabled);
 
     // Animation
     void load_animations();
     void load_animation(const AnimationPtr animation);
     void clear_animation();
-    void load_frame(
-        const FramePtr frame_info_in, const AnimationFramePtr animation_info_in
-    );
-    void clear_frame();
     void animate_frame(const Animation& animation, ushort frame_count);
     void stop_animation();
+    void set_animation_edit_enabled(bool enabled);
+
+    // Frame
+    void load_frame(
+        const FramePtr frame_info, const AnimationFramePtr animation_info
+    );
+    void clear_frame();
+    void set_frame_edit_enabled(bool enabled);
+    void set_frame_movement_enabled(bool enabled);
+
+    // Frame part
+    void load_frame_parts();
+    void load_frame_part(const FramePartPtr frame_part);
+    void clear_frame_part();
+    void load_palette();
+    void on_bt_frame_part_col_clicked(ColorButton* const button);
+    void set_frame_part_edit_enabled(bool enabled);
+    void set_frame_part_movement_enabled(bool enabled);
+
+    // Hitbox
+    void load_hitboxes();
+    void load_hitbox(const HitBoxPtr hitbox);
+    void clear_hitbox();
+    void set_hitbox_edit_enabled(bool enabled);
+    void set_hitbox_movement_enabled(bool enabled);
 
     bool _in_animation = false;
 
@@ -198,6 +277,24 @@ class MainWindow : public QMainWindow {
     void import_col(QString path);
     void on_csr_palette_button_clicked(ColorButton* button);
 };
+
+#define bt_frame_part_col_ALL(action)                                          \
+    ui->bt_frame_part_col_0->action;                                           \
+    ui->bt_frame_part_col_1->action;                                           \
+    ui->bt_frame_part_col_2->action;                                           \
+    ui->bt_frame_part_col_3->action;                                           \
+    ui->bt_frame_part_col_4->action;                                           \
+    ui->bt_frame_part_col_5->action;                                           \
+    ui->bt_frame_part_col_6->action;                                           \
+    ui->bt_frame_part_col_7->action;                                           \
+    ui->bt_frame_part_col_8->action;                                           \
+    ui->bt_frame_part_col_9->action;                                           \
+    ui->bt_frame_part_col_A->action;                                           \
+    ui->bt_frame_part_col_B->action;                                           \
+    ui->bt_frame_part_col_C->action;                                           \
+    ui->bt_frame_part_col_D->action;                                           \
+    ui->bt_frame_part_col_E->action;                                           \
+    ui->bt_frame_part_col_F->action;
 
 #define bt_col_ALL(action)                                                     \
     ui->bt_col_0->action;                                                      \

@@ -1,22 +1,20 @@
 #pragma once
 
-#include <QLinkedList>
+#include <QString>
 
-template<typename T>
-const typename T::iterator get_it_at(T& iterable, uchar index) {
-    auto it = iterable.begin();
-    std::advance(it, index);
-    return it;
+template<typename Container>
+typename Container::iterator get_it_at(Container& container, std::size_t i) {
+    return std::next(std::begin(container), i);
 }
 
-template<typename T>
-typename T::value_type get_val_at(T& iterable, uchar index) {
+template<typename Container>
+typename Container::value_type get_val_at(Container& iterable, uchar index) {
     auto it = iterable.begin();
     for (auto i = 0; i < index; i++)
         ++it;
     return *it;
 }
 
-#define ForEach(iterable, iterator)                                            \
+#define ForEach(iterator, iterable)                                            \
     for (auto iterator = iterable.begin(); iterator != iterable.end();         \
          iterator++)

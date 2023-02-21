@@ -2,7 +2,7 @@
 #include "../../forms/ui_new_frame_dialog.h"
 
 #include "util.h"
-#include "gui/frame_lwi.h"
+#include "gui/lwi/frame_lwi.h"
 
 NewFrameDialog::NewFrameDialog(Opd* const opd, QWidget* parent)
     : QDialog(parent), ui(new Ui::NewFrameDialog), _opd(opd) {
@@ -36,11 +36,6 @@ void NewFrameDialog::initialize_frame_list() {
 void NewFrameDialog::on_bt_add_clicked() { done(1); }
 void NewFrameDialog::on_bt_cancel_clicked() { done(0); }
 void NewFrameDialog::on_bt_create_clicked() {
-    // Create new frame
-    _opd->frames.push_back({ (ushort) _opd->frames.size(), "", 0, 0, {}, {} });
-    selected_frame = _opd->frames.end();
-    selected_frame--;
-
-    // Return
+    selected_frame = _opd->add_new_frame();
     done(2);
 }

@@ -2,7 +2,7 @@
 #include "../../forms/ui_new_part_dialog.h"
 
 #include "util.h"
-#include "gui/sprite_lwi.h"
+#include "gui/lwi/sprite_lwi.h"
 
 NewPartDialog::NewPartDialog(Opd* const opd, QWidget* parent)
     : QDialog(parent), ui(new Ui::NewPartDialog), _opd(opd) {

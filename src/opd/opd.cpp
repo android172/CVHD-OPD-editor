@@ -1,4 +1,4 @@
-#include "opd.h"
+#include "opd/opd.h"
 
 #include "file_utils.h"
 #include "util.h"
@@ -201,6 +201,60 @@ Opd* Opd::open(const QString& path) {
     opd_file.close();
 
     return new Opd(*gfx_pages, *sprites, *frames, *animations, *palettes);
+}
+
+// Add new
+
+AnimationPtr Opd::add_new_animation() {
+    animations.push_back({ (uchar) animations.size(), "", {} });
+    auto new_animation = animations.end();
+    new_animation--;
+    return new_animation;
+}
+FramePtr Opd::add_new_frame() {
+    frames.push_back({ (ushort) frames.size(), "", 0, 0, {}, {} });
+    auto new_frame = frames.end();
+    new_frame--;
+    return new_frame;
+}
+SpritePtr Opd::add_new_sprite() {
+    Sprite new_spr {};
+    new_spr.index = sprites.size();
+
+    sprites.push_back(new_spr);
+    auto new_sprite = sprites.end();
+    new_sprite--;
+    return new_sprite;
+}
+PalettePtr Opd::add_new_palette() {
+    // TODO: Implement
+    return {};
+}
+AnimationFramePtr Opd::add_new_animation_frame(
+    const AnimationPtr animation, const FramePtr frame
+) {
+    animation->frames.push_back(
+        { (ushort) animation->frames.size(), frame, 0, 0, 0 }
+    );
+    auto new_animation_frame = animation->frames.end();
+    new_animation_frame--;
+    return new_animation_frame;
+}
+FramePartPtr Opd::add_new_frame_part(
+    const FramePtr frame, const SpritePtr sprite, const PalettePtr palette
+) {
+    frame->parts.push_back(
+        { (ushort) frame->parts.size(), sprite, palette, 0, 0, 0 }
+    );
+    auto new_frame_part = frame->parts.end();
+    new_frame_part--;
+    return new_frame_part;
+}
+HitBoxPtr Opd::add_new_hitbox(const FramePtr frame) {
+    frame->hitboxes.push_back({ (uchar) frame->hitboxes.size(), 0, 0, 0 });
+    auto new_hitbox = frame->hitboxes.end();
+    new_hitbox--;
+    return new_hitbox;
 }
 
 // //////////////////// //

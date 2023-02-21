@@ -16,6 +16,12 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 # Get all sources
 file(GLOB_RECURSE SOURCES 
+    ${PROJECT_SOURCE_DIR}/froms/*.ui
+    ${PROJECT_SOURCE_DIR}/froms/**/*.ui
+    ${PROJECT_SOURCE_DIR}/froms/*.cpp
+    ${PROJECT_SOURCE_DIR}/froms/**/*.cpp
+    ${PROJECT_SOURCE_DIR}/froms/*.h
+    ${PROJECT_SOURCE_DIR}/froms/**/*.h
     ${PROJECT_SOURCE_DIR}/src/*.cpp
     ${PROJECT_SOURCE_DIR}/src/**/*.cpp
     ${PROJECT_SOURCE_DIR}/include/*.h

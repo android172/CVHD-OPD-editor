@@ -1,8 +1,8 @@
 #include "main_window.h"
-#include "../forms/ui_main_window.h"
+#include "../../forms/ui_main_window.h"
 
-#include "gui/animation_twi.h"
-#include "gui/frame_twi.h"
+#include "gui/twi/animation_twi.h"
+#include "gui/twi/frame_twi.h"
 #include "gui/new_frame_dialog.h"
 #include "util.h"
 
@@ -15,27 +15,19 @@
 void MainWindow::on_bt_add_frame_clicked() {
     const auto tree = ui->tree_animations;
 
-    // Get current top level twi
-    auto current_twi = tree->currentItem();
-    if (current_twi == nullptr) return;
-    if (current_twi->parent()) current_twi = current_twi->parent();
+    // Get current animation twi & unused twi (JIC)
+    const auto animation_twi = tree->get_current_animation();
+    const auto unused_twi    = tree->get_unused_section();
 
-    // Get current animation twi
-    const auto animation_twi = dynamic_cast<AnimationTwi*>(current_twi);
-
-    // If unused section is selected then new frame is created be default
+    // If current section is unused new frame is created by default
     if (animation_twi == nullptr) {
         // Create new frame
-        _opd->frames.push_back(
-            { (ushort) _opd->frames.size(), "", 0, 0, {}, {} }
-        );
-        auto new_frame = _opd->frames.end();
-        new_frame--;
+        auto new_frame = _opd->add_new_frame();
 
         // Create new twi for this frame
         const auto frame_twi =
             new FrameTwi(new_frame, Invalid::animation_frame);
-        current_twi->addChild(frame_twi);
+        unused_twi->addChild(frame_twi);
 
         // Set it as current
         tree->setCurrentItem(frame_twi);
@@ -56,8 +48,6 @@ void MainWindow::on_bt_add_frame_clicked() {
         // If an unused (previously existing) frame is added we need to remove
         // it from the unused section
         if (result == 1 && frame->uses == 0) {
-            const auto unused_twi = tree->topLevelItem(0);
-
             // Find selected frame twi
             FrameTwi* selected_frame_twi = nullptr;
             for (auto i = 0; i < unused_twi->childCount(); i++) {
@@ -77,15 +67,12 @@ void MainWindow::on_bt_add_frame_clicked() {
         }
 
         // Add as animation frame
-        auto& frames = animation_twi->animation->frames;
-        frames.push_back({ (ushort) frames.size(), frame, 0, 0, 0 });
-        auto animation_frame = frames.end();
-        animation_frame--;
+        auto animation_frame =
+            _opd->add_new_animation_frame(animation_twi->animation, frame);
         frame->uses++;
 
         // Add to tree
-        const auto frame_twi = new FrameTwi(frame, animation_frame);
-        animation_twi->addChild(frame_twi);
+        const auto frame_twi = animation_twi->add_frame(animation_frame);
 
         // Set as current
         tree->setCurrentItem(frame_twi);
@@ -93,22 +80,17 @@ void MainWindow::on_bt_add_frame_clicked() {
 }
 void MainWindow::on_bt_remove_frame_clicked() {
     check_if_valid(_current_frame);
-    auto tree = ui->tree_animations;
+    const auto tree = ui->tree_animations;
 
     // Get current frame
-    const auto frame_twi = dynamic_cast<FrameTwi*>(tree->currentItem());
+    const auto frame_twi = tree->get_current_frame();
     if (frame_twi == nullptr) return;
 
     // If frame is used we just remove it from animation
     if (_current_frame->uses) {
-        auto animation_twi = dynamic_cast<AnimationTwi*>(frame_twi->parent());
+        const auto animation_twi =
+            dynamic_cast<AnimationTwi*>(frame_twi->parent());
         if (!animation_twi) return;
-
-        // To avoid invoking on_item_changed we will change the current tree
-        // focus item to the parent animation (on_item_changed is only invoked
-        // if  currently focused item is removed)
-        if (animation_twi->childCount() == 1)
-            tree->setCurrentItem(animation_twi);
 
         // Remove animation frame
         _current_animation->frames.erase(_current_anim_frame);
@@ -128,13 +110,10 @@ void MainWindow::on_bt_remove_frame_clicked() {
         // If this was the last animation that used this frame move it to
         // unused section
         if (frame_twi->frame_info->uses == 0) {
-            auto unused_twi = tree->topLevelItem(0);
+            auto unused_twi = tree->get_unused_section();
+
             // Create unused frames section if needed
-            if (dynamic_cast<AnimationTwi*>(unused_twi) != nullptr) {
-                unused_twi = new QTreeWidgetItem();
-                unused_twi->setText(0, "unused");
-                tree->insertTopLevelItem(0, unused_twi);
-            }
+            if (unused_twi == nullptr) unused_twi = tree->add_unused_section();
 
             frame_twi->animation_info = Invalid::animation_frame;
             unused_twi->addChild(frame_twi);
@@ -144,7 +123,7 @@ void MainWindow::on_bt_remove_frame_clicked() {
     else {
         _opd->frames.erase(_current_frame);
 
-        auto unused_twi = frame_twi->parent();
+        const auto unused_twi = frame_twi->parent();
         unused_twi->removeChild(frame_twi); // This invokes on_item_changed
         delete frame_twi;
 
@@ -161,8 +140,7 @@ void MainWindow::on_bt_frame_up_clicked() {
     check_if_valid(_current_frame);
 
     // Get current frame
-    const auto frame_twi =
-        dynamic_cast<FrameTwi*>(ui->tree_animations->currentItem());
+    const auto frame_twi = ui->tree_animations->get_current_frame();
     if (frame_twi == nullptr) return;
 
     // Get parent
@@ -197,8 +175,7 @@ void MainWindow::on_bt_frame_down_clicked() {
     check_if_valid(_current_frame);
 
     // Get current frame
-    const auto frame_twi =
-        dynamic_cast<FrameTwi*>(ui->tree_animations->currentItem());
+    const auto frame_twi = ui->tree_animations->get_current_frame();
     if (frame_twi == nullptr) return;
 
     // Get parent
@@ -241,13 +218,9 @@ void MainWindow::on_line_frame_name_textEdited(QString new_text) {
     check_if_valid(_current_frame);
     _current_frame->name = new_text;
 
-    for (auto i = 0; i < ui->tree_animations->topLevelItemCount(); i++) {
-        auto animation = ui->tree_animations->topLevelItem(i);
-        for (auto j = 0; j < animation->childCount(); j++) {
-            auto frame_twi = dynamic_cast<FrameTwi*>(animation->child(j));
-            frame_twi->compute_name();
-        }
-    }
+    const auto frame_twi = ui->tree_animations->get_current_frame();
+    if (frame_twi == nullptr) return;
+    frame_twi->compute_name();
 }
 
 void MainWindow::on_spin_frame_pos_x_valueChanged(int new_value) {

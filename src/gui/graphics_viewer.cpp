@@ -76,11 +76,14 @@ void GraphicsViewer::show_frame(const Frame& frame) {
     translate(frame.x_offset, frame.y_offset);
 }
 
-void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
+void GraphicsViewer::show_sprite(
+    const Sprite& sprite, const Palette& palette, bool with_background
+) {
     auto scene = this->scene();
     scene->clear();
 
-    const auto pixmap     = compute_pixel_map(sprite.pixels, palette, true);
+    const auto pixmap =
+        compute_pixel_map(sprite.pixels, palette, with_background);
     const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
 
     scene->addItem(pixmap_gpi);

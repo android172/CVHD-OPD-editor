@@ -3,7 +3,8 @@
 
 #include <QTreeWidgetItem>
 
-#include "opd_types.h"
+#include "frame_twi.h"
+#include "util.h"
 
 class AnimationTwi : public QTreeWidgetItem {
   public:
@@ -12,6 +13,8 @@ class AnimationTwi : public QTreeWidgetItem {
     AnimationTwi(const AnimationPtr animation)
         : QTreeWidgetItem(), animation(animation) {
         compute_name();
+        // Add frames for this animation
+        ForEach(frame, animation->frames) add_frame(frame);
     }
     ~AnimationTwi() {}
 
@@ -21,6 +24,12 @@ class AnimationTwi : public QTreeWidgetItem {
                 ? animation->name
                 : "animation " + QString::number(animation->index);
         setText(0, animation_name);
+    }
+
+    FrameTwi* add_frame(AnimationFramePtr frame) {
+        const auto frame_twi = new FrameTwi(frame->data, frame);
+        addChild(frame_twi);
+        return frame_twi;
     }
 };
 

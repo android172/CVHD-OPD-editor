@@ -10,13 +10,31 @@
 
 #include "color_button.h"
 #include "gui/palette_button.h"
-#include "opd.h"
+#include "opd/opd.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
+
+#define COL_SLOTS(button, signal)                                              \
+    void on_##button##_0_##signal();                                           \
+    void on_##button##_1_##signal();                                           \
+    void on_##button##_2_##signal();                                           \
+    void on_##button##_3_##signal();                                           \
+    void on_##button##_4_##signal();                                           \
+    void on_##button##_5_##signal();                                           \
+    void on_##button##_6_##signal();                                           \
+    void on_##button##_7_##signal();                                           \
+    void on_##button##_8_##signal();                                           \
+    void on_##button##_9_##signal();                                           \
+    void on_##button##_A_##signal();                                           \
+    void on_##button##_B_##signal();                                           \
+    void on_##button##_C_##signal();                                           \
+    void on_##button##_D_##signal();                                           \
+    void on_##button##_E_##signal();                                           \
+    void on_##button##_F_##signal();
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -70,22 +88,7 @@ class MainWindow : public QMainWindow {
     void on_ch_frame_part_flip_y_toggled(bool new_value);
     void on_cb_frame_part_color_set_currentIndexChanged(int new_index);
     // Frame palette buttons
-    void on_bt_frame_part_col_0_clicked();
-    void on_bt_frame_part_col_1_clicked();
-    void on_bt_frame_part_col_2_clicked();
-    void on_bt_frame_part_col_3_clicked();
-    void on_bt_frame_part_col_4_clicked();
-    void on_bt_frame_part_col_5_clicked();
-    void on_bt_frame_part_col_6_clicked();
-    void on_bt_frame_part_col_7_clicked();
-    void on_bt_frame_part_col_8_clicked();
-    void on_bt_frame_part_col_9_clicked();
-    void on_bt_frame_part_col_A_clicked();
-    void on_bt_frame_part_col_B_clicked();
-    void on_bt_frame_part_col_C_clicked();
-    void on_bt_frame_part_col_D_clicked();
-    void on_bt_frame_part_col_E_clicked();
-    void on_bt_frame_part_col_F_clicked();
+    COL_SLOTS(bt_frame_part_col, clicked);
 
     // Hitboxes
     void on_list_hitboxes_itemPressed(QListWidgetItem* current);
@@ -100,6 +103,25 @@ class MainWindow : public QMainWindow {
     void on_spin_hitbox_pos_y_valueChanged(int new_value);
     void on_spin_hitbox_width_valueChanged(int new_value);
     void on_spin_hitbox_height_valueChanged(int new_value);
+
+    // Sprites
+    void on_list_sprites_currentItemChanged(
+        QListWidgetItem* current, QListWidgetItem* previous
+    );
+    void on_bt_add_sprite_clicked();
+    void on_bt_remove_sprite_clicked();
+    void on_bt_sprite_trim_clicked();
+    void on_bt_merge_layers_clicked();
+    void on_bt_save_sprite_clicked();
+    void on_ch_background_enabled_toggled(bool new_value);
+    void on_slider_transparency_valueChanged(int new_value);
+    void on_spin_sprite_pos_x_valueChanged(int new_value);
+    void on_spin_sprite_pos_y_valueChanged(int new_value);
+    void on_spin_sprite_width_valueChanged(int new_value);
+    void on_spin_sprite_height_valueChanged(int new_value);
+    void on_cb_sprite_palette_currentIndexChanged(int new_index);
+    // Sprite palette buttons
+    COL_SLOTS(bt_sprite_col, clicked);
 
     // Image control
     void on_bt_import_images_clicked();
@@ -117,59 +139,15 @@ class MainWindow : public QMainWindow {
     void dragLeaveEvent(QDragLeaveEvent*);
 
     // Palette control
-    void on_bt_col_0_clicked();
-    void on_bt_col_1_clicked();
-    void on_bt_col_2_clicked();
-    void on_bt_col_3_clicked();
-    void on_bt_col_4_clicked();
-    void on_bt_col_5_clicked();
-    void on_bt_col_6_clicked();
-    void on_bt_col_7_clicked();
-    void on_bt_col_8_clicked();
-    void on_bt_col_9_clicked();
-    void on_bt_col_A_clicked();
-    void on_bt_col_B_clicked();
-    void on_bt_col_C_clicked();
-    void on_bt_col_D_clicked();
-    void on_bt_col_E_clicked();
-    void on_bt_col_F_clicked();
-    void on_bt_col_0_right_clicked();
-    void on_bt_col_1_right_clicked();
-    void on_bt_col_2_right_clicked();
-    void on_bt_col_3_right_clicked();
-    void on_bt_col_4_right_clicked();
-    void on_bt_col_5_right_clicked();
-    void on_bt_col_6_right_clicked();
-    void on_bt_col_7_right_clicked();
-    void on_bt_col_8_right_clicked();
-    void on_bt_col_9_right_clicked();
-    void on_bt_col_A_right_clicked();
-    void on_bt_col_B_right_clicked();
-    void on_bt_col_C_right_clicked();
-    void on_bt_col_D_right_clicked();
-    void on_bt_col_E_right_clicked();
-    void on_bt_col_F_right_clicked();
     void on_cb_color_set_textActivated(QString color_set);
+    COL_SLOTS(bt_col, clicked);
+    COL_SLOTS(bt_col, right_clicked);
+
     // Col
-    void on_bt_icol_0_clicked();
-    void on_bt_icol_1_clicked();
-    void on_bt_icol_2_clicked();
-    void on_bt_icol_3_clicked();
-    void on_bt_icol_4_clicked();
-    void on_bt_icol_5_clicked();
-    void on_bt_icol_6_clicked();
-    void on_bt_icol_7_clicked();
-    void on_bt_icol_8_clicked();
-    void on_bt_icol_9_clicked();
-    void on_bt_icol_A_clicked();
-    void on_bt_icol_B_clicked();
-    void on_bt_icol_C_clicked();
-    void on_bt_icol_D_clicked();
-    void on_bt_icol_E_clicked();
-    void on_bt_icol_F_clicked();
     void on_bt_import_col_clicked();
     void on_bt_palette_to_col_clicked();
     void on_bt_save_col_clicked();
+    COL_SLOTS(bt_icol, clicked);
 
     // Csr control
     void on_bt_import_csr_clicked();
@@ -185,16 +163,21 @@ class MainWindow : public QMainWindow {
   private:
     Ui::MainWindow* ui;
 
+    // Application state
     Opd* _opd;
+
+    bool _in_animation = false;
 
     AnimationPtr      _current_animation  = Invalid::animation;
     AnimationFramePtr _current_anim_frame = Invalid::animation_frame;
     FramePtr          _current_frame      = Invalid::frame;
     FramePartPtr      _current_frame_part = Invalid::frame_part;
     HitBoxPtr         _current_hitbox     = Invalid::hitbox;
-    Palette           _current_palette {};
+    SpritePtr         _current_sprite     = Invalid::sprite;
+    Palette           _current_part_palette {};
+    Palette           _current_sprite_palette {};
 
-    // General
+    // General methods
     void import_opd(const QString opd_path);
     void update_color(Color& color);
     void set_general_editing_enabled(bool enabled);
@@ -231,7 +214,12 @@ class MainWindow : public QMainWindow {
     void set_hitbox_edit_enabled(bool enabled);
     void set_hitbox_movement_enabled(bool enabled);
 
-    bool _in_animation = false;
+    // Sprite
+    void load_sprites();
+    void load_sprite(const SpritePtr sprite);
+    void clear_sprite();
+    void on_bt_sprite_col_clicked(PaletteButton* const button);
+    void set_sprite_edit_enabled(bool enabled);
 
     //  Application state info
     QString _default_opd_import_location   = QDir::homePath();
@@ -279,58 +267,28 @@ class MainWindow : public QMainWindow {
     void on_csr_palette_button_clicked(ColorButton* button);
 };
 
+#define COL_ACTIVATE_ALL(button_set, action)                                   \
+    ui->button_set##_0->action;                                                \
+    ui->button_set##_1->action;                                                \
+    ui->button_set##_2->action;                                                \
+    ui->button_set##_3->action;                                                \
+    ui->button_set##_4->action;                                                \
+    ui->button_set##_5->action;                                                \
+    ui->button_set##_6->action;                                                \
+    ui->button_set##_7->action;                                                \
+    ui->button_set##_8->action;                                                \
+    ui->button_set##_9->action;                                                \
+    ui->button_set##_A->action;                                                \
+    ui->button_set##_B->action;                                                \
+    ui->button_set##_C->action;                                                \
+    ui->button_set##_D->action;                                                \
+    ui->button_set##_E->action;                                                \
+    ui->button_set##_F->action;
+
 #define bt_frame_part_col_ALL(action)                                          \
-    ui->bt_frame_part_col_0->action;                                           \
-    ui->bt_frame_part_col_1->action;                                           \
-    ui->bt_frame_part_col_2->action;                                           \
-    ui->bt_frame_part_col_3->action;                                           \
-    ui->bt_frame_part_col_4->action;                                           \
-    ui->bt_frame_part_col_5->action;                                           \
-    ui->bt_frame_part_col_6->action;                                           \
-    ui->bt_frame_part_col_7->action;                                           \
-    ui->bt_frame_part_col_8->action;                                           \
-    ui->bt_frame_part_col_9->action;                                           \
-    ui->bt_frame_part_col_A->action;                                           \
-    ui->bt_frame_part_col_B->action;                                           \
-    ui->bt_frame_part_col_C->action;                                           \
-    ui->bt_frame_part_col_D->action;                                           \
-    ui->bt_frame_part_col_E->action;                                           \
-    ui->bt_frame_part_col_F->action;
-
-#define bt_col_ALL(action)                                                     \
-    ui->bt_col_0->action;                                                      \
-    ui->bt_col_1->action;                                                      \
-    ui->bt_col_2->action;                                                      \
-    ui->bt_col_3->action;                                                      \
-    ui->bt_col_4->action;                                                      \
-    ui->bt_col_5->action;                                                      \
-    ui->bt_col_6->action;                                                      \
-    ui->bt_col_7->action;                                                      \
-    ui->bt_col_8->action;                                                      \
-    ui->bt_col_9->action;                                                      \
-    ui->bt_col_A->action;                                                      \
-    ui->bt_col_B->action;                                                      \
-    ui->bt_col_C->action;                                                      \
-    ui->bt_col_D->action;                                                      \
-    ui->bt_col_E->action;                                                      \
-    ui->bt_col_F->action;
-
-#define bt_icol_ALL(action)                                                    \
-    ui->bt_icol_0->action;                                                     \
-    ui->bt_icol_1->action;                                                     \
-    ui->bt_icol_2->action;                                                     \
-    ui->bt_icol_3->action;                                                     \
-    ui->bt_icol_4->action;                                                     \
-    ui->bt_icol_5->action;                                                     \
-    ui->bt_icol_6->action;                                                     \
-    ui->bt_icol_7->action;                                                     \
-    ui->bt_icol_8->action;                                                     \
-    ui->bt_icol_9->action;                                                     \
-    ui->bt_icol_A->action;                                                     \
-    ui->bt_icol_B->action;                                                     \
-    ui->bt_icol_C->action;                                                     \
-    ui->bt_icol_D->action;                                                     \
-    ui->bt_icol_E->action;                                                     \
-    ui->bt_icol_F->action;
+    COL_ACTIVATE_ALL(bt_frame_part_col, action)
+#define bt_sprite_col_ALL(action) COL_ACTIVATE_ALL(bt_sprite_col, action)
+#define bt_col_ALL(action) COL_ACTIVATE_ALL(bt_col, action)
+#define bt_icol_ALL(action) COL_ACTIVATE_ALL(bt_icol, action)
 
 #endif // MAIN_WINDOW_H

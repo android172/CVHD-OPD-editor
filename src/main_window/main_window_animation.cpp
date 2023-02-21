@@ -1,8 +1,8 @@
 #include "main_window.h"
-#include "../forms/ui_main_window.h"
+#include "../../forms/ui_main_window.h"
 
-#include "gui/frame_twi.h"
-#include "gui/animation_twi.h"
+#include "gui/twi/frame_twi.h"
+#include "gui/twi/animation_twi.h"
 #include "util.h"
 
 #include <QTimer>
@@ -22,7 +22,7 @@ void MainWindow::on_tree_animations_itemPressed(QTreeWidgetItem* current, int) {
         frame_twi     = dynamic_cast<FrameTwi*>(current);
     } else {
         animation_twi = dynamic_cast<AnimationTwi*>(current);
-        if (animation_twi && animation_twi->childCount() > 0)
+        if (animation_twi && animation_twi->animation->frames.size() > 0)
             frame_twi = dynamic_cast<FrameTwi*>(animation_twi->child(0));
     }
 
@@ -43,13 +43,11 @@ void MainWindow::on_tree_animations_currentItemChanged(
 
 void MainWindow::on_bt_add_animation_clicked() {
     // Create new animation
-    _opd->animations.push_back({ (uchar) _opd->animations.size(), "", {} });
-    auto new_animation = _opd->animations.end();
-    new_animation--;
+    auto new_animation = _opd->add_new_animation();
 
     // Create new animation TWI and add it to tree
-    const auto animation_twi = new AnimationTwi(new_animation);
-    ui->tree_animations->addTopLevelItem(animation_twi);
+    const auto animation_twi =
+        ui->tree_animations->add_animation(new_animation);
 
     // Select newest animation
     ui->tree_animations->setCurrentItem(animation_twi);
@@ -59,17 +57,9 @@ void MainWindow::on_bt_remove_animation_clicked() {
     check_if_valid(_current_animation);
     auto tree = ui->tree_animations;
 
-    // Get current item
-    const auto current_twi = tree->currentItem();
-    if (!current_twi) return;
-
-    // Cast its animation (if exist)
-    const auto animation_twi =
-        (current_twi->parent() == nullptr)
-            ? dynamic_cast<AnimationTwi*>(current_twi)
-            : dynamic_cast<AnimationTwi*>(current_twi->parent());
+    // Cast current animation (if exist)
+    const auto animation_twi = tree->get_current_animation();
     if (animation_twi == nullptr) return;
-    const auto anim_i = tree->indexOfTopLevelItem(animation_twi);
 
     // Remove all of its frames
     for (auto i = animation_twi->childCount() - 1; i >= 0; i--) {
@@ -79,13 +69,10 @@ void MainWindow::on_bt_remove_animation_clicked() {
         // If this was the last animation that used this frame move it to
         // unused section
         if (frame_twi->frame_info->uses == 0) {
-            auto unused_twi = tree->topLevelItem(0);
-            if (dynamic_cast<AnimationTwi*>(unused_twi) != nullptr) {
-                // This is the first unused frame
-                unused_twi = new QTreeWidgetItem();
-                unused_twi->setText(0, "unused");
-                tree->insertTopLevelItem(0, unused_twi);
-            }
+            auto unused_twi = tree->get_unused_section();
+
+            // If this is the first unused frame add unused section
+            if (unused_twi == nullptr) unused_twi = tree->add_unused_section();
 
             frame_twi->animation_info = Invalid::animation_frame;
             unused_twi->addChild(frame_twi);
@@ -94,7 +81,7 @@ void MainWindow::on_bt_remove_animation_clicked() {
 
     // Remove it
     _opd->animations.erase(_current_animation);
-    delete tree->takeTopLevelItem(anim_i);
+    tree->delete_animation(animation_twi);
 
     // Update indices
     ushort index = 0;
@@ -110,11 +97,9 @@ void MainWindow::on_line_animation_name_textEdited(QString new_text) {
     if (_current_animation->index == Invalid::index) return;
     _current_animation->name = new_text;
 
-    for (auto i = 0; i < ui->tree_animations->topLevelItemCount(); i++) {
-        auto animation_twi =
-            dynamic_cast<AnimationTwi*>(ui->tree_animations->topLevelItem(i));
-        if (animation_twi) animation_twi->compute_name();
-    }
+    const auto animation_twi = ui->tree_animations->get_current_animation();
+    if (animation_twi == nullptr) return;
+    animation_twi->compute_name();
 }
 
 void MainWindow::on_slider_animation_speed_valueChanged(int new_value) {
@@ -123,13 +108,8 @@ void MainWindow::on_slider_animation_speed_valueChanged(int new_value) {
 
 void MainWindow::on_bt_play_animation_clicked() {
     if (ui->bt_play_animation->isChecked()) {
-        auto current_twi = ui->tree_animations->currentItem();
-        if (current_twi == nullptr) return;
-        if (current_twi->parent() != nullptr)
-            current_twi = current_twi->parent();
-
         // Get current animation TWI
-        const auto animation_twi = dynamic_cast<AnimationTwi*>(current_twi);
+        const auto animation_twi = ui->tree_animations->get_current_animation();
         if (!animation_twi) return;
 
         // Display first frame immediately
@@ -149,30 +129,20 @@ void MainWindow::load_animations() {
     tree->clear();
 
     // Add all animations from OPD
-    ForEach(animation, _opd->animations) {
-        // Create animation TWI
-        auto animation_twi = new AnimationTwi(animation);
+    ForEach(animation, _opd->animations) tree->add_animation(animation);
 
-        // Add frames for this animation
-        ForEach(frame, animation->frames) {
-            animation_twi->addChild(new FrameTwi(frame->data, frame));
+    // Add unused frames section if necessary
+    if (_opd->frames.size() > 0) {
+        const auto unused_twi = tree->add_unused_section();
+
+        // Add all unused frames
+        ForEach(frame, _opd->frames) {
+            if (frame->uses == 0)
+                unused_twi->addChild(
+                    new FrameTwi(frame, Invalid::animation_frame)
+                );
         }
-
-        tree->addTopLevelItem(animation_twi);
     }
-
-    // Add unused frames section
-    // Create unused TWI
-    QString name       = "unused";
-    auto    unused_twi = new QTreeWidgetItem();
-    unused_twi->setText(0, name);
-
-    // Add all unused frames
-    ForEach(frame, _opd->frames) {
-        if (frame->uses == 0)
-            unused_twi->addChild(new FrameTwi(frame, Invalid::animation_frame));
-    }
-    if (unused_twi->childCount()) tree->insertTopLevelItem(0, unused_twi);
 
     // Select first item
     tree->setCurrentItem(tree->topLevelItem(0));

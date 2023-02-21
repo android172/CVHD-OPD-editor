@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QListWidgetItem>
 
-#include "opd.h"
+#include "opd/opd.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

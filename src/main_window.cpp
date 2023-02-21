@@ -1,8 +1,8 @@
 #include "main_window.h"
 #include "../forms/ui_main_window.h"
 
-#include "gui/frame_twi.h"
-#include "gui/animation_twi.h"
+#include "gui/twi/frame_twi.h"
+#include "gui/twi/animation_twi.h"
 #include <QFileDialog>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -24,22 +24,22 @@ MainWindow::MainWindow(QWidget* parent)
     ui->bt_remove_animation->setEnabled(false);
 
     // Setup frame part color buttons
-    ui->bt_frame_part_col_0->setup(0, &_current_palette);
-    ui->bt_frame_part_col_1->setup(1, &_current_palette);
-    ui->bt_frame_part_col_2->setup(2, &_current_palette);
-    ui->bt_frame_part_col_3->setup(3, &_current_palette);
-    ui->bt_frame_part_col_4->setup(4, &_current_palette);
-    ui->bt_frame_part_col_5->setup(5, &_current_palette);
-    ui->bt_frame_part_col_6->setup(6, &_current_palette);
-    ui->bt_frame_part_col_7->setup(7, &_current_palette);
-    ui->bt_frame_part_col_8->setup(8, &_current_palette);
-    ui->bt_frame_part_col_9->setup(9, &_current_palette);
-    ui->bt_frame_part_col_A->setup(10, &_current_palette);
-    ui->bt_frame_part_col_B->setup(11, &_current_palette);
-    ui->bt_frame_part_col_C->setup(12, &_current_palette);
-    ui->bt_frame_part_col_D->setup(13, &_current_palette);
-    ui->bt_frame_part_col_E->setup(14, &_current_palette);
-    ui->bt_frame_part_col_F->setup(15, &_current_palette);
+    ui->bt_frame_part_col_0->setup(0, &_current_part_palette);
+    ui->bt_frame_part_col_1->setup(1, &_current_part_palette);
+    ui->bt_frame_part_col_2->setup(2, &_current_part_palette);
+    ui->bt_frame_part_col_3->setup(3, &_current_part_palette);
+    ui->bt_frame_part_col_4->setup(4, &_current_part_palette);
+    ui->bt_frame_part_col_5->setup(5, &_current_part_palette);
+    ui->bt_frame_part_col_6->setup(6, &_current_part_palette);
+    ui->bt_frame_part_col_7->setup(7, &_current_part_palette);
+    ui->bt_frame_part_col_8->setup(8, &_current_part_palette);
+    ui->bt_frame_part_col_9->setup(9, &_current_part_palette);
+    ui->bt_frame_part_col_A->setup(10, &_current_part_palette);
+    ui->bt_frame_part_col_B->setup(11, &_current_part_palette);
+    ui->bt_frame_part_col_C->setup(12, &_current_part_palette);
+    ui->bt_frame_part_col_D->setup(13, &_current_part_palette);
+    ui->bt_frame_part_col_E->setup(14, &_current_part_palette);
+    ui->bt_frame_part_col_F->setup(15, &_current_part_palette);
 
     // Setup image color buttons
     ui->bt_col_0->setup(0, &_image_palette);
@@ -113,8 +113,9 @@ void MainWindow::import_opd(const QString opd_path) {
     for (auto i = 1; i < _opd->palettes.size(); i++)
         ui->cb_frame_part_color_set->addItem(QString::number(i));
 
-    // Load animations
+    // Load animations &  sprites
     load_animations();
+    load_sprites();
 
     // Enable editing
     set_general_editing_enabled(true);

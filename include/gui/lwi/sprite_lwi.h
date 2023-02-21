@@ -2,7 +2,7 @@
 #define __SPRITE_LWI_H__
 
 #include <QListWidgetItem>
-#include "opd_types.h"
+#include "opd/sprite.h"
 
 class SpriteLwi : public QListWidgetItem {
   public:

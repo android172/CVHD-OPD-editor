@@ -5,7 +5,7 @@
 #include <QGraphicsPixmapItem>
 #include <QWheelEvent>
 
-#include "opd.h"
+#include "opd/opd.h"
 
 class GraphicsViewer : public QGraphicsView {
     Q_OBJECT
@@ -14,7 +14,11 @@ class GraphicsViewer : public QGraphicsView {
     ~GraphicsViewer();
 
     void show_frame(const Frame& frame);
-    void show_sprite(const Sprite& sprite, const Palette& palette);
+    void show_sprite(
+        const Sprite&  sprite,
+        const Palette& palette,
+        bool           with_background = true
+    );
 
     bool hitbox_visible = false;
 

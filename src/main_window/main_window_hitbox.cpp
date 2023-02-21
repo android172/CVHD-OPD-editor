@@ -1,8 +1,8 @@
 #include "main_window.h"
-#include "../forms/ui_main_window.h"
+#include "../../forms/ui_main_window.h"
 
 #include "util.h"
-#include "gui/hitbox_lwi.h"
+#include "gui/lwi/hitbox_lwi.h"
 
 // //////////////////////// //
 // MAIN WINDOW HITBOX SLOTS //
@@ -24,11 +24,7 @@ void MainWindow::on_bt_add_hitbox_clicked() {
     const auto list = ui->list_hitboxes;
 
     // Add hitbox to the end of hitbox list
-    _current_frame->hitboxes.push_back(
-        { (uchar) _current_frame->hitboxes.size(), 0, 0, 0 }
-    );
-    auto new_hitbox = _current_frame->hitboxes.end();
-    new_hitbox--;
+    auto new_hitbox = _opd->add_new_hitbox(_current_frame);
 
     // Create new LWI
     auto hitbox_lwi = new HitBoxLwi(new_hitbox);

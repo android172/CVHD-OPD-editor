@@ -1,8 +1,8 @@
 #include "main_window.h"
-#include "../forms/ui_main_window.h"
+#include "../../forms/ui_main_window.h"
 
 #include "util.h"
-#include "gui/frame_part_lwi.h"
+#include "gui/lwi/frame_part_lwi.h"
 #include "gui/new_part_dialog.h"
 
 // //////////////////////////// //
@@ -33,11 +33,8 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     const auto palette = dialog.selected_palette;
 
     // Create new frame part
-    _current_frame->parts.push_back(
-        { (ushort) _current_frame->parts.size(), sprite, palette, 0, 0, 0 }
-    );
-    auto new_frame_part = _current_frame->parts.end();
-    new_frame_part--;
+    const auto new_frame_part =
+        _opd->add_new_frame_part(_current_frame, sprite, palette);
 
     // Add to list
     const auto frame_part_lwi = new FramePartLwi(new_frame_part);
@@ -165,25 +162,27 @@ void MainWindow::on_cb_frame_part_color_set_currentIndexChanged(int new_index) {
 // Palette buttons
 // -----------------------------------------------------------------------------
 
-#define button_click_method(method, button)                                    \
-    void MainWindow::method() { on_bt_frame_part_col_clicked(ui->button); }
+#define button_click_method(i)                                                 \
+    void MainWindow::on_bt_frame_part_col_##i##_clicked() {                    \
+        on_bt_frame_part_col_clicked(ui->bt_frame_part_col_##i);               \
+    }
 
-button_click_method(on_bt_frame_part_col_0_clicked, bt_frame_part_col_0);
-button_click_method(on_bt_frame_part_col_1_clicked, bt_frame_part_col_1);
-button_click_method(on_bt_frame_part_col_2_clicked, bt_frame_part_col_2);
-button_click_method(on_bt_frame_part_col_3_clicked, bt_frame_part_col_3);
-button_click_method(on_bt_frame_part_col_4_clicked, bt_frame_part_col_4);
-button_click_method(on_bt_frame_part_col_5_clicked, bt_frame_part_col_5);
-button_click_method(on_bt_frame_part_col_6_clicked, bt_frame_part_col_6);
-button_click_method(on_bt_frame_part_col_7_clicked, bt_frame_part_col_7);
-button_click_method(on_bt_frame_part_col_8_clicked, bt_frame_part_col_8);
-button_click_method(on_bt_frame_part_col_9_clicked, bt_frame_part_col_9);
-button_click_method(on_bt_frame_part_col_A_clicked, bt_frame_part_col_A);
-button_click_method(on_bt_frame_part_col_B_clicked, bt_frame_part_col_B);
-button_click_method(on_bt_frame_part_col_C_clicked, bt_frame_part_col_C);
-button_click_method(on_bt_frame_part_col_D_clicked, bt_frame_part_col_D);
-button_click_method(on_bt_frame_part_col_E_clicked, bt_frame_part_col_E);
-button_click_method(on_bt_frame_part_col_F_clicked, bt_frame_part_col_F);
+button_click_method(0);
+button_click_method(1);
+button_click_method(2);
+button_click_method(3);
+button_click_method(4);
+button_click_method(5);
+button_click_method(6);
+button_click_method(7);
+button_click_method(8);
+button_click_method(9);
+button_click_method(A);
+button_click_method(B);
+button_click_method(C);
+button_click_method(D);
+button_click_method(E);
+button_click_method(F);
 
 // ////////////////////////////////////// //
 // MAIN WINDOW FRAME PART PRIVATE METHODS //
@@ -237,19 +236,19 @@ void MainWindow::clear_frame_part() {
 
 void MainWindow::load_palette() {
     check_if_valid(_current_frame_part);
-    _current_palette = *_current_frame_part->palette;
+    _current_part_palette = *_current_frame_part->palette;
     bt_frame_part_col_ALL(set_color());
 }
 
 void MainWindow::on_bt_frame_part_col_clicked(PaletteButton* const button) {
-    if (_current_palette.size == 0) return;
+    if (_current_part_palette.size == 0) return;
 
     // Get new color
-    update_color(_current_palette[button->color_index]);
+    update_color(_current_part_palette[button->color_index]);
 
     // Set palette
     (*_current_frame_part->palette)[button->color_index] =
-        _current_palette[button->color_index];
+        _current_part_palette[button->color_index];
 
     // Setup button color
     button->set_color();

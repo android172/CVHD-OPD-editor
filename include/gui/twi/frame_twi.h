@@ -3,7 +3,7 @@
 
 #include <QTreeWidgetItem>
 
-#include "opd_types.h"
+#include "opd/animation.h"
 
 class FrameTwi : public QTreeWidgetItem {
   public:

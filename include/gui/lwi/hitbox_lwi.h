@@ -3,7 +3,7 @@
 
 #include <QListWidgetItem>
 
-#include "opd_types.h"
+#include "opd/frame.h"
 
 class HitBoxLwi : public QListWidgetItem {
   public:

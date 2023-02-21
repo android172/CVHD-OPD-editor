@@ -2,7 +2,7 @@
 #define __PALETTE_BUTTON_H__
 
 #include <QPushButton>
-#include "opd_types.h"
+#include "opd/palette.h"
 
 class PaletteButton : public QPushButton {
     Q_OBJECT

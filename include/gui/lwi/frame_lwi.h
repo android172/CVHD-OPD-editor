@@ -2,7 +2,7 @@
 #define __FRAME_LWI_H__
 
 #include <QListWidgetItem>
-#include "opd_types.h"
+#include "opd/frame.h"
 
 class FrameLwi : public QListWidgetItem {
   public:

@@ -4,7 +4,7 @@
 #include <QHash>
 #include <QListWidgetItem>
 
-#include "opd_types.h"
+#include "opd/color.h"
 
 // Image list widget item
 class ImageLWI : public QListWidgetItem {

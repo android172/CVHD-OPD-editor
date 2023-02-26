@@ -38,7 +38,7 @@ void MainWindow::on_bt_import_images_clicked() {
 }
 
 void MainWindow::on_bt_delete_selected_clicked() {
-    auto il = ui->list_images;
+    auto il = ui->list_images_2;
 
     // Delete current
     auto current_image = il->currentIndex();
@@ -51,13 +51,13 @@ void MainWindow::on_bt_delete_selected_clicked() {
 
 void MainWindow::on_bt_delete_all_clicked() {
     // Delete all
-    ui->list_images->clear();
+    ui->list_images_2->clear();
 
     // Update other elements
     set_img_section_enabled(false);
 }
 
-void MainWindow::on_list_images_itemPressed(QListWidgetItem* current) {
+void MainWindow::on_list_images_2_itemPressed(QListWidgetItem* current) {
     auto li = dynamic_cast<ImageLWI*>(current);
     if (!li) return;
 
@@ -71,10 +71,10 @@ void MainWindow::on_list_images_itemPressed(QListWidgetItem* current) {
     );
     ui->label_image_view->setPixmap(present_image);
 }
-void MainWindow::on_list_images_currentItemChanged(
+void MainWindow::on_list_images_2_currentItemChanged(
     QListWidgetItem* current, QListWidgetItem* previous
 ) {
-    on_list_images_itemPressed(current);
+    on_list_images_2_itemPressed(current);
 }
 
 // ///////////////////////// //
@@ -130,7 +130,7 @@ void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }
 
 void MainWindow::import_images(QStringList path_list) {
     // Image list
-    auto il = ui->list_images;
+    auto il = ui->list_images_2;
 
     for (auto& file_path : path_list) {
         // Get file name

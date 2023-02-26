@@ -131,7 +131,7 @@ void MainWindow::on_img_palette_button_clicked(ColorButton* button) {
 
     // Reload drawn image
     if (_csr_image_presented == false)
-        on_list_images_itemPressed(ui->list_images->currentItem());
+        on_list_images_2_itemPressed(ui->list_images_2->currentItem());
 }
 
 void MainWindow::on_img_palette_button_right_clicked(ColorButton* button) {
@@ -151,8 +151,8 @@ void MainWindow::on_img_palette_button_right_clicked(ColorButton* button) {
         _color_index[_image_palette[i].original] = i;
 
     // Inform images of changed palette
-    for (int i = 0; i < ui->list_images->count(); i++) {
-        auto image = dynamic_cast<ImageLWI*>(ui->list_images->item(i));
+    for (int i = 0; i < ui->list_images_2->count(); i++) {
+        auto image = dynamic_cast<ImageLWI*>(ui->list_images_2->item(i));
         image->update_color();
     }
 
@@ -208,8 +208,8 @@ void MainWindow::update_image_palette(QImage image) {
     }
 
     // Inform images of changed palette
-    for (int i = 0; i < ui->list_images->count(); i++) {
-        auto image = dynamic_cast<ImageLWI*>(ui->list_images->item(i));
+    for (int i = 0; i < ui->list_images_2->count(); i++) {
+        auto image = dynamic_cast<ImageLWI*>(ui->list_images_2->item(i));
         image->update_color();
     }
 

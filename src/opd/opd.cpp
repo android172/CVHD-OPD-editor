@@ -5,14 +5,16 @@
 
 // Constructor & Destructor
 Opd::Opd(
-    std::list<GFXPage>&   gfx_pages,
-    std::list<Sprite>&    sprites,
-    std::list<Frame>&     frames,
-    std::list<Animation>& animations,
-    std::list<Palette>&   palettes
+    std::list<GFXPage>&               gfx_pages,
+    std::list<Sprite>&                sprites,
+    std::list<Frame>&                 frames,
+    std::list<Animation>&             animations,
+    std::array<Palette, palette_max>& palettes,
+    uchar                             palette_count
 )
     : gfx_pages(gfx_pages), sprites(sprites), frames(frames),
-      animations(animations), palettes(palettes) {}
+      animations(animations), palettes(palettes), palette_count(palette_count) {
+}
 Opd::~Opd() {}
 
 // ////////////////// //
@@ -20,7 +22,7 @@ Opd::~Opd() {}
 // ////////////////// //
 
 // Helper functions
-std::list<Palette>* read_palettes(QString const& path);
+std::array<Palette, Opd::palette_max>* read_palettes(QString const& path);
 
 Opd* Opd::open(const QString& path) {
     const QString file_name = path.split('/').last().toLower();
@@ -143,7 +145,7 @@ Opd* Opd::open(const QString& path) {
             const auto palette_index = read_type<uchar>(opd_file);
             if (palette_index >= palette_count)
                 palette_count = palette_index + 1;
-            part.palette = get_it_at(*palettes, palette_index);
+            part.palette = &(*palettes)[palette_index];
 
             // Read rest
             part.flip_mode = read_type<uchar>(opd_file);
@@ -156,9 +158,6 @@ Opd* Opd::open(const QString& path) {
         frame.initialize();
         frames->push_back(frame);
     }
-
-    // Update palettes
-    palettes->resize(palette_count);
 
     // === Animation section ===
     // Parse header
@@ -200,7 +199,9 @@ Opd* Opd::open(const QString& path) {
 
     opd_file.close();
 
-    return new Opd(*gfx_pages, *sprites, *frames, *animations, *palettes);
+    return new Opd(
+        *gfx_pages, *sprites, *frames, *animations, *palettes, palette_count
+    );
 }
 
 // Add new
@@ -261,7 +262,7 @@ HitBoxPtr Opd::add_new_hitbox(const FramePtr frame) {
 // OPD HELPER FUNCTIONS //
 // //////////////////// //
 
-std::list<Palette>* read_palettes(QString const& path) {
+std::array<Palette, Opd::palette_max>* read_palettes(QString const& path) {
     // Load palettes
     std::ifstream col_file { path.toStdString(),
                              std::ios::in | std::ios::binary };
@@ -276,10 +277,10 @@ std::list<Palette>* read_palettes(QString const& path) {
     uchar const col_multiplier = std::max(4U * read_type<uchar>(col_file), 1U);
 
     // Compute palettes
-    auto palettes = new std::list<Palette> {};
-    for (auto i = 0; i < 256; i++) {
-        Palette palette {};
-        palette.index = i;
+    uchar index    = 0;
+    auto  palettes = new std::array<Palette, Opd::palette_max> {};
+    for (auto& palette : *palettes) {
+        palette.index = index++;
         for (auto& color : palette) {
             // read palette color
             uchar b = col_multiplier * read_type<uchar>(col_file);
@@ -289,7 +290,6 @@ std::list<Palette>* read_palettes(QString const& path) {
             // read separation byte
             read_type<uchar>(col_file);
         }
-        palettes->push_back(palette);
     }
 
     col_file.close();

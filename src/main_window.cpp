@@ -5,6 +5,24 @@
 #include "gui/twi/animation_twi.h"
 #include <QFileDialog>
 
+#define COL_SETUP_ALL(button_set, palette)                                     \
+    ui->button_set##_0->setup(0, palette);                                     \
+    ui->button_set##_1->setup(1, palette);                                     \
+    ui->button_set##_2->setup(2, palette);                                     \
+    ui->button_set##_3->setup(3, palette);                                     \
+    ui->button_set##_4->setup(4, palette);                                     \
+    ui->button_set##_5->setup(5, palette);                                     \
+    ui->button_set##_6->setup(6, palette);                                     \
+    ui->button_set##_7->setup(7, palette);                                     \
+    ui->button_set##_8->setup(8, palette);                                     \
+    ui->button_set##_9->setup(9, palette);                                     \
+    ui->button_set##_A->setup(10, palette);                                    \
+    ui->button_set##_B->setup(11, palette);                                    \
+    ui->button_set##_C->setup(12, palette);                                    \
+    ui->button_set##_D->setup(13, palette);                                    \
+    ui->button_set##_E->setup(14, palette);                                    \
+    ui->button_set##_F->setup(15, palette)
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
@@ -18,64 +36,26 @@ MainWindow::MainWindow(QWidget* parent)
     set_frame_edit_enabled(false);
     set_frame_part_edit_enabled(false);
     set_hitbox_edit_enabled(false);
+    set_image_edit_enabled(false);
+
+    // Add default with background setting for GV gui items
+    ui->gv_image->with_background  = true;
+    ui->gv_sprite->with_background = true;
 
     // TODO: Temporary
     ui->bt_add_animation->setEnabled(false);
     ui->bt_remove_animation->setEnabled(false);
 
     // Setup frame part color buttons
-    ui->bt_frame_part_col_0->setup(0, &_current_part_palette);
-    ui->bt_frame_part_col_1->setup(1, &_current_part_palette);
-    ui->bt_frame_part_col_2->setup(2, &_current_part_palette);
-    ui->bt_frame_part_col_3->setup(3, &_current_part_palette);
-    ui->bt_frame_part_col_4->setup(4, &_current_part_palette);
-    ui->bt_frame_part_col_5->setup(5, &_current_part_palette);
-    ui->bt_frame_part_col_6->setup(6, &_current_part_palette);
-    ui->bt_frame_part_col_7->setup(7, &_current_part_palette);
-    ui->bt_frame_part_col_8->setup(8, &_current_part_palette);
-    ui->bt_frame_part_col_9->setup(9, &_current_part_palette);
-    ui->bt_frame_part_col_A->setup(10, &_current_part_palette);
-    ui->bt_frame_part_col_B->setup(11, &_current_part_palette);
-    ui->bt_frame_part_col_C->setup(12, &_current_part_palette);
-    ui->bt_frame_part_col_D->setup(13, &_current_part_palette);
-    ui->bt_frame_part_col_E->setup(14, &_current_part_palette);
-    ui->bt_frame_part_col_F->setup(15, &_current_part_palette);
-
+    COL_SETUP_ALL(bt_frame_part_col, &_current_part_palette);
+    // Setup sprite color buttons
+    COL_SETUP_ALL(bt_sprite_col, &_current_sprite_palette);
     // Setup image color buttons
-    ui->bt_col_0->setup(0, &_image_palette);
-    ui->bt_col_1->setup(1, &_image_palette);
-    ui->bt_col_2->setup(2, &_image_palette);
-    ui->bt_col_3->setup(3, &_image_palette);
-    ui->bt_col_4->setup(4, &_image_palette);
-    ui->bt_col_5->setup(5, &_image_palette);
-    ui->bt_col_6->setup(6, &_image_palette);
-    ui->bt_col_7->setup(7, &_image_palette);
-    ui->bt_col_8->setup(8, &_image_palette);
-    ui->bt_col_9->setup(9, &_image_palette);
-    ui->bt_col_A->setup(10, &_image_palette);
-    ui->bt_col_B->setup(11, &_image_palette);
-    ui->bt_col_C->setup(12, &_image_palette);
-    ui->bt_col_D->setup(13, &_image_palette);
-    ui->bt_col_E->setup(14, &_image_palette);
-    ui->bt_col_F->setup(15, &_image_palette);
-
+    COL_SETUP_ALL(bt_image_col, &_image_palette);
+    // Setup image color buttons
+    COL_SETUP_ALL(bt_col, &_image_palette);
     // Setup csr color buttons
-    ui->bt_icol_0->setup(0, &_csr_palette);
-    ui->bt_icol_1->setup(1, &_csr_palette);
-    ui->bt_icol_2->setup(2, &_csr_palette);
-    ui->bt_icol_3->setup(3, &_csr_palette);
-    ui->bt_icol_4->setup(4, &_csr_palette);
-    ui->bt_icol_5->setup(5, &_csr_palette);
-    ui->bt_icol_6->setup(6, &_csr_palette);
-    ui->bt_icol_7->setup(7, &_csr_palette);
-    ui->bt_icol_8->setup(8, &_csr_palette);
-    ui->bt_icol_9->setup(9, &_csr_palette);
-    ui->bt_icol_A->setup(10, &_csr_palette);
-    ui->bt_icol_B->setup(11, &_csr_palette);
-    ui->bt_icol_C->setup(12, &_csr_palette);
-    ui->bt_icol_D->setup(13, &_csr_palette);
-    ui->bt_icol_E->setup(14, &_csr_palette);
-    ui->bt_icol_F->setup(15, &_csr_palette);
+    COL_SETUP_ALL(bt_icol, &_csr_palette);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -110,7 +90,7 @@ void MainWindow::import_opd(const QString opd_path) {
     // Update palette count
     ui->cb_frame_part_color_set->clear();
     ui->cb_frame_part_color_set->addItem("Default");
-    for (auto i = 1; i < _opd->palettes.size(); i++)
+    for (auto i = 1; i < _opd->palette_count; i++)
         ui->cb_frame_part_color_set->addItem(QString::number(i));
 
     // Load animations &  sprites
@@ -134,6 +114,28 @@ void MainWindow::set_general_editing_enabled(bool enabled) {
     ui->tab_main->setTabEnabled(1, enabled);
     ui->tab_main->setTabEnabled(2, enabled);
     ui->bt_add_frame->setEnabled(enabled);
+}
+
+void MainWindow::save_PNG(const QImage& image) {
+    // Get save location
+    auto path = QFileDialog::getSaveFileName(
+        this, "Export image", _default_image_import_location, "PNG (*.png)"
+    );
+    if (path.isEmpty()) return;
+
+    // Check extension
+    const auto file_name = path.split('/').last();
+    const auto file_dir  = path.chopped(file_name.size());
+    const auto extension = file_name.split('.').last();
+    if (extension.toLower().compare("png") != 0) path += ".png";
+
+    // Save image
+    const auto result = image.save(path);
+    if (!result) return;
+
+    // Save this path
+    _default_image_import_location = file_dir;
+    save_app_state();
 }
 
 // TODO: OLD

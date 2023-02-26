@@ -18,23 +18,26 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-#define COL_SLOTS(button, signal)                                              \
-    void on_##button##_0_##signal();                                           \
-    void on_##button##_1_##signal();                                           \
-    void on_##button##_2_##signal();                                           \
-    void on_##button##_3_##signal();                                           \
-    void on_##button##_4_##signal();                                           \
-    void on_##button##_5_##signal();                                           \
-    void on_##button##_6_##signal();                                           \
-    void on_##button##_7_##signal();                                           \
-    void on_##button##_8_##signal();                                           \
-    void on_##button##_9_##signal();                                           \
-    void on_##button##_A_##signal();                                           \
-    void on_##button##_B_##signal();                                           \
-    void on_##button##_C_##signal();                                           \
-    void on_##button##_D_##signal();                                           \
-    void on_##button##_E_##signal();                                           \
-    void on_##button##_F_##signal();
+#define APPLY_TO_COL(macro, ...)                                               \
+    macro(0, __VA_ARGS__);                                                     \
+    macro(1, __VA_ARGS__);                                                     \
+    macro(2, __VA_ARGS__);                                                     \
+    macro(3, __VA_ARGS__);                                                     \
+    macro(4, __VA_ARGS__);                                                     \
+    macro(5, __VA_ARGS__);                                                     \
+    macro(6, __VA_ARGS__);                                                     \
+    macro(7, __VA_ARGS__);                                                     \
+    macro(8, __VA_ARGS__);                                                     \
+    macro(9, __VA_ARGS__);                                                     \
+    macro(A, __VA_ARGS__);                                                     \
+    macro(B, __VA_ARGS__);                                                     \
+    macro(C, __VA_ARGS__);                                                     \
+    macro(D, __VA_ARGS__);                                                     \
+    macro(E, __VA_ARGS__);                                                     \
+    macro(F, __VA_ARGS__)
+
+#define __COL_SLOT__(i, button, signal) void on_##button##_##i##_##signal()
+#define COL_SLOTS(button, signal) APPLY_TO_COL(__COL_SLOT__, button, signal)
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -123,12 +126,32 @@ class MainWindow : public QMainWindow {
     // Sprite palette buttons
     COL_SLOTS(bt_sprite_col, clicked);
 
+    // Images
+    void on_list_images_currentItemChanged(
+        QListWidgetItem* current, QListWidgetItem* previous
+    );
+    void on_bt_import_image_clicked();
+    void on_bt_delete_image_clicked();
+    void on_bt_delete_all_images_clicked();
+    void on_bt_select_rect_clicked();
+    void on_bt_import_selected_clicked();
+    void on_bt_import_all_clicked();
+    void on_bt_import_palette_clicked();
+    void on_bt_image_trim_clicked();
+    void on_spin_img_pos_x_valueChanged(int new_value);
+    void on_spin_img_pos_y_valueChanged(int new_value);
+    void on_spin_img_width_valueChanged(int new_value);
+    void on_spin_img_height_valueChanged(int new_value);
+    // Image palette buttons
+    COL_SLOTS(bt_image_col, clicked);
+
+    // TODO: Sort old
     // Image control
     void on_bt_import_images_clicked();
     void on_bt_delete_selected_clicked();
     void on_bt_delete_all_clicked();
-    void on_list_images_itemPressed(QListWidgetItem* current);
-    void on_list_images_currentItemChanged(
+    void on_list_images_2_itemPressed(QListWidgetItem* current);
+    void on_list_images_2_currentItemChanged(
         QListWidgetItem* current, QListWidgetItem* previous
     );
 
@@ -181,6 +204,7 @@ class MainWindow : public QMainWindow {
     void import_opd(const QString opd_path);
     void update_color(Color& color);
     void set_general_editing_enabled(bool enabled);
+    void save_PNG(const QImage& image);
 
     // Animation
     void load_animations();
@@ -202,7 +226,7 @@ class MainWindow : public QMainWindow {
     void load_frame_parts();
     void load_frame_part(const FramePartPtr frame_part);
     void clear_frame_part();
-    void load_palette();
+    void load_frame_part_palette();
     void on_bt_frame_part_col_clicked(PaletteButton* const button);
     void set_frame_part_edit_enabled(bool enabled);
     void set_frame_part_movement_enabled(bool enabled);
@@ -220,6 +244,13 @@ class MainWindow : public QMainWindow {
     void clear_sprite();
     void on_bt_sprite_col_clicked(PaletteButton* const button);
     void set_sprite_edit_enabled(bool enabled);
+
+    // Image
+    void load_images(QStringList path_list);
+    void on_bt_image_col_clicked(ColorButton* const button);
+    void set_image_edit_enabled(bool enabled);
+
+    // TODO: OLD
 
     //  Application state info
     QString _default_opd_import_location   = QDir::homePath();
@@ -267,27 +298,15 @@ class MainWindow : public QMainWindow {
     void on_csr_palette_button_clicked(ColorButton* button);
 };
 
+#define __COL_ACTIVATE__(i, button_set, action) ui->button_set##_##i->action
 #define COL_ACTIVATE_ALL(button_set, action)                                   \
-    ui->button_set##_0->action;                                                \
-    ui->button_set##_1->action;                                                \
-    ui->button_set##_2->action;                                                \
-    ui->button_set##_3->action;                                                \
-    ui->button_set##_4->action;                                                \
-    ui->button_set##_5->action;                                                \
-    ui->button_set##_6->action;                                                \
-    ui->button_set##_7->action;                                                \
-    ui->button_set##_8->action;                                                \
-    ui->button_set##_9->action;                                                \
-    ui->button_set##_A->action;                                                \
-    ui->button_set##_B->action;                                                \
-    ui->button_set##_C->action;                                                \
-    ui->button_set##_D->action;                                                \
-    ui->button_set##_E->action;                                                \
-    ui->button_set##_F->action;
+    APPLY_TO_COL(__COL_ACTIVATE__, button_set, action)
 
 #define bt_frame_part_col_ALL(action)                                          \
     COL_ACTIVATE_ALL(bt_frame_part_col, action)
 #define bt_sprite_col_ALL(action) COL_ACTIVATE_ALL(bt_sprite_col, action)
+#define bt_image_col_ALL(action) COL_ACTIVATE_ALL(bt_image_col, action)
+
 #define bt_col_ALL(action) COL_ACTIVATE_ALL(bt_col, action)
 #define bt_icol_ALL(action) COL_ACTIVATE_ALL(bt_icol, action)
 

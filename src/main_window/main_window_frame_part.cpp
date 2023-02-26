@@ -155,34 +155,19 @@ void MainWindow::on_cb_frame_part_color_set_currentIndexChanged(int new_index) {
     auto new_palette = _opd->palettes.begin();
     std::advance(new_palette, new_index);
     change_frame_part_value(palette, new_palette);
-    load_palette();
+    load_frame_part_palette();
 }
 
 // -----------------------------------------------------------------------------
 // Palette buttons
 // -----------------------------------------------------------------------------
 
-#define button_click_method(i)                                                 \
+#define button_click_method(i, j)                                              \
     void MainWindow::on_bt_frame_part_col_##i##_clicked() {                    \
         on_bt_frame_part_col_clicked(ui->bt_frame_part_col_##i);               \
     }
 
-button_click_method(0);
-button_click_method(1);
-button_click_method(2);
-button_click_method(3);
-button_click_method(4);
-button_click_method(5);
-button_click_method(6);
-button_click_method(7);
-button_click_method(8);
-button_click_method(9);
-button_click_method(A);
-button_click_method(B);
-button_click_method(C);
-button_click_method(D);
-button_click_method(E);
-button_click_method(F);
+APPLY_TO_COL(button_click_method);
 
 // ////////////////////////////////////// //
 // MAIN WINDOW FRAME PART PRIVATE METHODS //
@@ -212,7 +197,7 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
     ui->cb_frame_part_color_set->setCurrentIndex(frame_part->palette->index);
 
     // Load palette colors
-    load_palette();
+    load_frame_part_palette();
 
     // Enable editing
     set_frame_part_edit_enabled(true);
@@ -234,7 +219,7 @@ void MainWindow::clear_frame_part() {
     set_frame_part_edit_enabled(false);
 }
 
-void MainWindow::load_palette() {
+void MainWindow::load_frame_part_palette() {
     check_if_valid(_current_frame_part);
     _current_part_palette = *_current_frame_part->palette;
     bt_frame_part_col_ALL(set_color());

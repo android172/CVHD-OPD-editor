@@ -23,7 +23,6 @@ class Invalid {
     static std::list<Frame::Part>      frame_parts_d;
     static std::list<Frame::HitBox>    hitboxes_d;
     static std::list<Sprite>           sprites_d;
-    static std::list<Palette>          palettes_d;
 };
 
 #define check_if_valid(opd_type)                                               \

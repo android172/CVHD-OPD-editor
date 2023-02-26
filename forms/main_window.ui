@@ -48,7 +48,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>true</bool>
@@ -692,13 +692,13 @@ border: none;</string>
                    <string notr="true"/>
                   </property>
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="Parts">
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-37</y>
+                     <y>0</y>
                      <width>399</width>
                      <height>316</height>
                     </rect>
@@ -1463,7 +1463,7 @@ border: none;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>399</width>
+                     <width>403</width>
                      <height>287</height>
                     </rect>
                    </property>
@@ -2045,13 +2045,6 @@ border: none;</string>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="bt_sprite_trim">
-                 <property name="text">
-                  <string>Trim</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QPushButton" name="bt_merge_layers">
                  <property name="text">
                   <string>Merge layers</string>
@@ -2062,6 +2055,13 @@ border: none;</string>
                 <widget class="QPushButton" name="bt_save_sprite">
                  <property name="text">
                   <string>Save as PNG</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="bt_sprite_trim">
+                 <property name="text">
+                  <string>Trim</string>
                  </property>
                 </widget>
                </item>
@@ -2086,10 +2086,10 @@ border: none;</string>
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                 </property>
                 <property name="minimum">
-                 <number>-32767</number>
+                 <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>32767</number>
+                 <number>65535</number>
                 </property>
                </widget>
               </item>
@@ -2155,10 +2155,10 @@ border: none;</string>
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                 </property>
                 <property name="minimum">
-                 <number>-32767</number>
+                 <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>32767</number>
+                 <number>65535</number>
                 </property>
                </widget>
               </item>
@@ -2168,10 +2168,10 @@ border: none;</string>
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                 </property>
                 <property name="minimum">
-                 <number>-32767</number>
+                 <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>32767</number>
+                 <number>65535</number>
                 </property>
                </widget>
               </item>
@@ -2194,10 +2194,10 @@ border: none;</string>
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                 </property>
                 <property name="minimum">
-                 <number>-32767</number>
+                 <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>32767</number>
+                 <number>65535</number>
                 </property>
                </widget>
               </item>
@@ -2232,13 +2232,6 @@ border: none;</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
-                <widget class="QPushButton" name="bt_image_trim">
-                 <property name="text">
-                  <string>Trim</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QPushButton" name="bt_select_rect">
                  <property name="text">
                   <string>Select Rectangle</string>
@@ -2263,6 +2256,13 @@ border: none;</string>
                 <widget class="QPushButton" name="bt_import_palette">
                  <property name="text">
                   <string>Import palette</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="bt_image_trim">
+                 <property name="text">
+                  <string>Trim</string>
                  </property>
                 </widget>
                </item>
@@ -2670,7 +2670,7 @@ border: none;</string>
             <item>
              <layout class="QGridLayout" name="gridLayout_7">
               <item row="0" column="4">
-               <widget class="PaletteButton" name="bt_image_col_4">
+               <widget class="ColorButton" name="bt_image_col_4">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2692,7 +2692,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="0">
-               <widget class="PaletteButton" name="bt_image_col_0">
+               <widget class="ColorButton" name="bt_image_col_0">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2714,7 +2714,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="5">
-               <widget class="PaletteButton" name="bt_image_col_D">
+               <widget class="ColorButton" name="bt_image_col_D">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2736,7 +2736,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="7">
-               <widget class="PaletteButton" name="bt_image_col_F">
+               <widget class="ColorButton" name="bt_image_col_F">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2758,7 +2758,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="5">
-               <widget class="PaletteButton" name="bt_image_col_5">
+               <widget class="ColorButton" name="bt_image_col_5">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2780,7 +2780,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="3">
-               <widget class="PaletteButton" name="bt_image_col_3">
+               <widget class="ColorButton" name="bt_image_col_3">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2802,7 +2802,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="7">
-               <widget class="PaletteButton" name="bt_image_col_7">
+               <widget class="ColorButton" name="bt_image_col_7">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2824,7 +2824,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="6">
-               <widget class="PaletteButton" name="bt_image_col_6">
+               <widget class="ColorButton" name="bt_image_col_6">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2846,7 +2846,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="3">
-               <widget class="PaletteButton" name="bt_image_col_B">
+               <widget class="ColorButton" name="bt_image_col_B">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2868,7 +2868,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="PaletteButton" name="bt_image_col_8">
+               <widget class="ColorButton" name="bt_image_col_8">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2890,7 +2890,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="PaletteButton" name="bt_image_col_1">
+               <widget class="ColorButton" name="bt_image_col_1">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2912,7 +2912,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="6">
-               <widget class="PaletteButton" name="bt_image_col_E">
+               <widget class="ColorButton" name="bt_image_col_E">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2934,7 +2934,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="2">
-               <widget class="PaletteButton" name="bt_image_col_A">
+               <widget class="ColorButton" name="bt_image_col_A">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2956,7 +2956,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="0" column="2">
-               <widget class="PaletteButton" name="bt_image_col_2">
+               <widget class="ColorButton" name="bt_image_col_2">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -2978,7 +2978,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="4">
-               <widget class="PaletteButton" name="bt_image_col_C">
+               <widget class="ColorButton" name="bt_image_col_C">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -3000,7 +3000,7 @@ border: none;</string>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="PaletteButton" name="bt_image_col_9">
+               <widget class="ColorButton" name="bt_image_col_9">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -3028,7 +3028,7 @@ border: none;</string>
          </layout>
         </item>
         <item>
-         <widget class="QWidget" name="verticalWidget_21" native="true">
+         <widget class="QWidget" name="verticalWidget_2" native="true">
           <property name="minimumSize">
            <size>
             <width>250</width>
@@ -3043,7 +3043,7 @@ border: none;</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <widget class="QPushButton" name="bt_import_img">
+            <widget class="QPushButton" name="bt_import_image">
              <property name="text">
               <string>Import images</string>
              </property>
@@ -3052,14 +3052,14 @@ border: none;</string>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
              <item>
-              <widget class="QPushButton" name="bt_delete_img">
+              <widget class="QPushButton" name="bt_delete_image">
                <property name="text">
                 <string>Delete selected</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="bt_delete_all_img">
+              <widget class="QPushButton" name="bt_delete_all_images">
                <property name="text">
                 <string>Delete all</string>
                </property>
@@ -3068,7 +3068,7 @@ border: none;</string>
             </layout>
            </item>
            <item>
-            <widget class="QListWidget" name="list_img"/>
+            <widget class="QListWidget" name="list_images"/>
            </item>
           </layout>
          </widget>
@@ -3623,7 +3623,7 @@ border: none;</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="2" column="0">
-          <widget class="QListWidget" name="list_images">
+          <widget class="QListWidget" name="list_images_2">
            <property name="selectionMode">
             <enum>QAbstractItemView::SingleSelection</enum>
            </property>

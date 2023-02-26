@@ -39,7 +39,7 @@ void NewPartDialog::on_bt_cancel_clicked() { close(); }
 
 void NewPartDialog::initialize_sprite_list() {
     // Setup palettes
-    for (auto i = 1; i < _opd->palettes.size(); i++)
+    for (auto i = 1; i < _opd->palette_count; i++)
         ui->cb_palette->addItem(QString::number(i));
     selected_palette = _opd->palettes.begin();
 

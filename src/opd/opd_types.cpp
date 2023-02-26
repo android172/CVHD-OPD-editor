@@ -11,4 +11,5 @@ define_invalid(Animation::Frame, animation_frame, animation_frames_d);
 define_invalid(Frame::Part, frame_part, frame_parts_d);
 define_invalid(Frame::HitBox, hitbox, hitboxes_d);
 define_invalid(Sprite, sprite, sprites_d);
-define_invalid(Palette, palette, palettes_d);
+
+const PalettePtr Invalid::palette = nullptr;

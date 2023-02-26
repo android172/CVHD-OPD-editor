@@ -3,7 +3,6 @@
 
 #include "color.h"
 #include <array>
-#include <list>
 
 struct Palette {
     ushort index = (ushort) -1;
@@ -24,6 +23,6 @@ struct Palette {
   private:
     std::array<Color, 16> _colors;
 };
-typedef std::list<Palette>::iterator PalettePtr;
+typedef Palette* PalettePtr;
 
 #endif // __PALETTE_H__

@@ -58,7 +58,7 @@ void MainWindow::on_list_csrs_currentItemChanged(
 void MainWindow::on_bt_image_to_csr_clicked() {
     // Get current image
     auto current_image =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+        dynamic_cast<ImageLWI*>(ui->list_images_2->currentItem());
     if (!current_image) return;
 
     // Get current csr
@@ -106,28 +106,11 @@ void MainWindow::on_bt_export_csr_clicked() {
         dynamic_cast<CsrLWI*>(ui->list_csrs->currentItem());
     if (!current_csr) return;
 
-    // Get save location
-    auto path = QFileDialog::getSaveFileName(
-        this, "Export csr as", _default_image_import_location, "PNG (*.png)"
-    );
-    if (path.isEmpty()) return;
-
-    // Check extension
-    const auto file_name = path.split('/').last();
-    const auto file_dir  = path.chopped(file_name.size());
-    const auto extension = file_name.split('.').last();
-    if (extension.toLower().compare("png") != 0) path += ".png";
-
     // Compute pixel map
     const auto image = compute_pixel_map(current_csr->pixels(), _csr_palette);
 
-    // And save it
-    const auto result = image.save(path);
-    if (!result) return;
-
-    // Save this path
-    _default_image_import_location = file_dir;
-    save_app_state();
+    // Save PNG
+    save_PNG(image);
 }
 
 // /////////////////////////////////////// //
@@ -168,8 +151,8 @@ void MainWindow::set_csr_section_enabled(bool is_enabled) {
     // On disable
     if (!is_enabled) {
         // Clear presented image if no imported image is present
-        if (ui->list_images->count() > 0)
-            on_list_images_itemPressed(ui->list_images->currentItem());
+        if (ui->list_images_2->count() > 0)
+            on_list_images_2_itemPressed(ui->list_images_2->currentItem());
         else ui->label_image_view->clear();
 
         // In either case csr image isn't presented anymore

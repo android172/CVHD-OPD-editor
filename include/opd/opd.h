@@ -7,12 +7,15 @@ class Opd {
   public:
     ~Opd();
 
+    constexpr static const uchar palette_max = 128;
+
     std::list<GFXPage>&   gfx_pages;
     std::list<Sprite>&    sprites;
     std::list<Frame>&     frames;
     std::list<Animation>& animations;
 
-    std::list<Palette>& palettes;
+    std::array<Palette, palette_max>& palettes;
+    uchar                             palette_count = 0;
 
     static Opd* open(QString const& path);
 
@@ -31,11 +34,12 @@ class Opd {
     HitBoxPtr add_new_hitbox(const FramePtr frame);
 
   private:
-    Opd(std::list<GFXPage>&   gfx_pages,
-        std::list<Sprite>&    sprites,
-        std::list<Frame>&     frames,
-        std::list<Animation>& animations,
-        std::list<Palette>&   palettes);
+    Opd(std::list<GFXPage>&               gfx_pages,
+        std::list<Sprite>&                sprites,
+        std::list<Frame>&                 frames,
+        std::list<Animation>&             animations,
+        std::array<Palette, palette_max>& palettes,
+        uchar                             palette_count);
 };
 
 #endif // __OPD_H__

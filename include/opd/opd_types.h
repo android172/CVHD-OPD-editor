@@ -2,6 +2,7 @@
 #define __OPD_TYPES_H__
 
 #include "animation.h"
+#include "sprite.h"
 
 class Invalid {
   public:

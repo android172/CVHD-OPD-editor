@@ -85,6 +85,8 @@ class MainWindow : public QMainWindow {
     void on_bt_remove_frame_part_clicked();
     void on_bt_frame_part_up_clicked();
     void on_bt_frame_part_down_clicked();
+    void on_bt_merge_frame_parts_clicked();
+    void on_bt_edit_frame_part_clicked();
     void on_spin_frame_part_off_x_valueChanged(int new_value);
     void on_spin_frame_part_off_y_valueChanged(int new_value);
     void on_ch_frame_part_flip_x_toggled(bool new_value);

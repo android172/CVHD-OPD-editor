@@ -3,7 +3,10 @@
 
 #include "util.h"
 #include "gui/lwi/frame_part_lwi.h"
+#include "gui/lwi/sprite_lwi.h"
 #include "gui/new_part_dialog.h"
+
+#include <QMessageBox>
 
 // //////////////////////////// //
 // MAIN WINDOW FRAME PART SLOTS //
@@ -128,6 +131,83 @@ void MainWindow::on_bt_frame_part_down_clicked() {
 
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+}
+
+void MainWindow::on_bt_merge_frame_parts_clicked() {
+    check_if_valid(_current_frame_part);
+
+    // Get selected frames
+    const auto            selected_lwi = ui->list_frame_parts->selectedItems();
+    QVector<FramePartPtr> used_frame_parts;
+    used_frame_parts.reserve(selected_lwi.size());
+    for (const auto& lwi : selected_lwi) {
+        const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
+        used_frame_parts.push_back(frame_part_lwi->frame_part);
+    }
+    if (used_frame_parts.size() < 2) return;
+
+    // Compute min offsets
+    auto min_x = SHRT_MAX;
+    auto min_y = SHRT_MAX;
+
+    // Also check if merger is possible
+    const auto palette_used = used_frame_parts[0]->palette;
+    for (const auto& frame_part : used_frame_parts) {
+        // Fusion of frame parts with different pallets isn't done here
+        if (palette_used != frame_part->palette) {
+            QMessageBox::warning(
+                this,
+                "Invalid merger",
+                "Frame part merger is only possible under a singular palette."
+            );
+            return;
+        }
+        if (frame_part->x_offset < min_x) min_x = frame_part->x_offset;
+        if (frame_part->y_offset < min_y) min_y = frame_part->y_offset;
+    }
+
+    // Merge selected frame parts into a new sprite
+    const auto new_sprite = _opd->add_new_sprite();
+    new_sprite->from_frame_parts(used_frame_parts);
+
+    // Remove now unused frame parts
+    for (const auto& lwi : selected_lwi) {
+        const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
+        _current_frame->parts.erase(frame_part_lwi->frame_part);
+        ui->list_frame_parts->removeItemWidget(frame_part_lwi);
+        delete frame_part_lwi;
+    }
+
+    // Add new frame part
+    const auto new_frame_part = _opd->add_new_frame_part(_current_frame);
+    new_frame_part->sprite    = new_sprite;
+    new_frame_part->palette   = palette_used;
+    new_frame_part->x_offset  = min_x;
+    new_frame_part->y_offset  = min_y;
+
+    // Update indices
+    ushort index = 0;
+    for (auto& frame_part : _current_frame->parts)
+        frame_part.index = index++;
+
+    // Add new lwi
+    const auto new_frame_part_lwi = new FramePartLwi(new_frame_part);
+    ui->list_frame_parts->addItem(new_frame_part_lwi);
+
+    // Set as current
+    ui->list_frame_parts->setCurrentItem(new_frame_part_lwi);
+
+    // Update in sprite list
+    const auto new_sprite_lwi = new SpriteLwi(new_frame_part->sprite);
+    ui->list_sprites->addItem(new_sprite_lwi);
+}
+void MainWindow::on_bt_edit_frame_part_clicked() {
+    check_if_valid(_current_frame_part);
+    ui->tab_main->setCurrentIndex(1);
+    ui->list_sprites->setCurrentRow(_current_frame_part->sprite->index);
 
     // Stop playing animation
     if (_in_animation) stop_animation();

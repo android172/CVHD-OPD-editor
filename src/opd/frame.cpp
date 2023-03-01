@@ -1,5 +1,7 @@
 #include "opd/frame.h"
 
+#include "opd/sprite.h"
+
 void Frame::initialize() {
     for (auto& part : parts) {
         // Compute max color index used

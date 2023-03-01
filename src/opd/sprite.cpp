@@ -69,6 +69,73 @@ void Sprite::from_image(
     trim_empty_pixels();
 }
 
+void Sprite::from_frame_parts(const QVector<FramePartPtr>& frame_parts) {
+    auto min_x = SHRT_MAX;
+    auto min_y = SHRT_MAX;
+    auto max_x = SHRT_MIN;
+    auto max_y = SHRT_MIN;
+
+    // Compute bounding box
+    for (const auto& part : frame_parts) {
+        if (part->sprite->width == 0 || part->sprite->height == 0) continue;
+
+        const auto x_left  = part->x_offset + 0;
+        const auto x_right = part->x_offset + part->sprite->width;
+        const auto y_left  = part->y_offset + 0;
+        const auto y_right = part->y_offset + part->sprite->height;
+
+        if (x_left < min_x) min_x = x_left;
+        if (y_left < min_y) min_y = y_left;
+        if (x_right > max_x) max_x = x_right;
+        if (y_right > max_y) max_y = y_right;
+    }
+
+    // Compute width and height
+    if (max_x <= min_x || max_y <= min_y) return;
+    width  = max_x - min_x;
+    height = max_y - min_y;
+
+    // Resize pixels & clear
+    pixels.resize(height);
+    for (auto& row : pixels) {
+        row.resize(width);
+        for (auto& pixel : row)
+            pixel = 0;
+    }
+    if (width == 0 || height == 0) return;
+
+    // Update pixels
+    for (const auto& part : frame_parts) {
+        const auto sprite        = part->sprite;
+        const auto pixels_height = sprite->pixels.size();
+        const auto pixels_width =
+            (pixels_height) ? sprite->pixels[0].size() : 0;
+
+        for (auto i = 0; i < sprite->height; i++) {
+            // Current sprite position space
+            const auto y     = sprite->y_pos + i;
+            // New sprite position space
+            const auto y_res = part->y_offset + i - min_y;
+            for (auto j = 0; j < sprite->width; j++) {
+                const auto x     = sprite->x_pos + j;
+                const auto x_res = part->x_offset + j - min_x;
+
+                // Compute color index of current sprite
+                const auto color_index =
+                    (x < 0 || y < 0 || x >= pixels_width || y >= pixels_height)
+                        ? 0
+                        : sprite->pixels[y][x];
+
+                // Dont override with background
+                if (color_index != 0) pixels[y_res][x_res] = color_index;
+            }
+        }
+    }
+
+    // Trim empty rows and cols
+    trim_empty_pixels();
+}
+
 QImage Sprite::to_image(
     const Palette& palette, bool with_background, float alpha_multiplier
 ) const {

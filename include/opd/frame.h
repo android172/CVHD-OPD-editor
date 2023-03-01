@@ -1,8 +1,10 @@
 #ifndef __FRAME_H__
 #define __FRAME_H__
 
-#include "sprite.h"
 #include "palette.h"
+
+struct Sprite;
+typedef std::list<Sprite>::iterator SpritePtr;
 
 struct Frame {
     struct Part {

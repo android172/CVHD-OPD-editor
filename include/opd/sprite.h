@@ -2,7 +2,7 @@
 #define __SPRITE_H__
 
 #include "gfx_page.h"
-#include "palette.h"
+#include "frame.h"
 
 #include <QImage>
 
@@ -30,6 +30,8 @@ struct Sprite {
         const ushort                   width,
         const ushort                   height
     );
+    void from_frame_parts(const QVector<FramePartPtr>& frame_parts);
+
     QImage to_image(
         const Palette& palette,
         bool           with_background  = false,

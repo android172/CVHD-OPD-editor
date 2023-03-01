@@ -290,7 +290,7 @@ void MainWindow::clear_frame() {
     _current_frame      = Invalid::frame;
     _current_anim_frame = Invalid::animation_frame;
 
-    ui->gv_frame->scene()->clear();
+    ui->gv_frame->clear();
     ui->line_frame_name->clear();
     ui->spin_frame_delay->clear();
     ui->spin_frame_pos_x->clear();

@@ -46,14 +46,42 @@ void MainWindow::on_bt_remove_sprite_clicked() {
         dynamic_cast<SpriteLwi*>(ui->list_sprites->currentItem());
     if (sprite_lwi == nullptr) return;
 
-    // Remove it
+    // Remove frame parts which use this sprite
+    for (auto& frame : _opd->frames) {
+        auto change_occurred = false;
+
+        // Remove parts
+        for (auto part = frame.parts.begin(); part != frame.parts.end();) {
+            if (part->sprite->index == _current_sprite->index) {
+                change_occurred = true;
+                part            = frame.parts.erase(part);
+            } else part++;
+        }
+
+        // Recompute indices if necessary
+        if (change_occurred) {
+            ushort index = 0;
+            for (auto& part : frame.parts)
+                part.index = index++;
+        }
+
+        // Update animation tab if necessary
+        if (_current_frame->index == frame.index) {
+            // Find current frame part list
+            const auto frame_part_row = ui->list_frame_parts->currentRow();
+            if (frame_part_row != -1)
+                // Remove it
+                delete ui->list_frame_parts->takeItem(frame_part_row);
+        }
+    }
+
+    // Remove sprite itself
     _opd->sprites.erase(_current_sprite);
     ui->list_sprites->removeItemWidget(sprite_lwi);
     delete sprite_lwi;
 
     // If this is the last sprite
     if (_opd->sprites.size() == 0) clear_sprite();
-    // TODO: Update animation page
 
     // Update indices
     ushort index = 0;
@@ -240,7 +268,7 @@ void MainWindow::clear_sprite() {
     if (_current_sprite_import) delete _current_sprite_import;
 
     // Update ui
-    ui->gv_sprite->scene()->clear();
+    ui->gv_sprite->clear();
     ui->spin_sprite_pos_x->clear();
     ui->spin_sprite_pos_y->clear();
     ui->spin_sprite_width->clear();

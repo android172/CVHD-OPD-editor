@@ -54,13 +54,13 @@ void MainWindow::on_bt_delete_image_clicked() {
 
     // Update rest if last
     if (ui->list_images->count() == 0) {
-        ui->gv_image->scene()->clear();
+        ui->gv_image->clear();
         set_image_edit_enabled(false);
     }
 }
 void MainWindow::on_bt_delete_all_images_clicked() {
     ui->list_images->clear();
-    ui->gv_image->scene()->clear();
+    ui->gv_image->clear();
     set_image_edit_enabled(false);
 }
 

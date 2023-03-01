@@ -43,10 +43,13 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             );
             _in_selection_mode = true;
 
+            // Delete selection lines
             scene()->removeItem(_selection_x_line);
             scene()->removeItem(_selection_y_line);
             delete _selection_x_line;
             delete _selection_y_line;
+            _selection_x_line = nullptr;
+            _selection_y_line = nullptr;
         } else if (_current_mode == ControlMode::Move) {
         } else
             ;
@@ -74,10 +77,12 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
 void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         if (_current_mode == ControlMode::Select) {
+            // Back to pan
             _in_selection_mode = false;
             _current_mode      = ControlMode::Pan;
             setDragMode(QGraphicsView::ScrollHandDrag);
 
+            // Activate on completion callback
             const auto rect = _selection_rect->rect();
             _on_selection_completed(
                 (short) rect.x(),
@@ -98,7 +103,7 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
 
 void GraphicsViewer::show_frame(const Frame& frame) {
     auto scene = this->scene();
-    clear_scene();
+    scene->clear();
 
     // Draw all frame parts
     for (auto const& part : frame.parts) {
@@ -143,7 +148,7 @@ void GraphicsViewer::show_frame(const Frame& frame) {
 
 void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
     auto scene = this->scene();
-    clear_scene();
+    scene->clear();
 
     if (sprite.width == 0 || sprite.height == 0) return;
 
@@ -158,7 +163,12 @@ void GraphicsViewer::show_image(
     const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
 ) {
     auto scene = this->scene();
-    clear_scene();
+    activate_pan();
+
+    // stop animation
+    if (_selection_timer) stop_selection_animation();
+
+    scene->clear();
 
     if (pixels.size() == 0 || pixels[0].size() == 0) return;
 
@@ -196,6 +206,13 @@ void GraphicsViewer::show_image(
 
     // Show
     scene->addItem(pixmap_gpi);
+}
+
+void GraphicsViewer::clear() {
+    auto scene = this->scene();
+    activate_pan();
+    if (_selection_timer) stop_selection_animation();
+    scene->clear();
 }
 
 void GraphicsViewer::add_sprite(
@@ -238,13 +255,46 @@ void GraphicsViewer::add_selection(
     scene->addItem(rectangle);
 }
 
+void GraphicsViewer::activate_pan() {
+    if (_current_mode == ControlMode::Select) {
+        // Clear selection lines if already present
+        if (_selection_x_line) {
+            scene()->removeItem(_selection_x_line);
+            delete _selection_x_line;
+            _selection_x_line = nullptr;
+        }
+        if (_selection_y_line) {
+            scene()->removeItem(_selection_y_line);
+            delete _selection_y_line;
+            _selection_y_line = nullptr;
+        }
+    }
+
+    // Back to pan
+    _in_selection_mode = false;
+    _current_mode      = ControlMode::Pan;
+    setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
 void GraphicsViewer::activate_selection(
     const std::function<void(short, short, ushort, ushort)>&
         on_selection_completed
 ) {
+    // Change current mode to select
     _current_mode           = ControlMode::Select;
     _on_selection_completed = on_selection_completed;
 
+    // Clear selection lines if already present
+    if (_selection_x_line) {
+        scene()->removeItem(_selection_x_line);
+        delete _selection_x_line;
+    }
+    if (_selection_y_line) {
+        scene()->removeItem(_selection_y_line);
+        delete _selection_y_line;
+    }
+
+    // Create new selection lines
     _selection_x_line = new QGraphicsLineItem {};
     _selection_y_line = new QGraphicsLineItem {};
     _selection_x_line->setPen(_selection_pen);
@@ -253,6 +303,7 @@ void GraphicsViewer::activate_selection(
     scene()->addItem(_selection_x_line);
     scene()->addItem(_selection_y_line);
 
+    // Disable drag
     setDragMode(QGraphicsView::NoDrag);
 }
 
@@ -260,13 +311,9 @@ void GraphicsViewer::activate_selection(
 // GRAPHICS VIEWER PRIVATE METHODS //
 // /////////////////////////////// //
 
-void GraphicsViewer::clear_scene() {
-    auto scene = this->scene();
-    scene->clear();
-    if (_selection_timer) {
-        _selection_timer->stop();
-        _selection_timer->disconnect();
-        delete _selection_timer;
-        _selection_timer = nullptr;
-    }
+void GraphicsViewer::stop_selection_animation() {
+    _selection_timer->stop();
+    _selection_timer->disconnect();
+    delete _selection_timer;
+    _selection_timer = nullptr;
 }

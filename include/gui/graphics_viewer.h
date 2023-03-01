@@ -26,6 +26,8 @@ class GraphicsViewer : public QGraphicsView {
         const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
     );
 
+    void clear();
+
     void add_sprite(
         const Sprite& sprite, const Palette& palette, const float alpha = 1.0f
     );
@@ -36,6 +38,7 @@ class GraphicsViewer : public QGraphicsView {
         const ushort height
     );
 
+    void activate_pan();
     void activate_selection(
         const std::function<void(short, short, ushort, ushort)>&
             on_selection_completed
@@ -63,7 +66,7 @@ class GraphicsViewer : public QGraphicsView {
     QGraphicsLineItem* _selection_x_line = nullptr;
     QGraphicsLineItem* _selection_y_line = nullptr;
 
-    void clear_scene();
+    void stop_selection_animation();
 };
 
 #endif // __GRAPHICS_VIEWER_H__

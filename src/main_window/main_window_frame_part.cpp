@@ -96,6 +96,9 @@ void MainWindow::on_bt_frame_part_up_clicked() {
 
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::on_bt_frame_part_down_clicked() {
     check_if_valid(_current_frame_part);
@@ -125,11 +128,15 @@ void MainWindow::on_bt_frame_part_down_clicked() {
 
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 
 #define change_frame_part_value(attribute, new_value)                          \
     check_if_valid(_current_frame_part);                                       \
     _current_frame_part->attribute = new_value;                                \
+    if (_in_animation) stop_animation();                                       \
     ui->gv_frame->show_frame(*_current_frame)
 
 void MainWindow::on_spin_frame_part_off_x_valueChanged(int new_value) {
@@ -142,12 +149,20 @@ void MainWindow::on_ch_frame_part_flip_x_toggled(bool new_value) {
     check_if_valid(_current_frame_part);
     _current_frame_part->flip_mode &= 0b01;
     _current_frame_part->flip_mode |= new_value << 1;
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+
     ui->gv_frame->show_frame(*_current_frame);
 }
 void MainWindow::on_ch_frame_part_flip_y_toggled(bool new_value) {
     check_if_valid(_current_frame_part);
     _current_frame_part->flip_mode &= 0b10;
     _current_frame_part->flip_mode |= (uchar) new_value;
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+
     ui->gv_frame->show_frame(*_current_frame);
 }
 void MainWindow::on_cb_frame_part_color_set_currentIndexChanged(int new_index) {
@@ -201,6 +216,9 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
 
     // Enable editing
     set_frame_part_edit_enabled(true);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::clear_frame_part() {
     _current_frame_part = Invalid::frame_part;
@@ -217,6 +235,9 @@ void MainWindow::clear_frame_part() {
 
     // Disable editing
     set_frame_part_edit_enabled(false);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 
 void MainWindow::load_frame_part_palette() {
@@ -237,6 +258,9 @@ void MainWindow::on_bt_frame_part_col_clicked(PaletteButton* const button) {
 
     // Setup button color
     button->set_color();
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);

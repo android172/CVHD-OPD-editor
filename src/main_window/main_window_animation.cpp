@@ -15,6 +15,7 @@ void MainWindow::on_tree_animations_itemPressed(QTreeWidgetItem* current, int) {
     if (current == nullptr) return;
     auto is_frame = current->parent() != nullptr;
 
+    // Get current frame twi and its corresponding animation (if applicable)
     AnimationTwi* animation_twi = nullptr;
     FrameTwi*     frame_twi     = nullptr;
     if (is_frame) {
@@ -116,7 +117,8 @@ void MainWindow::on_bt_play_animation_clicked() {
         _in_animation = true;
         animate_frame(*animation_twi->animation, 0);
     } else {
-        stop_animation();
+        // This will stop the animation
+        on_tree_animations_itemPressed(ui->tree_animations->currentItem(), 0);
     }
 }
 
@@ -152,11 +154,17 @@ void MainWindow::load_animation(const AnimationPtr animation) {
     _current_animation = animation;
     ui->line_animation_name->setText(animation->name);
     set_animation_edit_enabled(true);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::clear_animation() {
     _current_animation = Invalid::animation;
     ui->line_animation_name->setText("");
     set_animation_edit_enabled(false);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 
 void MainWindow::animate_frame(const Animation& animation, ushort frame_count) {
@@ -187,7 +195,8 @@ void MainWindow::animate_frame(const Animation& animation, ushort frame_count) {
 
 void MainWindow::stop_animation() {
     _in_animation = false;
-    on_tree_animations_itemPressed(ui->tree_animations->currentItem(), 0);
+    if (ui->bt_play_animation->isChecked())
+        ui->bt_play_animation->setChecked(false);
 }
 
 void MainWindow::set_animation_edit_enabled(bool enabled) {

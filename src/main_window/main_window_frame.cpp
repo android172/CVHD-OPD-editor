@@ -211,6 +211,10 @@ void MainWindow::on_bt_frame_down_clicked() {
 void MainWindow::on_tool_box_frame_currentChanged(int current) {
     ui->gv_frame->hitbox_visible = current == 1;
     check_if_valid(_current_frame);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+
     ui->gv_frame->show_frame(*_current_frame);
 }
 
@@ -278,6 +282,9 @@ void MainWindow::load_frame(
 
     // Enable editing
     set_frame_edit_enabled(true);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::clear_frame() {
     _current_frame      = Invalid::frame;
@@ -297,6 +304,9 @@ void MainWindow::clear_frame() {
 
     // Disable editing
     set_frame_edit_enabled(false);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 
 void MainWindow::set_frame_edit_enabled(bool enabled) {

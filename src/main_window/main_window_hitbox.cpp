@@ -87,6 +87,9 @@ void MainWindow::on_bt_hitbox_up_clicked() {
     // Update arrows
     set_hitbox_movement_enabled(true);
 
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);
 }
@@ -116,6 +119,9 @@ void MainWindow::on_bt_hitbox_down_clicked() {
     // Update arrows
     set_hitbox_movement_enabled(true);
 
+    // Stop playing animation
+    if (_in_animation) stop_animation();
+
     // Redraw frame
     ui->gv_frame->show_frame(*_current_frame);
 }
@@ -123,6 +129,7 @@ void MainWindow::on_bt_hitbox_down_clicked() {
 #define change_hitbox_value(attribute, new_value)                              \
     check_if_valid(_current_hitbox);                                           \
     _current_hitbox->attribute = new_value;                                    \
+    if (_in_animation) stop_animation();                                       \
     ui->gv_frame->show_frame(*_current_frame)
 
 void MainWindow::on_spin_hitbox_pos_x_valueChanged(int new_value) {
@@ -166,6 +173,9 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
 
     // Enable editing
     set_hitbox_edit_enabled(true);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::clear_hitbox() {
     _current_hitbox = Invalid::hitbox;
@@ -178,6 +188,9 @@ void MainWindow::clear_hitbox() {
 
     // Enable editing
     set_hitbox_edit_enabled(false);
+
+    // Stop playing animation
+    if (_in_animation) stop_animation();
 }
 void MainWindow::set_hitbox_edit_enabled(bool enabled) {
     ui->bt_remove_hitbox->setEnabled(enabled);

@@ -22,9 +22,23 @@ struct Sprite {
 
     bool operator==(const Sprite& other) const;
 
-    void   initialize();
-    QImage to_image(const Palette& palette, bool with_background = false) const;
-    void   trim();
+    void initialize();
+    void from_image(
+        const QVector<QVector<uchar>>& pixels,
+        const short                    x_pos,
+        const short                    y_pos,
+        const ushort                   width,
+        const ushort                   height
+    );
+    QImage to_image(
+        const Palette& palette,
+        bool           with_background  = false,
+        float          alpha_multiplier = 1.0f
+    ) const;
+    void trim();
+
+  private:
+    void trim_empty_pixels();
 };
 typedef std::list<Sprite>::iterator SpritePtr;
 

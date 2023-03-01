@@ -74,9 +74,43 @@ void MainWindow::on_bt_select_rect_clicked() {
         }
     );
 }
-void MainWindow::on_bt_import_selected_clicked() {}
+void MainWindow::on_bt_import_selected_clicked() {
+    check_if_valid(_current_sprite);
+
+    // Get selection info
+    const auto x = ui->spin_img_pos_x->value();
+    const auto y = ui->spin_img_pos_y->value();
+    const auto w = ui->spin_img_width->value();
+    const auto h = ui->spin_img_height->value();
+
+    if (w == 0 || h == 0) return;
+
+    // Get current image
+    const auto image_lwi =
+        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+    if (image_lwi == nullptr) return;
+
+    // Add new sprite import
+    if (_current_sprite_import != nullptr) delete _current_sprite_import;
+    _current_sprite_import = new Sprite();
+    _current_sprite_import->from_image(image_lwi->pixels(), x, y, w, h);
+
+    // Set it's palette
+    _current_sprite_import_palette.size = _image_palette.size();
+    for (auto i = 0; i < _image_palette.size(); i++)
+        _current_sprite_import_palette[i] = _image_palette[i].display;
+
+    // Add layer to sprite view
+    ui->gv_sprite->add_sprite(
+        *_current_sprite_import,
+        _current_sprite_import_palette,
+        1.0f - ui->slider_transparency->value() / 100.0f
+    );
+}
 void MainWindow::on_bt_import_all_clicked() {}
+
 void MainWindow::on_bt_import_palette_clicked() {}
+
 void MainWindow::on_bt_image_trim_clicked() {}
 
 void MainWindow::on_spin_img_pos_x_valueChanged(int new_value) {

@@ -191,14 +191,16 @@ class MainWindow : public QMainWindow {
 
     bool _in_animation = false;
 
-    AnimationPtr      _current_animation  = Invalid::animation;
-    AnimationFramePtr _current_anim_frame = Invalid::animation_frame;
-    FramePtr          _current_frame      = Invalid::frame;
-    FramePartPtr      _current_frame_part = Invalid::frame_part;
-    HitBoxPtr         _current_hitbox     = Invalid::hitbox;
-    SpritePtr         _current_sprite     = Invalid::sprite;
+    AnimationPtr      _current_animation     = Invalid::animation;
+    AnimationFramePtr _current_anim_frame    = Invalid::animation_frame;
+    FramePtr          _current_frame         = Invalid::frame;
+    FramePartPtr      _current_frame_part    = Invalid::frame_part;
+    HitBoxPtr         _current_hitbox        = Invalid::hitbox;
+    SpritePtr         _current_sprite        = Invalid::sprite;
+    Sprite*           _current_sprite_import = nullptr;
     Palette           _current_part_palette {};
     Palette           _current_sprite_palette {};
+    Palette           _current_sprite_import_palette {};
 
     // General methods
     void import_opd(const QString opd_path);

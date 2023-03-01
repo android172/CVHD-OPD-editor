@@ -198,6 +198,19 @@ void GraphicsViewer::show_image(
     scene->addItem(pixmap_gpi);
 }
 
+void GraphicsViewer::add_sprite(
+    const Sprite& sprite, const Palette& palette, const float alpha
+) {
+    auto scene = this->scene();
+
+    if (sprite.width == 0 || sprite.height == 0) return;
+
+    const auto pixmap =
+        QPixmap::fromImage(sprite.to_image(palette, with_background, alpha));
+    const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
+
+    scene->addItem(pixmap_gpi);
+}
 void GraphicsViewer::add_selection(
     const short  x_pos,
     const short  y_pos,

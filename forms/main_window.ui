@@ -48,7 +48,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>true</bool>
@@ -692,7 +692,7 @@ border: none;</string>
                    <string notr="true"/>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="Parts">
                    <property name="geometry">
@@ -2026,9 +2026,6 @@ border: none;</string>
                    <width>180</width>
                    <height>16777215</height>
                   </size>
-                 </property>
-                 <property name="minimum">
-                  <number>0</number>
                  </property>
                  <property name="maximum">
                   <number>100</number>

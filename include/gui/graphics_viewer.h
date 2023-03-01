@@ -26,6 +26,9 @@ class GraphicsViewer : public QGraphicsView {
         const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
     );
 
+    void add_sprite(
+        const Sprite& sprite, const Palette& palette, const float alpha = 1.0f
+    );
     void add_selection(
         const short  x_pos,
         const short  y_pos,

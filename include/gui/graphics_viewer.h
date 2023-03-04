@@ -14,8 +14,9 @@ class GraphicsViewer : public QGraphicsView {
     Q_OBJECT
   public:
     // Draw settings
-    bool hitbox_visible  = false;
-    bool with_background = false;
+    bool   hitbox_visible  = false;
+    bool   with_background = false;
+    ushort current_index   = 0;
 
     explicit GraphicsViewer(QWidget* parent);
     ~GraphicsViewer();
@@ -41,7 +42,10 @@ class GraphicsViewer : public QGraphicsView {
     void activate_pan();
     void activate_selection(
         const std::function<void(short, short, ushort, ushort)>&
-            on_selection_completed
+            on_selection_preformed
+    );
+    void activate_move(
+        const std::function<void(short, short)>& on_move_preformed
     );
 
   protected Q_SLOTS:
@@ -57,7 +61,7 @@ class GraphicsViewer : public QGraphicsView {
     ControlMode _current_mode = ControlMode::Pan;
 
     // Selection
-    std::function<void(short, short, ushort, ushort)> _on_selection_completed;
+    std::function<void(short, short, ushort, ushort)> _on_selection_preformed;
     bool               _in_selection_mode = false;
     QPoint             _selection_pivot {};
     QPen               _selection_pen { Qt::DashLine };
@@ -66,7 +70,13 @@ class GraphicsViewer : public QGraphicsView {
     QGraphicsLineItem* _selection_x_line = nullptr;
     QGraphicsLineItem* _selection_y_line = nullptr;
 
-    void stop_selection_animation();
+    // Move
+    std::function<void(short, short)> _on_move_preformed;
+    bool                              _in_move_mode = false;
+    QPoint                            _move_pivot {};
+    QGraphicsItem*                    _moving_object = nullptr;
+
+    void clear_state();
 };
 
 #endif // __GRAPHICS_VIEWER_H__

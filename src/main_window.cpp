@@ -3,7 +3,9 @@
 
 #include "gui/twi/frame_twi.h"
 #include "gui/twi/animation_twi.h"
+
 #include <QFileDialog>
+#include <QColorDialog>
 
 #define COL_SETUP_ALL(button_set, palette)                                     \
     ui->button_set##_0->setup(0, palette);                                     \
@@ -42,6 +44,21 @@ MainWindow::MainWindow(QWidget* parent)
     ui->gv_image->with_background  = true;
     ui->gv_sprite->with_background = true;
 
+    // Add mode change button where necessary
+    const auto bt_change_mode_frame  = add_bt_change_mode(ui->gv_frame);
+    const auto bt_change_mode_sprite = add_bt_change_mode(ui->gv_sprite);
+
+    connect(bt_change_mode_frame, &QPushButton::clicked, this, [=]() {
+        on_bt_change_mode_clicked(bt_change_mode_frame);
+        if (bt_change_mode_frame->isChecked()) on_activate_frame_move_mode();
+        else ui->gv_frame->activate_pan();
+    });
+    connect(bt_change_mode_sprite, &QPushButton::clicked, this, [=]() {
+        on_bt_change_mode_clicked(bt_change_mode_sprite);
+        if (bt_change_mode_sprite->isChecked()) on_activate_frame_move_mode();
+        else ui->gv_frame->activate_pan();
+    });
+
     // TODO: Temporary
     ui->bt_add_animation->setEnabled(false);
     ui->bt_remove_animation->setEnabled(false);
@@ -76,8 +93,6 @@ void MainWindow::on_bt_import_opd_clicked() {
 // MAIN WINDOW PRIVATE METHODS //
 // /////////////////////////// //
 
-#include <QColorDialog>
-
 void MainWindow::import_opd(const QString opd_path) {
     if (opd_path.isEmpty()) return;
     _opd = Opd::open(opd_path);
@@ -101,7 +116,7 @@ void MainWindow::import_opd(const QString opd_path) {
     set_general_editing_enabled(true);
 }
 
-void MainWindow::update_color(Color& color) {
+void MainWindow::update_color(Color& color) const {
     QColor initial_color { color.r, color.g, color.b };
     QColor new_color = QColorDialog::getColor(initial_color);
     if (new_color.isValid() == false) return;
@@ -136,6 +151,24 @@ void MainWindow::save_PNG(const QImage& image) {
     // Save this path
     _default_image_import_location = file_dir;
     save_app_state();
+}
+
+void MainWindow::on_bt_change_mode_clicked(QPushButton* const button) const {
+    if (button->isChecked()) button->setIcon(QIcon(":/icons_general/move.png"));
+    else button->setIcon(QIcon(":/icons_general/expand-arrows.png"));
+}
+
+QPushButton* MainWindow::add_bt_change_mode(
+    GraphicsViewer* const graphics_viewer
+) const {
+    auto bt_change_mode = new QPushButton(graphics_viewer);
+    bt_change_mode->setStyleSheet("background: none; border: none;");
+    bt_change_mode->setIcon(QIcon(":/icons_general/expand-arrows.png"));
+    bt_change_mode->setIconSize(QSize(32, 32));
+    bt_change_mode->setCheckable(true);
+    bt_change_mode->move(5, 5);
+    bt_change_mode->show();
+    return bt_change_mode;
 }
 
 // TODO: OLD

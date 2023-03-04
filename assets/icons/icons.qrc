@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons_general">
+    <file>expand-arrows.png</file>
+    <file>move.png</file>
     <file>add.png</file>
     <file>down-arrow.png</file>
     <file>pause_button.png</file>

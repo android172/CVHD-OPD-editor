@@ -11,3 +11,8 @@ void PaletteButton::set_color() {
     );
     update();
 }
+
+void PaletteButton::clear_color() {
+    setStyleSheet("");
+    update();
+}

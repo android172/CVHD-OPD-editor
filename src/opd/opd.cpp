@@ -104,9 +104,9 @@ Opd* Opd::open(const QString& path) {
         read_type<ushort>(opd_file); // Unknown
 
         // Read hit boxes
-        for (auto i = 0; i < hit_box_count; i++) {
+        for (auto j = 0; j < hit_box_count; j++) {
             Frame::HitBox hit_box {};
-            hit_box.index      = i;
+            hit_box.index      = j;
             hit_box.x_position = read_type<short>(opd_file);
             hit_box.y_position = read_type<short>(opd_file);
             hit_box.width      = read_type<ushort>(opd_file);
@@ -115,9 +115,9 @@ Opd* Opd::open(const QString& path) {
         }
 
         // Read parts
-        for (auto i = 0; i < part_count; i++) {
+        for (auto j = 0; j < part_count; j++) {
             Frame::Part part {};
-            part.index    = i;
+            part.index    = j;
             part.x_offset = read_type<short>(opd_file);
             part.y_offset = read_type<short>(opd_file);
 
@@ -129,6 +129,10 @@ Opd* Opd::open(const QString& path) {
             sprite.gfx_y_pos = read_type<ushort>(opd_file);
             sprite.width     = read_type<ushort>(opd_file);
             sprite.height    = read_type<ushort>(opd_file);
+
+            // Handling of invalid gfx pages
+            if (sprite.gfx_page == gfx_pages->end())
+                sprite.width = sprite.height = 0;
 
             // Set sprite
             auto sprite_i = std::find(sprites->begin(), sprites->end(), sprite);
@@ -157,6 +161,16 @@ Opd* Opd::open(const QString& path) {
         }
         frame.initialize();
         frames->push_back(frame);
+    }
+
+    // === Palette size ===
+    // Set palette color count for unused palettes
+    // These "in between" palettes are most likely used for recolors, and thus
+    // just copy the count of last used palette
+    auto palette_running_size = 0;
+    for (auto& palette : *palettes) {
+        if (palette.size == 0) palette.size = palette_running_size;
+        else palette_running_size = palette.size;
     }
 
     // === Animation section ===

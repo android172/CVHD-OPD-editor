@@ -84,6 +84,9 @@ void MainWindow::on_bt_hitbox_up_clicked() {
     hitbox_neighbour->hitbox->index = hitbox_index;
     _current_hitbox->index          = hitbox_index - 1;
 
+    // Update gv indices
+    ui->gv_frame->current_index = hitbox_index - 1;
+
     // Update arrows
     set_hitbox_movement_enabled(true);
 
@@ -115,6 +118,9 @@ void MainWindow::on_bt_hitbox_down_clicked() {
     // Update indices
     hitbox_neighbour->hitbox->index = hitbox_index;
     _current_hitbox->index          = hitbox_index + 1;
+
+    // Update gv indices
+    ui->gv_frame->current_index = hitbox_index + 1;
 
     // Update arrows
     set_hitbox_movement_enabled(true);
@@ -170,6 +176,10 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
     ui->spin_hitbox_pos_y->setValue(hitbox->y_position);
     ui->spin_hitbox_width->setValue(hitbox->width);
     ui->spin_hitbox_height->setValue(hitbox->height);
+
+    // Redraw
+    ui->gv_frame->current_index = _current_hitbox->index;
+    ui->gv_frame->show_frame(*_current_frame);
 
     // Enable editing
     set_hitbox_edit_enabled(true);

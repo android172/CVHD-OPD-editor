@@ -292,3 +292,5 @@ void MainWindow::set_sprite_edit_enabled(bool enabled) {
     ui->spin_sprite_width->setEnabled(enabled);
     ui->spin_sprite_height->setEnabled(enabled);
 }
+
+void MainWindow::on_activate_sprite_move_mode() {}

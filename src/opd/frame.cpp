@@ -8,7 +8,7 @@ void Frame::initialize() {
         auto max_color = 0;
         for (auto& row : part.sprite->pixels) {
             for (auto& pixel : row)
-                if (pixel > max_color) max_color = pixel;
+                if (pixel + 1 > max_color) max_color = pixel + 1;
         }
         if (max_color > part.palette->size) part.palette->size = max_color;
     }

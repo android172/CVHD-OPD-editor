@@ -13,6 +13,7 @@ class PaletteButton : public QPushButton {
 
     void setup(const int color_index, Palette* const palette);
     void set_color();
+    void clear_color();
 
   private:
     Palette* _palette {};

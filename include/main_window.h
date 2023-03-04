@@ -9,6 +9,7 @@
 #include <QPushButton>
 
 #include "color_button.h"
+#include "gui/graphics_viewer.h"
 #include "gui/palette_button.h"
 #include "opd/opd.h"
 
@@ -205,10 +206,15 @@ class MainWindow : public QMainWindow {
     Palette           _current_sprite_import_palette {};
 
     // General methods
-    void import_opd(const QString opd_path);
-    void update_color(Color& color);
     void set_general_editing_enabled(bool enabled);
+    void import_opd(const QString opd_path);
+    void update_color(Color& color) const;
     void save_PNG(const QImage& image);
+    void on_bt_change_mode_clicked(QPushButton* const button) const;
+
+    QPushButton* add_bt_change_mode( //
+        GraphicsViewer* const graphics_viewer
+    ) const;
 
     // Animation
     void load_animations();
@@ -225,6 +231,7 @@ class MainWindow : public QMainWindow {
     void clear_frame();
     void set_frame_edit_enabled(bool enabled);
     void set_frame_movement_enabled(bool enabled);
+    void on_activate_frame_move_mode();
 
     // Frame part
     void load_frame_parts();
@@ -248,6 +255,7 @@ class MainWindow : public QMainWindow {
     void clear_sprite();
     void on_bt_sprite_col_clicked(PaletteButton* const button);
     void set_sprite_edit_enabled(bool enabled);
+    void on_activate_sprite_move_mode();
 
     // Image
     void load_images(QStringList path_list);

@@ -94,6 +94,9 @@ void MainWindow::on_bt_frame_part_up_clicked() {
     part_neighbour->frame_part->index = part_index;
     _current_frame_part->index        = part_index - 1;
 
+    // Update gv indices
+    ui->gv_frame->current_index = part_index - 1;
+
     // Update arrows
     set_frame_part_movement_enabled(true);
 
@@ -125,6 +128,9 @@ void MainWindow::on_bt_frame_part_down_clicked() {
     // Update indices
     part_neighbour->frame_part->index = part_index;
     _current_frame_part->index        = part_index + 1;
+
+    // Update gv indices
+    ui->gv_frame->current_index = part_index + 1;
 
     // Update arrows
     set_frame_part_movement_enabled(true);
@@ -291,6 +297,10 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
     ui->ch_frame_part_flip_y->setChecked(frame_part->flip_mode & 0b01);
     ui->cb_frame_part_color_set->setCurrentIndex(frame_part->palette->index);
 
+    // Redraw
+    ui->gv_frame->current_index = _current_frame_part->index;
+    ui->gv_frame->show_frame(*_current_frame);
+
     // Load palette colors
     load_frame_part_palette();
 
@@ -311,7 +321,7 @@ void MainWindow::clear_frame_part() {
     ui->cb_frame_part_color_set->setCurrentIndex(0);
 
     // Load palette colors
-    bt_frame_part_col_ALL(setStyleSheet(""));
+    bt_frame_part_col_ALL(clear_color());
 
     // Disable editing
     set_frame_part_edit_enabled(false);
@@ -323,11 +333,12 @@ void MainWindow::clear_frame_part() {
 void MainWindow::load_frame_part_palette() {
     check_if_valid(_current_frame_part);
     _current_part_palette = *_current_frame_part->palette;
+    bt_frame_part_col_ALL(clear_color());
     bt_frame_part_col_ALL(set_color());
 }
 
 void MainWindow::on_bt_frame_part_col_clicked(PaletteButton* const button) {
-    if (_current_part_palette.size == 0) return;
+    if (button->color_index >= _current_part_palette.size) return;
 
     // Get new color
     update_color(_current_part_palette[button->color_index]);

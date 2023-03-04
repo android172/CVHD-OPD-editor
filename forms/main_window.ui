@@ -331,7 +331,7 @@ border: none;</string>
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="0,4">
+             <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="0,1">
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_9">
                 <property name="sizeConstraint">
@@ -1803,13 +1803,7 @@ border: none;</string>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>11111</width>
-                  <height>11111</height>
+                  <height>3</height>
                  </size>
                 </property>
                 <property name="verticalScrollBarPolicy">

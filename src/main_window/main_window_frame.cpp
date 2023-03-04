@@ -212,6 +212,9 @@ void MainWindow::on_tool_box_frame_currentChanged(int current) {
     ui->gv_frame->hitbox_visible = current == 1;
     check_if_valid(_current_frame);
 
+    if (current == 0) ui->gv_frame->current_index = _current_frame_part->index;
+    else ui->gv_frame->current_index = _current_hitbox->index;
+
     // Stop playing animation
     if (_in_animation) stop_animation();
 
@@ -342,4 +345,38 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
 
     ui->bt_frame_up->setEnabled(enabled && not_first);
     ui->bt_frame_down->setEnabled(enabled && not_last);
+}
+
+void MainWindow::on_activate_frame_move_mode() {
+    ui->gv_frame->activate_move([=](short dx, short dy) {
+        if (ui->tool_box_frame->currentIndex() == 0) {
+            check_if_valid(_current_frame_part);
+
+            // Change values
+            _current_frame_part->x_offset += dx;
+            _current_frame_part->y_offset += dy;
+
+            // Change their display
+            ui->spin_frame_part_off_x->setValue(
+                ui->spin_frame_part_off_x->value() + dx
+            );
+            ui->spin_frame_part_off_y->setValue(
+                ui->spin_frame_part_off_y->value() + dy
+            );
+        } else {
+            check_if_valid(_current_hitbox);
+
+            // Change values
+            _current_hitbox->x_position += dx;
+            _current_hitbox->y_position += dy;
+
+            // Change their display
+            ui->spin_hitbox_pos_x->setValue(
+                ui->spin_hitbox_pos_x->value() + dx
+            );
+            ui->spin_hitbox_pos_y->setValue(
+                ui->spin_hitbox_pos_y->value() + dy
+            );
+        }
+    });
 }

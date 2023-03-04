@@ -6,6 +6,7 @@ GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
     QGraphicsScene* scene = new QGraphicsScene();
     setScene(scene);
 
+    // Setup selection
     _selection_pen.setWidthF(1.5);
     _selection_pen.setColor(Qt::blue);
 }
@@ -31,12 +32,30 @@ void GraphicsViewer::wheelEvent(QWheelEvent* event) {
 void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Plus) scale(1.1, 1.1);
     else if (event->key() == Qt::Key_Minus) scale(0.9, 0.9);
+    else if (_current_mode == ControlMode::Move && !_in_move_mode) {
+        if (_moving_object == nullptr) return;
+        if (event->key() == Qt::Key_Up) {
+            _moving_object->moveBy(0, -1);
+            _on_move_preformed(0, -1);
+        } else if (event->key() == Qt::Key_Down) {
+            _moving_object->moveBy(0, 1);
+            _on_move_preformed(0, 1);
+        } else if (event->key() == Qt::Key_Left) {
+            _moving_object->moveBy(-1, 0);
+            _on_move_preformed(-1, 0);
+        } else if (event->key() == Qt::Key_Right) {
+            _moving_object->moveBy(1, 0);
+            _on_move_preformed(1, 0);
+        }
+    }
 }
 
 void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         if (_current_mode == ControlMode::Select) {
             if (_selection_rect == nullptr) return;
+
+            // Get pivot
             _selection_pivot = mapToScene(event->pos()).toPoint();
             _selection_rect->setRect(
                 _selection_pivot.x(), _selection_pivot.y(), 1, 1
@@ -51,6 +70,11 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             _selection_x_line = nullptr;
             _selection_y_line = nullptr;
         } else if (_current_mode == ControlMode::Move) {
+            if (_moving_object == nullptr) return;
+
+            // Get pivot
+            _move_pivot   = mapToScene(event->pos()).toPoint();
+            _in_move_mode = true;
         } else
             ;
     }
@@ -60,16 +84,37 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
     if (_current_mode == ControlMode::Select) {
         if (_in_selection_mode) {
             if (_selection_rect == nullptr) return;
+
+            // Update selection rectangle
             const auto end_point = mapToScene(event->pos()).toPoint();
             const auto x         = qMin(end_point.x(), _selection_pivot.x());
             const auto y         = qMin(end_point.y(), _selection_pivot.y());
             const auto width  = qAbs(end_point.x() - _selection_pivot.x()) + 1;
             const auto height = qAbs(end_point.y() - _selection_pivot.y()) + 1;
+
             _selection_rect->setRect(x, y, width, height);
         } else {
+            // Draw selection lines
             const auto pos = mapToScene(event->pos()).toPoint();
             _selection_x_line->setLine(-10000, pos.y(), 10000, pos.y());
             _selection_y_line->setLine(pos.x(), -10000, pos.x(), 10000);
+        }
+    } else if (_current_mode == ControlMode::Move) {
+        if (_in_move_mode) {
+            if (_moving_object == nullptr) return;
+
+            // Get distance traveled
+            const auto end_point = mapToScene(event->pos()).toPoint();
+            const auto delta_x   = end_point.x() - _move_pivot.x();
+            const auto delta_y   = end_point.y() - _move_pivot.y();
+
+            // Update pivot
+            _move_pivot.setX(end_point.x());
+            _move_pivot.setY(end_point.y());
+
+            // Move current object
+            _moving_object->moveBy(delta_x, delta_y);
+            _on_move_preformed(delta_x, delta_y);
         }
     }
     QGraphicsView::mouseMoveEvent(event);
@@ -84,13 +129,15 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
 
             // Activate on completion callback
             const auto rect = _selection_rect->rect();
-            _on_selection_completed(
+            _on_selection_preformed(
                 (short) rect.x(),
                 (short) rect.y(),
                 (ushort) qMax(rect.width(), 0.0),
                 (ushort) qMax(rect.height(), 0.0)
             );
         } else if (_current_mode == ControlMode::Move) {
+            // Finish movement
+            _in_move_mode = false;
         } else
             ;
     }
@@ -103,6 +150,7 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
 
 void GraphicsViewer::show_frame(const Frame& frame) {
     auto scene = this->scene();
+    clear_state();
     scene->clear();
 
     // Draw all frame parts
@@ -125,6 +173,19 @@ void GraphicsViewer::show_frame(const Frame& frame) {
         pixmap_gpi->setTransform(t);
 
         scene->addItem(pixmap_gpi);
+
+        if (!hitbox_visible && part.index == current_index) {
+            // Show currently selected frame part
+            // Only visible if move control mode is active
+            _moving_object = pixmap_gpi;
+            add_selection(
+                part.x_offset,
+                part.y_offset,
+                part.sprite->width,
+                part.sprite->height
+            );
+            _selection_rect->setVisible(_current_mode == ControlMode::Move);
+        }
     }
 
     // Draw hitboxes
@@ -139,6 +200,19 @@ void GraphicsViewer::show_frame(const Frame& frame) {
             hitbox_rectangle->setOpacity(0.2);
             hitbox_rectangle->setBrush(Qt::red);
             scene->addItem(hitbox_rectangle);
+
+            // Show currently selected hitbox
+            // Only visible if move control mode is active
+            if (hitbox.index == current_index) {
+                _moving_object = hitbox_rectangle;
+                add_selection(
+                    hitbox.x_position,
+                    hitbox.y_position,
+                    hitbox.width,
+                    hitbox.height
+                );
+                _selection_rect->setVisible(_current_mode == ControlMode::Move);
+            }
         }
     }
 
@@ -164,10 +238,7 @@ void GraphicsViewer::show_image(
 ) {
     auto scene = this->scene();
     activate_pan();
-
-    // stop animation
-    if (_selection_timer) stop_selection_animation();
-
+    clear_state();
     scene->clear();
 
     if (pixels.size() == 0 || pixels[0].size() == 0) return;
@@ -211,7 +282,7 @@ void GraphicsViewer::show_image(
 void GraphicsViewer::clear() {
     auto scene = this->scene();
     activate_pan();
-    if (_selection_timer) stop_selection_animation();
+    clear_state();
     scene->clear();
 }
 
@@ -236,7 +307,9 @@ void GraphicsViewer::add_selection(
 ) {
     auto scene = this->scene();
 
-    auto rectangle  = new QGraphicsRectItem(x_pos, y_pos, width, height);
+    auto rectangle = new QGraphicsRectItem(x_pos, y_pos, width, height);
+
+    if (_selection_rect != nullptr) delete _selection_rect;
     _selection_rect = rectangle;
 
     rectangle->setPen(_selection_pen);
@@ -257,6 +330,8 @@ void GraphicsViewer::add_selection(
 
 void GraphicsViewer::activate_pan() {
     if (_current_mode == ControlMode::Select) {
+        _in_selection_mode = false;
+
         // Clear selection lines if already present
         if (_selection_x_line) {
             scene()->removeItem(_selection_x_line);
@@ -268,21 +343,22 @@ void GraphicsViewer::activate_pan() {
             delete _selection_y_line;
             _selection_y_line = nullptr;
         }
+    } else if (_current_mode == ControlMode::Move) {
+        if (_selection_rect) _selection_rect->setVisible(false);
     }
 
     // Back to pan
-    _in_selection_mode = false;
-    _current_mode      = ControlMode::Pan;
+    _current_mode = ControlMode::Pan;
     setDragMode(QGraphicsView::ScrollHandDrag);
 }
 
 void GraphicsViewer::activate_selection(
     const std::function<void(short, short, ushort, ushort)>&
-        on_selection_completed
+        on_selection_preformed
 ) {
     // Change current mode to select
     _current_mode           = ControlMode::Select;
-    _on_selection_completed = on_selection_completed;
+    _on_selection_preformed = on_selection_preformed;
 
     // Clear selection lines if already present
     if (_selection_x_line) {
@@ -307,13 +383,39 @@ void GraphicsViewer::activate_selection(
     setDragMode(QGraphicsView::NoDrag);
 }
 
+void GraphicsViewer::activate_move(
+    const std::function<void(short, short)>& on_move_preformed
+) {
+    // Change current mode to move
+    _current_mode      = ControlMode::Move;
+    _on_move_preformed = on_move_preformed;
+
+    // Set visiblity of selection
+    if (_selection_rect) _selection_rect->setVisible(true);
+
+    // Disable drag
+    setDragMode(QGraphicsView::NoDrag);
+}
+
 // /////////////////////////////// //
 // GRAPHICS VIEWER PRIVATE METHODS //
 // /////////////////////////////// //
 
-void GraphicsViewer::stop_selection_animation() {
-    _selection_timer->stop();
-    _selection_timer->disconnect();
-    delete _selection_timer;
-    _selection_timer = nullptr;
+void GraphicsViewer::clear_state() {
+    // Stop timer
+    if (_selection_timer) {
+        _selection_timer->stop();
+        _selection_timer->disconnect();
+        delete _selection_timer;
+        _selection_timer = nullptr;
+    }
+
+    // Delete rectangle
+    if (_selection_rect) {
+        delete _selection_rect;
+        _selection_rect = nullptr;
+    }
+
+    // Clear moving object
+    if (_moving_object) _moving_object = nullptr;
 }

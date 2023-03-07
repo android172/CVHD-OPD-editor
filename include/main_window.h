@@ -260,6 +260,13 @@ class MainWindow : public QMainWindow {
     // Image
     void load_images(QStringList path_list);
     void on_bt_image_col_clicked(ColorButton* const button);
+    void import_image_as_sprite(
+        const PixelMap& pixels,
+        const short     x,
+        const short     y,
+        const ushort    w,
+        const ushort    h
+    );
     void set_image_edit_enabled(bool enabled);
 
     // TODO: OLD

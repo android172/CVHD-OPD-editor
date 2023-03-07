@@ -21,8 +21,8 @@ class ImageLWI : public QListWidgetItem {
             _pixels[i].resize(_imported_image.height());
     }
 
-    void                           update_color() { _is_up_to_date = false; }
-    const QVector<QVector<uchar>>& pixels() {
+    void            update_color() { _is_up_to_date = false; }
+    const PixelMap& pixels() {
         if (!_is_up_to_date) compute_pixels();
         return _pixels;
     }
@@ -34,7 +34,7 @@ class ImageLWI : public QListWidgetItem {
 
     QHash<Color, int>* const _color_map;
     const QImage             _imported_image;
-    QVector<QVector<uchar>>  _pixels;
+    PixelMap                 _pixels;
 
     void compute_pixels() {
         for (int i = 0; i < _imported_image.width(); ++i) {

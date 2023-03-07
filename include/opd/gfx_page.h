@@ -1,8 +1,9 @@
 #ifndef __GFX_PAGE_H__
 #define __GFX_PAGE_H__
 
-#include <QVector>
 #include <list>
+
+#include "pixel_map.h"
 
 struct GFXPage {
   public:
@@ -12,7 +13,7 @@ struct GFXPage {
     ushort  width;
     ushort  height;
 
-    QVector<QVector<uchar>> pixels;
+    PixelMap pixels;
 
     void initialize();
 

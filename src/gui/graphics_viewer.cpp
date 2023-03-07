@@ -234,7 +234,7 @@ void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
 }
 
 void GraphicsViewer::show_image(
-    const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
+    const PixelMap& pixels, const QVector<ColorPair>& palette
 ) {
     auto scene = this->scene();
     activate_pan();

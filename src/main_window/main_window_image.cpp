@@ -90,28 +90,104 @@ void MainWindow::on_bt_import_selected_clicked() {
         dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
     if (image_lwi == nullptr) return;
 
-    // Add new sprite import
-    if (_current_sprite_import != nullptr) delete _current_sprite_import;
-    _current_sprite_import = new Sprite();
-    _current_sprite_import->from_image(image_lwi->pixels(), x, y, w, h);
-
-    // Set it's palette
-    _current_sprite_import_palette.size = _image_palette.size();
-    for (auto i = 0; i < _image_palette.size(); i++)
-        _current_sprite_import_palette[i] = _image_palette[i].display;
-
-    // Add layer to sprite view
-    ui->gv_sprite->add_sprite(
-        *_current_sprite_import,
-        _current_sprite_import_palette,
-        1.0f - ui->slider_transparency->value() / 100.0f
-    );
+    // Import image as sprite
+    import_image_as_sprite(image_lwi->pixels(), x, y, w, h);
 }
-void MainWindow::on_bt_import_all_clicked() {}
+void MainWindow::on_bt_import_all_clicked() {
+    check_if_valid(_current_sprite);
+
+    // Get current image
+    const auto image_lwi =
+        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+    if (image_lwi == nullptr) return;
+    const auto pixels = image_lwi->pixels();
+
+    // Get selection info
+    const auto x = 0;
+    const auto y = 0;
+    const auto h = pixels.size();
+    if (h == 0) return;
+    const auto w = pixels[0].size();
+    if (w == 0) return;
+
+    // Import image as sprite
+    import_image_as_sprite(pixels, x, y, w, h);
+}
 
 void MainWindow::on_bt_import_palette_clicked() {}
 
-void MainWindow::on_bt_image_trim_clicked() {}
+void MainWindow::on_bt_image_trim_clicked() {
+    check_if_valid(_current_sprite);
+
+    // Get current image
+    const auto image_lwi =
+        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+    if (image_lwi == nullptr) return;
+    const auto& pixels = image_lwi->pixels();
+
+    // Get image info
+    const auto img_h = pixels.size();
+    if (img_h == 0) return;
+    const auto img_w = pixels[0].size();
+    if (img_w == 0) return;
+
+    // Get selection info
+    auto x = ui->spin_img_pos_x->value();
+    auto y = ui->spin_img_pos_y->value();
+    auto w = ui->spin_img_width->value();
+    auto h = ui->spin_img_height->value();
+    if (w == 0 || h == 0) return;
+
+    // Create temp pixmap
+    PixelMap selection {};
+    selection.resize(h);
+    for (auto i = 0; i < h; i++) {
+        selection[i].resize(w);
+        const auto py = y + i;
+        for (auto j = 0; j < w; j++) {
+            const auto px   = x + j;
+            selection[i][j] = (py >= 0 && py < img_h && px >= 0 && px < img_w)
+                                  ? pixels[y + i][x + j]
+                                  : 0;
+        }
+    }
+
+    // Trim empty rows
+    for (auto i = 0; i < selection.size(); i++) {
+        if (selection.row_empty(i)) {
+            y++;
+            h--;
+        } else break;
+    }
+    if (h == 0) {
+        // Update selection
+        ui->spin_img_width->setValue(0);
+        ui->spin_img_height->setValue(0);
+        redraw(pixels);
+    }
+    for (auto i = selection.size() - 1; i >= 0; i--) {
+        if (selection.row_empty(i)) h--;
+        else break;
+    }
+    // Trim empty columns
+    for (auto i = 0; i < selection[0].size(); i++) {
+        if (selection.column_empty(i)) {
+            x++;
+            w--;
+        } else break;
+    }
+    for (auto i = selection[0].size() - 1; i >= 0; i--) {
+        if (selection.column_empty(i)) w--;
+        else break;
+    }
+
+    // Update selection
+    ui->spin_img_pos_x->setValue(x);
+    ui->spin_img_pos_y->setValue(y);
+    ui->spin_img_width->setValue(w);
+    ui->spin_img_height->setValue(h);
+    redraw(pixels);
+}
 
 void MainWindow::on_spin_img_pos_x_valueChanged(int new_value) {
     const auto image_lwi =
@@ -198,6 +274,37 @@ void MainWindow::load_images(QStringList path_list) {
 }
 
 void MainWindow::on_bt_image_col_clicked(ColorButton* const button) {}
+
+void MainWindow::import_image_as_sprite(
+    const PixelMap& pixels,
+    const short     x,
+    const short     y,
+    const ushort    w,
+    const ushort    h
+) {
+    // Add new sprite import
+    if (_current_sprite_import != nullptr) delete _current_sprite_import;
+    _current_sprite_import = new Sprite();
+    _current_sprite_import->from_image(pixels, x, y, w, h);
+
+    // Set it's palette
+    _current_sprite_import_palette.size = _image_palette.size();
+    for (auto i = 0; i < _image_palette.size(); i++)
+        _current_sprite_import_palette[i] = _image_palette[i].display;
+
+    // Add layer to sprite view
+    ui->gv_sprite->add_sprite(
+        *_current_sprite_import,
+        _current_sprite_import_palette,
+        1.0f - ui->slider_transparency->value() / 100.0f
+    );
+
+    // Update UI
+    ui->spin_sprite_pos_x->setValue(_current_sprite_import->x_pos);
+    ui->spin_sprite_pos_y->setValue(_current_sprite_import->y_pos);
+    ui->spin_sprite_width->setValue(_current_sprite_import->width);
+    ui->spin_sprite_height->setValue(_current_sprite_import->height);
+}
 
 void MainWindow::set_image_edit_enabled(bool enabled) {
     ui->bt_delete_image->setEnabled(enabled);

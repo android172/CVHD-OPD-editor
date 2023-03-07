@@ -2,9 +2,6 @@
 
 #include "util.h"
 
-bool row_empty(QVector<uchar>& row);
-bool column_empty(QVector<QVector<uchar>>& pixels, uchar column);
-
 // ///////////////////// //
 // SPRITE PUBLIC METHODS //
 // ///////////////////// //
@@ -39,11 +36,11 @@ void Sprite::initialize() {
 }
 
 void Sprite::from_image(
-    const QVector<QVector<uchar>>& pixels_in,
-    const short                    x_pos_in,
-    const short                    y_pos_in,
-    const ushort                   width_in,
-    const ushort                   height_in
+    const PixelMap& pixels_in,
+    const short     x_pos_in,
+    const short     y_pos_in,
+    const ushort    width_in,
+    const ushort    height_in
 ) {
     // Update width and height
     height = height_in;
@@ -189,13 +186,13 @@ void Sprite::trim() {
 void Sprite::trim_empty_pixels() {
     // Trim height
     while (pixels.size() > 0) {
-        if (row_empty(pixels.first())) {
+        if (pixels.row_empty(0)) {
             pixels.pop_front();
             y_pos--;
         } else break;
     }
     while (pixels.size() > 0) {
-        if (row_empty(pixels.last())) {
+        if (pixels.row_empty(pixels.size() - 1)) {
             pixels.pop_back();
         } else break;
     }
@@ -205,31 +202,16 @@ void Sprite::trim_empty_pixels() {
         return;
     }
     while (pixels[0].size() > 0) {
-        if (column_empty(pixels, 0)) {
+        if (pixels.column_empty(0)) {
             for (auto& row : pixels)
                 row.pop_front();
             x_pos--;
         } else break;
     }
     while (pixels[0].size() > 0) {
-        if (column_empty(pixels, pixels[0].size() - 1)) {
+        if (pixels.column_empty(pixels[0].size() - 1)) {
             for (auto& row : pixels)
                 row.pop_back();
         } else break;
     }
-}
-
-// /////////////////////// //
-// SPRITE HELPER FUNCTIONS //
-// /////////////////////// //
-
-bool row_empty(QVector<uchar>& row) {
-    for (const auto& pixel : row)
-        if (pixel != 0) return false;
-    return true;
-}
-bool column_empty(QVector<QVector<uchar>>& pixels, uchar column) {
-    for (auto i = 0; i < pixels.size(); i++)
-        if (pixels[i][column] != 0) return false;
-    return true;
 }

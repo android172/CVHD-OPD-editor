@@ -18,17 +18,17 @@ struct Sprite {
     ushort width;
     ushort height;
 
-    QVector<QVector<uchar>> pixels;
+    PixelMap pixels;
 
     bool operator==(const Sprite& other) const;
 
     void initialize();
     void from_image(
-        const QVector<QVector<uchar>>& pixels,
-        const short                    x_pos,
-        const short                    y_pos,
-        const ushort                   width,
-        const ushort                   height
+        const PixelMap& pixels,
+        const short     x_pos,
+        const short     y_pos,
+        const ushort    width,
+        const ushort    height
     );
     void from_frame_parts(const QVector<FramePartPtr>& frame_parts);
 

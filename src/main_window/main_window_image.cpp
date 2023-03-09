@@ -114,7 +114,30 @@ void MainWindow::on_bt_import_all_clicked() {
     import_image_as_sprite(pixels, x, y, w, h);
 }
 
-void MainWindow::on_bt_import_palette_clicked() {}
+void MainWindow::on_bt_import_palette_clicked() {
+    // Get current palette
+    const auto palette_index   = _current_sprite_palette.index;
+    auto&      current_palette = _opd->palettes[palette_index];
+
+    // Update colors
+    current_palette.size = _image_palette.size();
+    for (auto i = 0; i < _image_palette.size(); i++)
+        current_palette[i] = _image_palette[i].display;
+
+    // Update current palette
+    _current_sprite_palette = current_palette;
+    bt_sprite_col_ALL(clear_color());
+    bt_sprite_col_ALL(set_color());
+    ui->gv_sprite->show_sprite(*_current_sprite, _current_sprite_palette);
+
+    // Keep import if applicable
+    if (_current_sprite_import)
+        ui->gv_sprite->add_sprite(
+            *_current_sprite_import,
+            _current_sprite_import_palette,
+            1.0f - ui->slider_transparency->value() / 100.0f
+        );
+}
 
 void MainWindow::on_bt_image_trim_clicked() {
     check_if_valid(_current_sprite);

@@ -33,20 +33,10 @@ void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Plus) scale(1.1, 1.1);
     else if (event->key() == Qt::Key_Minus) scale(0.9, 0.9);
     else if (_current_mode == ControlMode::Move && !_in_move_mode) {
-        if (_moving_object == nullptr) return;
-        if (event->key() == Qt::Key_Up) {
-            _moving_object->moveBy(0, -1);
-            _on_move_preformed(0, -1);
-        } else if (event->key() == Qt::Key_Down) {
-            _moving_object->moveBy(0, 1);
-            _on_move_preformed(0, 1);
-        } else if (event->key() == Qt::Key_Left) {
-            _moving_object->moveBy(-1, 0);
-            _on_move_preformed(-1, 0);
-        } else if (event->key() == Qt::Key_Right) {
-            _moving_object->moveBy(1, 0);
-            _on_move_preformed(1, 0);
-        }
+        if (event->key() == Qt::Key_Up) _on_move_preformed(0, -1);
+        else if (event->key() == Qt::Key_Down) _on_move_preformed(0, 1);
+        else if (event->key() == Qt::Key_Left) _on_move_preformed(-1, 0);
+        else if (event->key() == Qt::Key_Right) _on_move_preformed(1, 0);
     }
 }
 
@@ -70,8 +60,6 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             _selection_x_line = nullptr;
             _selection_y_line = nullptr;
         } else if (_current_mode == ControlMode::Move) {
-            if (_moving_object == nullptr) return;
-
             // Get pivot
             _move_pivot   = mapToScene(event->pos()).toPoint();
             _in_move_mode = true;
@@ -101,8 +89,6 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
         }
     } else if (_current_mode == ControlMode::Move) {
         if (_in_move_mode) {
-            if (_moving_object == nullptr) return;
-
             // Get distance traveled
             const auto end_point = mapToScene(event->pos()).toPoint();
             const auto delta_x   = end_point.x() - _move_pivot.x();
@@ -113,7 +99,6 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
             _move_pivot.setY(end_point.y());
 
             // Move current object
-            _moving_object->moveBy(delta_x, delta_y);
             _on_move_preformed(delta_x, delta_y);
         }
     }
@@ -177,7 +162,6 @@ void GraphicsViewer::show_frame(const Frame& frame) {
         if (!hitbox_visible && part.index == current_index) {
             // Show currently selected frame part
             // Only visible if move control mode is active
-            _moving_object = pixmap_gpi;
             add_selection(
                 part.x_offset,
                 part.y_offset,
@@ -204,7 +188,6 @@ void GraphicsViewer::show_frame(const Frame& frame) {
             // Show currently selected hitbox
             // Only visible if move control mode is active
             if (hitbox.index == current_index) {
-                _moving_object = hitbox_rectangle;
                 add_selection(
                     hitbox.x_position,
                     hitbox.y_position,
@@ -222,13 +205,19 @@ void GraphicsViewer::show_frame(const Frame& frame) {
 
 void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
     auto scene = this->scene();
+    clear_state();
     scene->clear();
 
     if (sprite.width == 0 || sprite.height == 0) return;
 
+    // Get pixmap
     const auto pixmap =
         QPixmap::fromImage(sprite.to_image(palette, with_background));
     const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
+
+    // Show as currently selected if in MOVE mode
+    add_selection(0, 0, sprite.width, sprite.height);
+    _selection_rect->setVisible(_current_mode == ControlMode::Move);
 
     scene->addItem(pixmap_gpi);
 }
@@ -290,12 +279,18 @@ void GraphicsViewer::add_sprite(
     const Sprite& sprite, const Palette& palette, const float alpha
 ) {
     auto scene = this->scene();
+    clear_state();
 
     if (sprite.width == 0 || sprite.height == 0) return;
 
+    // Compute pixmap
     const auto pixmap =
         QPixmap::fromImage(sprite.to_image(palette, with_background, alpha));
     const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
+
+    // Show as currently selected if in MOVE mode
+    add_selection(0, 0, sprite.width, sprite.height);
+    _selection_rect->setVisible(_current_mode == ControlMode::Move);
 
     scene->addItem(pixmap_gpi);
 }
@@ -415,7 +410,4 @@ void GraphicsViewer::clear_state() {
         delete _selection_rect;
         _selection_rect = nullptr;
     }
-
-    // Clear moving object
-    if (_moving_object) _moving_object = nullptr;
 }

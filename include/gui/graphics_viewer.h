@@ -72,7 +72,6 @@ class GraphicsViewer : public QGraphicsView {
     std::function<void(short, short)> _on_move_preformed;
     bool                              _in_move_mode = false;
     QPoint                            _move_pivot {};
-    QGraphicsItem*                    _moving_object = nullptr;
 
     void clear_state();
 };

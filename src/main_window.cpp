@@ -55,8 +55,8 @@ MainWindow::MainWindow(QWidget* parent)
     });
     connect(bt_change_mode_sprite, &QPushButton::clicked, this, [=]() {
         on_bt_change_mode_clicked(bt_change_mode_sprite);
-        if (bt_change_mode_sprite->isChecked()) on_activate_frame_move_mode();
-        else ui->gv_frame->activate_pan();
+        if (bt_change_mode_sprite->isChecked()) on_activate_sprite_move_mode();
+        else ui->gv_sprite->activate_pan();
     });
 
     // TODO: Temporary

@@ -113,6 +113,23 @@ void MainWindow::on_bt_sprite_trim_clicked() {
 }
 void MainWindow::on_bt_merge_layers_clicked() {
     check_if_valid(_current_sprite);
+    if (_current_sprite_import == nullptr) return;
+
+    // Replace sprite
+    *_current_sprite = *_current_sprite_import;
+
+    // Get current palette
+    const auto palette_index   = _current_sprite_palette.index;
+    auto&      current_palette = _opd->palettes[palette_index];
+
+    // Replace palette
+    current_palette         = _current_sprite_import_palette;
+    _current_sprite_palette = _current_sprite_import_palette;
+    bt_sprite_col_ALL(clear_color());
+    bt_sprite_col_ALL(set_color());
+
+    // Redraw
+    redraw;
 }
 void MainWindow::on_bt_save_sprite_clicked() {
     check_if_valid(_current_sprite);
@@ -209,8 +226,12 @@ void MainWindow::on_cb_sprite_palette_currentIndexChanged(int new_index) {
 
     // Set current palette
     _current_sprite_palette = _opd->palettes[new_index];
+    bt_sprite_col_ALL(clear_color());
     bt_sprite_col_ALL(set_color());
     redraw;
+
+    // Keep import if applicable
+    if (_current_sprite_import) draw_import;
 }
 
 // -----------------------------------------------------------------------------
@@ -249,7 +270,10 @@ void MainWindow::load_sprite(const SpritePtr sprite) {
     _current_sprite = sprite;
 
     // Clear import sprite
-    if (_current_sprite_import) delete _current_sprite_import;
+    if (_current_sprite_import) {
+        delete _current_sprite_import;
+        _current_sprite_import = nullptr;
+    }
 
     // Update ui
     redraw;
@@ -293,4 +317,46 @@ void MainWindow::set_sprite_edit_enabled(bool enabled) {
     ui->spin_sprite_height->setEnabled(enabled);
 }
 
-void MainWindow::on_activate_sprite_move_mode() {}
+void MainWindow::on_activate_sprite_move_mode() {
+    ui->gv_sprite->activate_move([=](short dx, short dy) {
+        check_if_valid(_current_sprite);
+
+        if (_current_sprite_import != nullptr) {
+            // Cap min width and height
+            if (_current_sprite_import->width + dx <= 0)
+                dx = 1 - _current_sprite_import->width;
+            if (_current_sprite_import->height + dy <= 0)
+                dy = 1 - _current_sprite_import->height;
+
+            // Change values
+            _current_sprite_import->x_pos -= dx;
+            _current_sprite_import->y_pos -= dy;
+            _current_sprite_import->width += dx;
+            _current_sprite_import->height += dy;
+
+            // Change their display
+            ui->spin_sprite_pos_x->setValue(_current_sprite_import->x_pos);
+            ui->spin_sprite_pos_y->setValue(_current_sprite_import->y_pos);
+            ui->spin_sprite_width->setValue(_current_sprite_import->width);
+            ui->spin_sprite_height->setValue(_current_sprite_import->height);
+        } else {
+            // Cap min width and height
+            if (_current_sprite->width + dx <= 0)
+                dx = 1 - _current_sprite->width;
+            if (_current_sprite->height + dy <= 0)
+                dy = 1 - _current_sprite->height;
+
+            // Change values
+            _current_sprite->x_pos -= dx;
+            _current_sprite->y_pos -= dy;
+            _current_sprite->width += dx;
+            _current_sprite->height += dy;
+
+            // Change their display
+            ui->spin_sprite_pos_x->setValue(_current_sprite->x_pos);
+            ui->spin_sprite_pos_y->setValue(_current_sprite->y_pos);
+            ui->spin_sprite_width->setValue(_current_sprite->width);
+            ui->spin_sprite_height->setValue(_current_sprite->height);
+        }
+    });
+}

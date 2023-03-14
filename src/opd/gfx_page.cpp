@@ -40,3 +40,27 @@ void GFXPage::initialize() {
         }
     }
 }
+
+QImage GFXPage::to_image(const Palette& palette, bool with_background) const {
+
+    QImage image = QImage(width, height, QImage::Format_RGBA8888);
+
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            // Compute color index
+            const auto color_index = pixels[i][j];
+
+            // Get color from index
+            const auto color = palette.get_color(color_index);
+
+            // Compute alpha
+            const uchar alpha = (with_background || color_index) ? 0xff : 0x00;
+
+            // Set pixel
+            const QColor q_color { color.r, color.g, color.b, alpha };
+            image.setPixel(j, i, q_color.rgba());
+        }
+    }
+
+    return image;
+}

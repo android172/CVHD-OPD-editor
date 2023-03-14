@@ -4,8 +4,6 @@
 #include "gfx_page.h"
 #include "frame.h"
 
-#include <QImage>
-
 struct Sprite {
     ushort index = (ushort) -1;
 

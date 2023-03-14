@@ -5,14 +5,9 @@
 
 #include <QFileDialog>
 
-#define redraw(pixels)                                                         \
-    ui->gv_image->show_image(pixels, _image_palette);                          \
-    ui->gv_image->add_selection(                                               \
-        ui->spin_img_pos_x->value(),                                           \
-        ui->spin_img_pos_y->value(),                                           \
-        ui->spin_img_width->value(),                                           \
-        ui->spin_img_height->value()                                           \
-    )
+const QVector<QString> MainWindow::supported_image_formats {
+    "png", "jpg", "jpeg", "jpe", "bmp", "tif", "tiff", "tga"
+};
 
 QString all_supported_img_formats() {
     QString ret = "Images (";
@@ -32,9 +27,10 @@ QString all_supported_img_formats() {
 void MainWindow::on_list_images_currentItemChanged(
     QListWidgetItem* current, QListWidgetItem* previous
 ) {
-    const auto image_lwi = dynamic_cast<ImageLWI*>(current);
+
+    const auto image_lwi = dynamic_cast<ImageLwi*>(current);
     if (image_lwi == nullptr) return;
-    redraw(image_lwi->pixels());
+    redraw_image(image_lwi->pixels());
 }
 
 void MainWindow::on_bt_import_image_clicked() {
@@ -56,12 +52,14 @@ void MainWindow::on_bt_delete_image_clicked() {
     if (ui->list_images->count() == 0) {
         ui->gv_image->clear();
         set_image_edit_enabled(false);
+        bt_image_col_ALL(clear_color());
     }
 }
 void MainWindow::on_bt_delete_all_images_clicked() {
     ui->list_images->clear();
     ui->gv_image->clear();
     set_image_edit_enabled(false);
+    bt_image_col_ALL(clear_color());
 }
 
 void MainWindow::on_bt_select_rect_clicked() {
@@ -87,7 +85,7 @@ void MainWindow::on_bt_import_selected_clicked() {
 
     // Get current image
     const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+        dynamic_cast<ImageLwi*>(ui->list_images->currentItem());
     if (image_lwi == nullptr) return;
 
     // Import image as sprite
@@ -98,7 +96,7 @@ void MainWindow::on_bt_import_all_clicked() {
 
     // Get current image
     const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+        dynamic_cast<ImageLwi*>(ui->list_images->currentItem());
     if (image_lwi == nullptr) return;
     const auto pixels = image_lwi->pixels();
 
@@ -115,28 +113,9 @@ void MainWindow::on_bt_import_all_clicked() {
 }
 
 void MainWindow::on_bt_import_palette_clicked() {
-    // Get current palette
-    const auto palette_index   = _current_sprite_palette.index;
-    auto&      current_palette = _opd->palettes[palette_index];
-
-    // Update colors
-    current_palette.size = _image_palette.size();
-    for (auto i = 0; i < _image_palette.size(); i++)
-        current_palette[i] = _image_palette[i].display;
-
-    // Update current palette
-    _current_sprite_palette = current_palette;
-    bt_sprite_col_ALL(clear_color());
-    bt_sprite_col_ALL(set_color());
-    ui->gv_sprite->show_sprite(*_current_sprite, _current_sprite_palette);
-
-    // Keep import if applicable
-    if (_current_sprite_import)
-        ui->gv_sprite->add_sprite(
-            *_current_sprite_import,
-            _current_sprite_import_palette,
-            1.0f - ui->slider_transparency->value() / 100.0f
-        );
+    update_palettes(
+        _current_sprite_palette.index, _current_image_palette.display
+    );
 }
 
 void MainWindow::on_bt_image_trim_clicked() {
@@ -144,7 +123,7 @@ void MainWindow::on_bt_image_trim_clicked() {
 
     // Get current image
     const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
+        dynamic_cast<ImageLwi*>(ui->list_images->currentItem());
     if (image_lwi == nullptr) return;
     const auto& pixels = image_lwi->pixels();
 
@@ -186,7 +165,7 @@ void MainWindow::on_bt_image_trim_clicked() {
         // Update selection
         ui->spin_img_width->setValue(0);
         ui->spin_img_height->setValue(0);
-        redraw(pixels);
+        redraw_image(image_lwi->pixels());
     }
     for (auto i = selection.size() - 1; i >= 0; i--) {
         if (selection.row_empty(i)) h--;
@@ -209,32 +188,20 @@ void MainWindow::on_bt_image_trim_clicked() {
     ui->spin_img_pos_y->setValue(y);
     ui->spin_img_width->setValue(w);
     ui->spin_img_height->setValue(h);
-    redraw(pixels);
+    redraw_image(image_lwi->pixels());
 }
 
 void MainWindow::on_spin_img_pos_x_valueChanged(int new_value) {
-    const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
-    if (image_lwi == nullptr) return;
-    redraw(image_lwi->pixels());
+    redraw_image();
 }
 void MainWindow::on_spin_img_pos_y_valueChanged(int new_value) {
-    const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
-    if (image_lwi == nullptr) return;
-    redraw(image_lwi->pixels());
+    redraw_image();
 }
 void MainWindow::on_spin_img_width_valueChanged(int new_value) {
-    const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
-    if (image_lwi == nullptr) return;
-    redraw(image_lwi->pixels());
+    redraw_image();
 }
 void MainWindow::on_spin_img_height_valueChanged(int new_value) {
-    const auto image_lwi =
-        dynamic_cast<ImageLWI*>(ui->list_images->currentItem());
-    if (image_lwi == nullptr) return;
-    redraw(image_lwi->pixels());
+    redraw_image();
 }
 
 // -----------------------------------------------------------------------------
@@ -263,15 +230,19 @@ void MainWindow::load_images(QStringList path_list) {
         // Initialize if necessary
         if (list->count() == 0) {
             set_image_edit_enabled(true);
-            setup_image_palette(image);
+            _current_image_palette.original.size = 0;
+            _current_image_palette.display.size  = 0;
+            _current_image_palette.compute_from_image(image, _color_index);
 
+            // Setup button colors
+            bt_image_col_ALL(clear_color());
             bt_image_col_ALL(set_color());
-        } else if (_image_palette.size() < 16) {
-            update_image_palette(image);
+        } else if (_current_image_palette.original.size < 16) {
+            _current_image_palette.compute_from_image(image, _color_index);
 
             // Inform images of changed palette
             for (int i = 0; i < ui->list_images->count(); i++) {
-                auto image = dynamic_cast<ImageLWI*>(ui->list_images->item(i));
+                auto image = dynamic_cast<ImageLwi*>(ui->list_images->item(i));
                 image->update_color();
             }
 
@@ -281,7 +252,7 @@ void MainWindow::load_images(QStringList path_list) {
 
         // Save to image list
         const QString image_name = file_path.split('/').last();
-        const auto image_item = new ImageLWI(image_name, image, &_color_index);
+        const auto image_item = new ImageLwi(image_name, image, &_color_index);
         list->addItem(image_item);
     }
 
@@ -296,7 +267,18 @@ void MainWindow::load_images(QStringList path_list) {
     }
 }
 
-void MainWindow::on_bt_image_col_clicked(ColorButton* const button) {}
+void MainWindow::on_bt_image_col_clicked(PaletteButton* const button) {
+    if (button->color_index >= _current_image_palette.display.size) return;
+
+    // Compute new color
+    prompt_color_dialog(_current_image_palette.display[button->color_index]);
+
+    // Setup button color
+    button->set_color();
+
+    // Redraw frame
+    redraw_image();
+}
 
 void MainWindow::import_image_as_sprite(
     const PixelMap& pixels,
@@ -311,9 +293,9 @@ void MainWindow::import_image_as_sprite(
     _current_sprite_import->from_image(pixels, x, y, w, h);
 
     // Set it's palette
-    _current_sprite_import_palette.size = _image_palette.size();
-    for (auto i = 0; i < _image_palette.size(); i++)
-        _current_sprite_import_palette[i] = _image_palette[i].display;
+    _current_sprite_import_palette.size = _current_image_palette.display.size;
+    for (auto i = 0; i < _current_image_palette.display.size; i++)
+        _current_sprite_import_palette[i] = _current_image_palette.display[i];
 
     // Add layer to sprite view
     ui->gv_sprite->add_sprite(
@@ -342,4 +324,21 @@ void MainWindow::set_image_edit_enabled(bool enabled) {
     ui->spin_img_width->setEnabled(enabled);
     ui->spin_img_height->setEnabled(enabled);
     bt_image_col_ALL(setEnabled(enabled));
+}
+
+void MainWindow::redraw_image(const PixelMap pixels) {
+    ui->gv_image->show_image(pixels, _current_image_palette.display);
+    ui->gv_image->add_selection(
+        ui->spin_img_pos_x->value(),
+        ui->spin_img_pos_y->value(),
+        ui->spin_img_width->value(),
+        ui->spin_img_height->value()
+    );
+}
+
+void MainWindow::redraw_image() {
+    const auto image_lwi =
+        dynamic_cast<ImageLwi*>(ui->list_images->currentItem());
+    if (image_lwi == nullptr) return;
+    redraw_image(image_lwi->pixels());
 }

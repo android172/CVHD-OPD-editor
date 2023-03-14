@@ -9,17 +9,10 @@ struct Color {
     uchar b;
 
     bool operator==(const Color& other) const;
+    bool operator<(const Color& other) const;
 
     QString to_hex();
 };
 uint qHash(const Color& key, uint seed = 0);
-
-struct ColorPair {
-    Color original;
-    Color display;
-
-    bool operator==(const ColorPair& other) const;
-    bool operator<(const ColorPair& other) const;
-};
 
 #endif // __COLOR_H__

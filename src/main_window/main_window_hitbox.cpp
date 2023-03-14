@@ -34,7 +34,7 @@ void MainWindow::on_bt_add_hitbox_clicked() {
     list->setCurrentItem(hitbox_lwi);
 
     // Redraw frame
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 }
 void MainWindow::on_bt_remove_hitbox_clicked() {
     check_if_valid(_current_hitbox);
@@ -60,7 +60,7 @@ void MainWindow::on_bt_remove_hitbox_clicked() {
         hitbox.index = index++;
 
     // Redraw frame
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 }
 void MainWindow::on_bt_hitbox_up_clicked() {
     check_if_valid(_current_hitbox);
@@ -94,7 +94,7 @@ void MainWindow::on_bt_hitbox_up_clicked() {
     if (_in_animation) stop_animation();
 
     // Redraw frame
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 }
 void MainWindow::on_bt_hitbox_down_clicked() {
     check_if_valid(_current_hitbox);
@@ -129,14 +129,14 @@ void MainWindow::on_bt_hitbox_down_clicked() {
     if (_in_animation) stop_animation();
 
     // Redraw frame
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 }
 
 #define change_hitbox_value(attribute, new_value)                              \
     check_if_valid(_current_hitbox);                                           \
     _current_hitbox->attribute = new_value;                                    \
     if (_in_animation) stop_animation();                                       \
-    ui->gv_frame->show_frame(*_current_frame)
+    redraw_frame()
 
 void MainWindow::on_spin_hitbox_pos_x_valueChanged(int new_value) {
     change_hitbox_value(x_position, new_value);
@@ -179,7 +179,7 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
 
     // Redraw
     ui->gv_frame->current_index = _current_hitbox->index;
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 
     // Enable editing
     set_hitbox_edit_enabled(true);

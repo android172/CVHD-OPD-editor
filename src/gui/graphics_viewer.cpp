@@ -223,7 +223,7 @@ void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
 }
 
 void GraphicsViewer::show_image(
-    const PixelMap& pixels, const QVector<ColorPair>& palette
+    const PixelMap& pixels, const Palette& palette
 ) {
     auto scene = this->scene();
     activate_pan();
@@ -243,22 +243,31 @@ void GraphicsViewer::show_image(
             const auto color_index = pixels[i][j];
 
             // Get color from index
-            Color color;
-            if (color_index <= palette.size())
-                color = palette[color_index].display;
-            else
-                color = { (uchar) (color_index * 17),
-                          (uchar) (color_index * 17),
-                          (uchar) (color_index * 17) };
+            const auto color = palette.get_color(color_index);
 
             // Compute alpha
-            uchar alpha = (with_background || color_index) ? 0xff : 0x00;
+            const uchar alpha = (with_background || color_index) ? 0xff : 0x00;
 
             // Set pixel
-            QColor q_color { color.r, color.g, color.b, alpha };
+            const QColor q_color { color.r, color.g, color.b, alpha };
             image.setPixel(j, i, q_color.rgba());
         }
     }
+
+    // Get pixmap from image
+    const auto pixmap     = QPixmap::fromImage(image);
+    const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
+
+    // Show
+    scene->addItem(pixmap_gpi);
+}
+
+void GraphicsViewer::show_csr(const GFXPage& csr, const Palette& palette) {
+    auto scene = this->scene();
+    scene->clear();
+
+    // Compute image
+    const QImage image = csr.to_image(palette, with_background);
 
     // Get pixmap from image
     const auto pixmap     = QPixmap::fromImage(image);

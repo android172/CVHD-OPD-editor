@@ -25,8 +25,7 @@ void NewPartDialog::on_list_sprites_currentItemChanged(
 }
 
 void NewPartDialog::on_cb_palette_currentIndexChanged(int new_index) {
-    selected_palette = _opd->palettes.begin();
-    std::advance(selected_palette, new_index);
+    selected_palette = get_it_at(_opd->palettes, new_index);
     ui->gv_sprite->show_sprite(*selected_sprite, *selected_palette);
 }
 

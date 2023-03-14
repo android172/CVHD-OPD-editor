@@ -7,17 +7,17 @@
 #include "opd/opd_types.h"
 
 // Image list widget item
-class ImageLWI : public QListWidgetItem {
+class ImageLwi : public QListWidgetItem {
   public:
-    ImageLWI(
-        const QString&           name,
-        const QImage&            image,
-        QHash<Color, int>* const color_map
+    ImageLwi(
+        const QString&             name,
+        const QImage&              image,
+        QHash<Color, uchar>* const color_map
     )
         : QListWidgetItem(name), name(name), _imported_image(image),
           _color_map(color_map) {
         _pixels.resize(_imported_image.width());
-        for (int i = 0; i < _imported_image.width(); ++i)
+        for (auto i = 0; i < _imported_image.width(); ++i)
             _pixels[i].resize(_imported_image.height());
     }
 
@@ -32,13 +32,13 @@ class ImageLWI : public QListWidgetItem {
   private:
     bool _is_up_to_date = false;
 
-    QHash<Color, int>* const _color_map;
-    const QImage             _imported_image;
-    PixelMap                 _pixels;
+    QHash<Color, uchar>* const _color_map;
+    const QImage               _imported_image;
+    PixelMap                   _pixels;
 
     void compute_pixels() {
-        for (int i = 0; i < _imported_image.width(); ++i) {
-            for (int j = 0; j < _imported_image.height(); ++j) {
+        for (auto i = 0; i < _imported_image.width(); ++i) {
+            for (auto j = 0; j < _imported_image.height(); ++j) {
                 QColor pixel { _imported_image.pixel(j, i) };
                 Color  color  = { (uchar) pixel.red(),
                                   (uchar) pixel.green(),

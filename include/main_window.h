@@ -8,7 +8,6 @@
 #include <QMainWindow>
 #include <QPushButton>
 
-#include "color_button.h"
 #include "gui/graphics_viewer.h"
 #include "gui/palette_button.h"
 #include "opd/opd.h"
@@ -44,14 +43,20 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
   public:
+    // Static
+    static const QVector<QString> supported_image_formats;
+
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
-
-    static const QVector<QString> supported_image_formats;
 
   private slots:
     // General
     void on_bt_import_opd_clicked();
+    // Drag and drop
+    void dropEvent(QDropEvent*);
+    void dragEnterEvent(QDragEnterEvent*);
+    void dragMoveEvent(QDragMoveEvent*);
+    void dragLeaveEvent(QDragLeaveEvent*);
 
     // Animations
     void on_tree_animations_itemPressed(QTreeWidgetItem* current, int);
@@ -148,52 +153,32 @@ class MainWindow : public QMainWindow {
     // Image palette buttons
     COL_SLOTS(bt_image_col, clicked);
 
-    // TODO: Sort old
-    // Image control
-    void on_bt_import_images_clicked();
-    void on_bt_delete_selected_clicked();
-    void on_bt_delete_all_clicked();
-    void on_list_images_2_itemPressed(QListWidgetItem* current);
-    void on_list_images_2_currentItemChanged(
-        QListWidgetItem* current, QListWidgetItem* previous
-    );
-
-    // Drag and drop
-    void dropEvent(QDropEvent*);
-    void dragEnterEvent(QDragEnterEvent*);
-    void dragMoveEvent(QDragMoveEvent*);
-    void dragLeaveEvent(QDragLeaveEvent*);
-
-    // Palette control
-    void on_cb_color_set_textActivated(QString color_set);
-    COL_SLOTS(bt_col, clicked);
-    COL_SLOTS(bt_col, right_clicked);
-
-    // Col
-    void on_bt_import_col_clicked();
-    void on_bt_palette_to_col_clicked();
-    void on_bt_save_col_clicked();
-    COL_SLOTS(bt_icol, clicked);
-
-    // Csr control
-    void on_bt_import_csr_clicked();
-    void on_bt_delete_sel_csr_clicked();
-    void on_bt_delete_all_csr_clicked();
-    void on_bt_image_to_csr_clicked();
-    void on_bt_export_csr_clicked();
-    void on_list_csrs_itemPressed(QListWidgetItem* current);
+    // CSRs
     void on_list_csrs_currentItemChanged(
         QListWidgetItem* current, QListWidgetItem* previous
     );
+    void on_bt_export_csr_clicked();
+    void on_bt_save_col_clicked();
+    void on_cb_csr_palette_currentIndexChanged(int new_index);
+    // CSR palette buttons
+    COL_SLOTS(bt_csr_col, clicked);
 
   private:
     Ui::MainWindow* ui;
 
     // Application state
+    // Opd file
     Opd* _opd;
 
+    // Animation state
     bool _in_animation = false;
 
+    // Default load locations
+    QString _default_opd_import_location   = QDir::homePath();
+    QString _default_image_import_location = QDir::homePath();
+
+    // Currently selected
+    GFXPagePtr        _current_csr           = Invalid::gfx_page;
     AnimationPtr      _current_animation     = Invalid::animation;
     AnimationFramePtr _current_anim_frame    = Invalid::animation_frame;
     FramePtr          _current_frame         = Invalid::frame;
@@ -201,20 +186,36 @@ class MainWindow : public QMainWindow {
     HitBoxPtr         _current_hitbox        = Invalid::hitbox;
     SpritePtr         _current_sprite        = Invalid::sprite;
     Sprite*           _current_sprite_import = nullptr;
-    Palette           _current_part_palette {};
-    Palette           _current_sprite_palette {};
-    Palette           _current_sprite_import_palette {};
+
+    // Current palettes
+    Palette     _current_part_palette {};
+    Palette     _current_sprite_palette {};
+    Palette     _current_sprite_import_palette {};
+    Palette     _current_csr_palette {};
+    PalettePair _current_image_palette {};
+
+    QHash<Color, uchar> _color_index {};
 
     // General methods
     void set_general_editing_enabled(bool enabled);
     void import_opd(const QString opd_path);
-    void update_color(Color& color) const;
+    void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
     void on_bt_change_mode_clicked(QPushButton* const button) const;
 
     QPushButton* add_bt_change_mode( //
         GraphicsViewer* const graphics_viewer
     ) const;
+
+    // Color buttons
+    void setup_color_buttons();
+    void update_palettes(
+        const uchar color_set, const uchar index, const Color color
+    );
+    void update_palettes(const uchar color_set, const Palette palette);
+    // (De)Serialization
+    void save_app_state();
+    void load_app_state();
 
     // Animation
     void load_animations();
@@ -232,6 +233,7 @@ class MainWindow : public QMainWindow {
     void set_frame_edit_enabled(bool enabled);
     void set_frame_movement_enabled(bool enabled);
     void on_activate_frame_move_mode();
+    void redraw_frame();
 
     // Frame part
     void load_frame_parts();
@@ -256,10 +258,11 @@ class MainWindow : public QMainWindow {
     void on_bt_sprite_col_clicked(PaletteButton* const button);
     void set_sprite_edit_enabled(bool enabled);
     void on_activate_sprite_move_mode();
+    void redraw_sprite();
 
     // Image
     void load_images(QStringList path_list);
-    void on_bt_image_col_clicked(ColorButton* const button);
+    void on_bt_image_col_clicked(PaletteButton* const button);
     void import_image_as_sprite(
         const PixelMap& pixels,
         const short     x,
@@ -268,53 +271,16 @@ class MainWindow : public QMainWindow {
         const ushort    h
     );
     void set_image_edit_enabled(bool enabled);
+    void redraw_image(const PixelMap pixels);
+    void redraw_image();
 
-    // TODO: OLD
-
-    //  Application state info
-    QString _default_opd_import_location   = QDir::homePath();
-    QString _default_image_import_location = QDir::homePath();
-    QString _default_col_import_location   = QDir::homePath();
-    QString _default_csr_import_location   = QDir::homePath();
-    bool    _image_list_empty              = true;
-    bool    _csr_list_empty                = true;
-    bool    _csr_image_presented           = false;
-
-    QVector<QVector<ColorPair>> _csr_palettes { 8 };
-    QVector<ColorPair>          _csr_palette {};
-
-    QVector<ColorPair> _image_palette {};
-    QHash<Color, int>  _color_index {};
-
-    QString _current_col_path       = "";
-    uint    _current_col_set        = 0;
-    uchar   _current_col_multiplier = 1;
-
-    // State
-    void   initial_load(QImage image);
-    QImage compute_pixel_map(
-        const QVector<QVector<uchar>>& pixels, const QVector<ColorPair>& palette
-    );
-    void save_app_state();
-    void load_app_state();
-
-    // Image control
-    void import_images(QStringList path_list);
-    void set_img_section_enabled(bool is_enabled);
-
-    // CSR control
-    void import_csrs(QStringList path_list);
-    void set_csr_section_enabled(bool is_enabled);
-
-    // Image palette control
-    void setup_image_palette(QImage image);
-    void update_image_palette(QImage image);
-    void on_img_palette_button_clicked(ColorButton* button);
-    void on_img_palette_button_right_clicked(ColorButton* button);
-
-    // CSR palette control (col control)
-    void import_col(QString path);
-    void on_csr_palette_button_clicked(ColorButton* button);
+    // CSR
+    void load_csrs();
+    void load_csr(const GFXPagePtr csr);
+    void clear_csr();
+    void on_bt_csr_col_clicked(PaletteButton* const button);
+    void set_csr_edit_enabled(bool enabled);
+    void redraw_csr();
 };
 
 #define __COL_ACTIVATE__(i, button_set, action) ui->button_set##_##i->action
@@ -325,8 +291,6 @@ class MainWindow : public QMainWindow {
     COL_ACTIVATE_ALL(bt_frame_part_col, action)
 #define bt_sprite_col_ALL(action) COL_ACTIVATE_ALL(bt_sprite_col, action)
 #define bt_image_col_ALL(action) COL_ACTIVATE_ALL(bt_image_col, action)
-
-#define bt_col_ALL(action) COL_ACTIVATE_ALL(bt_col, action)
-#define bt_icol_ALL(action) COL_ACTIVATE_ALL(bt_icol, action)
+#define bt_csr_col_ALL(action) COL_ACTIVATE_ALL(bt_csr_col, action)
 
 #endif // MAIN_WINDOW_H

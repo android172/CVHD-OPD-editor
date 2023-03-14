@@ -218,7 +218,7 @@ void MainWindow::on_tool_box_frame_currentChanged(int current) {
     // Stop playing animation
     if (_in_animation) stop_animation();
 
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
 }
 
 void MainWindow::on_line_frame_name_textEdited(QString new_text) {
@@ -272,7 +272,7 @@ void MainWindow::load_frame(
     ui->spin_frame_delay->setValue(animation_info.delay);
 
     // Frame data
-    ui->gv_frame->show_frame(*_current_frame);
+    redraw_frame();
     ui->line_frame_name->setText(_current_frame->name);
     ui->spin_frame_pos_x->setValue(_current_frame->x_offset);
     ui->spin_frame_pos_y->setValue(_current_frame->y_offset);
@@ -380,3 +380,5 @@ void MainWindow::on_activate_frame_move_mode() {
         }
     });
 }
+
+void MainWindow::redraw_frame() { ui->gv_frame->show_frame(*_current_frame); }

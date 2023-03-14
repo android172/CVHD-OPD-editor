@@ -152,19 +152,15 @@ QImage Sprite::to_image(
                     : pixels[y][x];
 
             // Get color from index
-            Color color;
-            if (color_index <= palette.size) color = palette[color_index];
-            else
-                color = { (uchar) (color_index * 17),
-                          (uchar) (color_index * 17),
-                          (uchar) (color_index * 17) };
+            const auto color = palette.get_color(color_index);
 
             // Compute alpha
-            uchar alpha = (with_background || color_index) ? 0xff : 0x00;
-            alpha *= alpha_multiplier;
+            const uchar alpha = (with_background || color_index)
+                                    ? 0xff * alpha_multiplier
+                                    : 0x00;
 
             // Set pixel
-            QColor q_color { color.r, color.g, color.b, alpha };
+            const QColor q_color { color.r, color.g, color.b, alpha };
             image.setPixel(j, i, q_color.rgba());
         }
     }

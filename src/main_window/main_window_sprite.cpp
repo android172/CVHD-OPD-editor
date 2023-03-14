@@ -6,15 +6,6 @@
 
 #include <QFileDialog>
 
-#define redraw                                                                 \
-    ui->gv_sprite->show_sprite(*_current_sprite, _current_sprite_palette)
-#define draw_import                                                            \
-    ui->gv_sprite->add_sprite(                                                 \
-        *_current_sprite_import,                                               \
-        _current_sprite_import_palette,                                        \
-        1.0f - ui->slider_transparency->value() / 100.0f                       \
-    )
-
 // //////////////////////// //
 // MAIN WINDOW SPRITE SLOTS //
 // //////////////////////// //
@@ -94,8 +85,6 @@ void MainWindow::on_bt_sprite_trim_clicked() {
 
     if (_current_sprite_import != nullptr) {
         _current_sprite_import->trim();
-        redraw;
-        draw_import;
 
         ui->spin_sprite_pos_x->setValue(_current_sprite_import->x_pos);
         ui->spin_sprite_pos_y->setValue(_current_sprite_import->y_pos);
@@ -103,33 +92,31 @@ void MainWindow::on_bt_sprite_trim_clicked() {
         ui->spin_sprite_height->setValue(_current_sprite_import->height);
     } else {
         _current_sprite->trim();
-        redraw;
 
         ui->spin_sprite_pos_x->setValue(_current_sprite->x_pos);
         ui->spin_sprite_pos_y->setValue(_current_sprite->y_pos);
         ui->spin_sprite_width->setValue(_current_sprite->width);
         ui->spin_sprite_height->setValue(_current_sprite->height);
     }
+    redraw_sprite();
 }
 void MainWindow::on_bt_merge_layers_clicked() {
     check_if_valid(_current_sprite);
     if (_current_sprite_import == nullptr) return;
 
     // Replace sprite
-    *_current_sprite = *_current_sprite_import;
-
-    // Get current palette
-    const auto palette_index   = _current_sprite_palette.index;
-    auto&      current_palette = _opd->palettes[palette_index];
+    _current_sprite_import->index = _current_sprite->index;
+    *_current_sprite              = *_current_sprite_import;
 
     // Replace palette
-    current_palette         = _current_sprite_import_palette;
-    _current_sprite_palette = _current_sprite_import_palette;
-    bt_sprite_col_ALL(clear_color());
-    bt_sprite_col_ALL(set_color());
+    _current_sprite_import_palette.index = _current_sprite_palette.index;
+    update_palettes(
+        _current_sprite_palette.index, _current_sprite_import_palette
+    );
 
-    // Redraw
-    redraw;
+    // Clear import
+    delete _current_sprite_import;
+    _current_sprite_import = nullptr;
 }
 void MainWindow::on_bt_save_sprite_clicked() {
     check_if_valid(_current_sprite);
@@ -145,64 +132,48 @@ void MainWindow::on_ch_background_enabled_toggled(bool new_value) {
     check_if_valid(_current_sprite);
 
     ui->gv_sprite->with_background = new_value;
-    redraw;
-    if (_current_sprite_import) draw_import;
+    redraw_sprite();
 }
 void MainWindow::on_slider_transparency_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
-    if (_current_sprite_import == nullptr) return;
-
-    redraw;
-    draw_import;
+    redraw_sprite();
 }
 
 void MainWindow::on_spin_sprite_pos_x_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) {
+    if (_current_sprite_import) //
         _current_sprite_import->x_pos = new_value;
-        redraw;
-        draw_import;
-    } else {
-        _current_sprite->x_pos = new_value;
-        redraw;
-    }
+    else _current_sprite->x_pos = new_value;
+
+    redraw_sprite();
 }
 void MainWindow::on_spin_sprite_pos_y_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) {
+    if (_current_sprite_import) //
         _current_sprite_import->y_pos = new_value;
-        redraw;
-        draw_import;
-    } else {
-        _current_sprite->y_pos = new_value;
-        redraw;
-    }
+    else _current_sprite->y_pos = new_value;
+
+    redraw_sprite();
 }
 void MainWindow::on_spin_sprite_width_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) {
+    if (_current_sprite_import) //
         _current_sprite_import->width = new_value;
-        redraw;
-        draw_import;
-    } else {
-        _current_sprite->width = new_value;
-        redraw;
-    }
+    else _current_sprite->width = new_value;
+
+    redraw_sprite();
 }
 void MainWindow::on_spin_sprite_height_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) {
+    if (_current_sprite_import) //
         _current_sprite_import->height = new_value;
-        redraw;
-        draw_import;
-    } else {
-        _current_sprite->height = new_value;
-        redraw;
-    }
+    else _current_sprite->height = new_value;
+
+    redraw_sprite();
 }
 
 void MainWindow::on_cb_sprite_palette_currentIndexChanged(int new_index) {
@@ -228,10 +199,8 @@ void MainWindow::on_cb_sprite_palette_currentIndexChanged(int new_index) {
     _current_sprite_palette = _opd->palettes[new_index];
     bt_sprite_col_ALL(clear_color());
     bt_sprite_col_ALL(set_color());
-    redraw;
 
-    // Keep import if applicable
-    if (_current_sprite_import) draw_import;
+    redraw_sprite();
 }
 
 // -----------------------------------------------------------------------------
@@ -276,11 +245,11 @@ void MainWindow::load_sprite(const SpritePtr sprite) {
     }
 
     // Update ui
-    redraw;
     ui->spin_sprite_pos_x->setValue(sprite->x_pos);
     ui->spin_sprite_pos_y->setValue(sprite->y_pos);
     ui->spin_sprite_width->setValue(sprite->width);
     ui->spin_sprite_height->setValue(sprite->height);
+    redraw_sprite();
 
     // Enable editing
     set_sprite_edit_enabled(true);
@@ -289,7 +258,10 @@ void MainWindow::clear_sprite() {
     _current_sprite = Invalid::sprite;
 
     // Clear import sprite
-    if (_current_sprite_import) delete _current_sprite_import;
+    if (_current_sprite_import) {
+        delete _current_sprite_import;
+        _current_sprite_import = nullptr;
+    }
 
     // Update ui
     ui->gv_sprite->clear();
@@ -302,7 +274,16 @@ void MainWindow::clear_sprite() {
     set_sprite_edit_enabled(false);
 }
 
-void MainWindow::on_bt_sprite_col_clicked(PaletteButton* const button) {}
+void MainWindow::on_bt_sprite_col_clicked(PaletteButton* const button) {
+    if (button->color_index >= _current_sprite_palette.size) return;
+
+    // Compute new color
+    auto color = _current_sprite_palette[button->color_index];
+    prompt_color_dialog(color);
+
+    // Update palettes
+    update_palettes(_current_sprite_palette.index, button->color_index, color);
+}
 
 void MainWindow::set_sprite_edit_enabled(bool enabled) {
     ui->bt_remove_sprite->setEnabled(enabled);
@@ -359,4 +340,14 @@ void MainWindow::on_activate_sprite_move_mode() {
             ui->spin_sprite_height->setValue(_current_sprite->height);
         }
     });
+}
+
+void MainWindow::redraw_sprite() {
+    ui->gv_sprite->show_sprite(*_current_sprite, _current_sprite_palette);
+    if (_current_sprite_import)
+        ui->gv_sprite->add_sprite(
+            *_current_sprite_import,
+            _current_sprite_import_palette,
+            1.0f - ui->slider_transparency->value() / 100.0f
+        );
 }

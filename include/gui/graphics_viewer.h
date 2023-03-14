@@ -23,7 +23,8 @@ class GraphicsViewer : public QGraphicsView {
 
     void show_frame(const Frame& frame);
     void show_sprite(const Sprite& sprite, const Palette& palette);
-    void show_image(const PixelMap& pixels, const QVector<ColorPair>& palette);
+    void show_image(const PixelMap& pixels, const Palette& palette);
+    void show_csr(const GFXPage& csr, const Palette& palette);
 
     void clear();
 

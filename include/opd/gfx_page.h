@@ -2,8 +2,10 @@
 #define __GFX_PAGE_H__
 
 #include <list>
+#include <QImage>
 
 #include "pixel_map.h"
+#include "palette.h"
 
 struct GFXPage {
   public:
@@ -15,7 +17,8 @@ struct GFXPage {
 
     PixelMap pixels;
 
-    void initialize();
+    void   initialize();
+    QImage to_image(const Palette& palette, bool with_background = false) const;
 
   private:
     ushort _previous_width  = 0;

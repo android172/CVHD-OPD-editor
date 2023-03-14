@@ -2,6 +2,7 @@
 #define __PALETTE_BUTTON_H__
 
 #include <QPushButton>
+
 #include "opd/palette.h"
 
 class PaletteButton : public QPushButton {
@@ -17,6 +18,12 @@ class PaletteButton : public QPushButton {
 
   private:
     Palette* _palette {};
+
+  private slots:
+    void mousePressEvent(QMouseEvent* e);
+
+  signals:
+    void right_clicked();
 };
 
 #endif // __PALETTE_BUTTON_H__

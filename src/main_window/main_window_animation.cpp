@@ -174,7 +174,7 @@ void MainWindow::animate_frame(const Animation& animation, ushort frame_count) {
     const auto frame = get_val_at(animation.frames, frame_count);
 
     // Show current frame
-    ui->gv_frame->show_frame(*frame.data);
+    redraw_frame();
 
     // Update frame count
     frame_count++;

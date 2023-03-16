@@ -7,7 +7,7 @@
 // ///////////////////// //
 
 bool Sprite::operator==(const Sprite& other) const {
-    if (gfx_page != other.gfx_page) return false;
+    if (gfx_page->index != other.gfx_page->index) return false;
     if (gfx_x_pos != other.gfx_x_pos) return false;
     if (gfx_y_pos != other.gfx_y_pos) return false;
     if (width != other.width) return false;

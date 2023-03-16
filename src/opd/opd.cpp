@@ -136,8 +136,10 @@ Opd* Opd::open(const QString& path) {
             sprite.height    = read_type<ushort>(opd_file);
 
             // Handling of invalid gfx pages
-            if (sprite.gfx_page == gfx_pages->end())
+            if (sprite.gfx_page == gfx_pages->end()) {
+                sprite.gfx_page = Invalid::gfx_page;
                 sprite.width = sprite.height = 0;
+            }
 
             // Set sprite
             auto sprite_i = std::find(sprites->begin(), sprites->end(), sprite);
@@ -516,12 +518,6 @@ void Opd::recompute_gfx_pages() {
                              sprite.pixels };
         sprite_copy.fill_margin();
 
-        // If this is the first sprite just add it
-        if (sorted_sprites.size() == 0) {
-            sorted_sprites.push_back(sprite_copy);
-            continue;
-        }
-
         // Add sorted
         auto insert_pos = std::lower_bound(
             sorted_sprites.begin(),
@@ -551,34 +547,33 @@ void Opd::recompute_gfx_pages() {
 
         // If the image couldn't fit into any existing container create new
         if (!place_found) {
+            // Add gfx
             const ushort index = gfx_pages.size();
-            GFXPage      gfx_page {};
-            gfx_page.index = index;
-            gfx_page.name =
-                Opd::csr_base_file_name + "_" + QString::number(index) + ".csr";
-            gfx_page.dir    = dir;
-            gfx_page.width  = 128;
-            gfx_page.height = 128;
+            gfx_pages.push_back({ index,
+                                  Opd::csr_base_file_name + "_" +
+                                      QString::number(index) + ".csr",
+                                  dir,
+                                  128,
+                                  128,
+                                  {} });
+            const auto gfx_page = get_it_at(gfx_pages, gfx_pages.size() - 1);
 
             // Initialize gfx page to empty
-            gfx_page.pixels.resize(gfx_page.height);
-            for (auto i = 0; i < gfx_page.width; i++) {
-                gfx_page.pixels[i].resize(gfx_page.width);
-                for (auto j = 0; j < gfx_page.height; j++)
-                    gfx_page.pixels[i][j] = (uchar) -1;
+            gfx_page->pixels.resize(gfx_page->height);
+            for (auto i = 0; i < gfx_page->width; i++) {
+                gfx_page->pixels[i].resize(gfx_page->width);
+                for (auto j = 0; j < gfx_page->height; j++)
+                    gfx_page->pixels[i][j] = (uchar) -1;
             }
-
-            // Add gfx
-            gfx_pages.push_back(gfx_page);
 
             // Add the image to the container
             const auto sprite_it = get_it_at(sprites, sprite.index);
-            sprite_it->gfx_page  = get_it_at(gfx_pages, gfx_page.index);
+            sprite_it->gfx_page  = gfx_page;
             sprite_it->gfx_x_pos = 0;
             sprite_it->gfx_y_pos = 0;
             for (auto i = 0; i < sprite.height; i++) {
                 for (auto j = 0; j < sprite.width; j++)
-                    gfx_page.pixels[i][j] = sprite.pixels[i][j];
+                    gfx_page->pixels[i][j] = sprite.pixels[i][j];
             }
         }
     }

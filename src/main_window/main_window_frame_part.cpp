@@ -35,6 +35,9 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     const auto sprite  = dialog.selected_sprite;
     const auto palette = dialog.selected_palette;
 
+    // Increment use count
+    sprite->uses++;
+
     // Create new frame part
     const auto new_frame_part =
         _opd->add_new_frame_part(_current_frame, sprite, palette);
@@ -53,6 +56,9 @@ void MainWindow::on_bt_remove_frame_part_clicked() {
     // Get current part lwi
     const auto part_lwi = dynamic_cast<FramePartLwi*>(list->currentItem());
     if (part_lwi == nullptr) return;
+
+    // Decrement sprite use
+    part_lwi->frame_part->sprite->uses--;
 
     // Remove it
     _current_frame->parts.erase(_current_frame_part);
@@ -178,10 +184,12 @@ void MainWindow::on_bt_merge_frame_parts_clicked() {
     // Merge selected frame parts into a new sprite
     const auto new_sprite = _opd->add_new_sprite();
     new_sprite->from_frame_parts(used_frame_parts);
+    new_sprite->uses++;
 
     // Remove now unused frame parts
     for (const auto& lwi : selected_lwi) {
         const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
+        frame_part_lwi->frame_part->sprite->uses--;
         _current_frame->parts.erase(frame_part_lwi->frame_part);
         ui->list_frame_parts->removeItemWidget(frame_part_lwi);
         delete frame_part_lwi;

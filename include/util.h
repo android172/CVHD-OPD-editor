@@ -4,7 +4,7 @@
 
 template<typename Container>
 typename Container::iterator get_it_at(Container& container, std::size_t i) {
-    if (i > std::size(container)) return std::end(container);
+    if (i >= std::size(container)) return std::end(container);
     return std::next(std::begin(container), i);
 }
 

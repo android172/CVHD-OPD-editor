@@ -6,6 +6,7 @@
 
 struct Sprite {
     ushort index = (ushort) -1;
+    ushort uses  = 0;
 
     GFXPagePtr gfx_page;
     ushort     gfx_x_pos;
@@ -36,6 +37,8 @@ struct Sprite {
         float          alpha_multiplier = 1.0f
     ) const;
     void trim();
+
+    void fill_margin();
 
   private:
     void trim_empty_pixels();

@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow {
   private slots:
     // General
     void on_bt_import_opd_clicked();
+    void on_bt_save_opd_clicked();
     // Drag and drop
     void dropEvent(QDropEvent*);
     void dragEnterEvent(QDragEnterEvent*);
@@ -165,6 +166,7 @@ class MainWindow : public QMainWindow {
 
   private:
     Ui::MainWindow* ui;
+    QPushButton*    bt_save = nullptr;
 
     // Application state
     // Opd file
@@ -197,8 +199,9 @@ class MainWindow : public QMainWindow {
     QHash<Color, uchar> _color_index {};
 
     // General methods
-    void set_general_editing_enabled(bool enabled);
     void import_opd(const QString opd_path);
+    void export_opd(const QString opd_path);
+    void set_general_editing_enabled(bool enabled);
     void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
     void on_bt_change_mode_clicked(QPushButton* const button) const;

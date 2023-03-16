@@ -121,6 +121,11 @@ void MainWindow::on_bt_remove_frame_clicked() {
     }
     // Otherwise we remove it completely
     else {
+        // Remove sprite uses
+        for (auto& part : _current_frame->parts)
+            part.sprite->uses--;
+
+        // Remove frame itself
         _opd->frames.erase(_current_frame);
 
         const auto unused_twi = frame_twi->parent();

@@ -15,6 +15,34 @@ MainWindow::MainWindow(QWidget* parent)
     setAcceptDrops(true);
     load_app_state();
 
+    // Additional UI elements
+    // Add save button
+    bt_save = new QPushButton(ui->centralwidget);
+    bt_save->setText("Save OPD");
+    bt_save->move(width() - bt_save->width() - 15, 5);
+    bt_save->show();
+    // Add mode change button where necessary
+    const auto bt_change_mode_frame  = add_bt_change_mode(ui->gv_frame);
+    const auto bt_change_mode_sprite = add_bt_change_mode(ui->gv_sprite);
+
+    // Additional connections
+    connect(
+        bt_save,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::on_bt_save_opd_clicked
+    );
+    connect(bt_change_mode_frame, &QPushButton::clicked, this, [=]() {
+        on_bt_change_mode_clicked(bt_change_mode_frame);
+        if (bt_change_mode_frame->isChecked()) on_activate_frame_move_mode();
+        else ui->gv_frame->activate_pan();
+    });
+    connect(bt_change_mode_sprite, &QPushButton::clicked, this, [=]() {
+        on_bt_change_mode_clicked(bt_change_mode_sprite);
+        if (bt_change_mode_sprite->isChecked()) on_activate_sprite_move_mode();
+        else ui->gv_sprite->activate_pan();
+    });
+
     // Initially disable editing
     set_general_editing_enabled(false);
     set_animation_edit_enabled(false);
@@ -29,34 +57,12 @@ MainWindow::MainWindow(QWidget* parent)
     ui->gv_sprite->with_background = true;
     ui->gv_csr->with_background    = true;
 
-    // Add mode change button where necessary
-    const auto bt_change_mode_frame  = add_bt_change_mode(ui->gv_frame);
-    const auto bt_change_mode_sprite = add_bt_change_mode(ui->gv_sprite);
-
-    connect(bt_change_mode_frame, &QPushButton::clicked, this, [=]() {
-        on_bt_change_mode_clicked(bt_change_mode_frame);
-        if (bt_change_mode_frame->isChecked()) on_activate_frame_move_mode();
-        else ui->gv_frame->activate_pan();
-    });
-    connect(bt_change_mode_sprite, &QPushButton::clicked, this, [=]() {
-        on_bt_change_mode_clicked(bt_change_mode_sprite);
-        if (bt_change_mode_sprite->isChecked()) on_activate_sprite_move_mode();
-        else ui->gv_sprite->activate_pan();
-    });
-
     // TODO: Temporary
     ui->bt_add_animation->setEnabled(false);
     ui->bt_remove_animation->setEnabled(false);
 
     // Setup color buttons
     setup_color_buttons();
-
-    // Add save button
-    auto bt_save = new QPushButton(ui->centralwidget);
-    bt_save->setText("Save OPD");
-    bt_save->move(width() - bt_save->width() - 15, 5);
-    bt_save->setEnabled(false);
-    bt_save->show();
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -71,6 +77,14 @@ void MainWindow::on_bt_import_opd_clicked() {
         this, "Import CSR file", _default_opd_import_location, "CHD_opd (*.opd)"
     );
     import_opd(opd_path);
+}
+void MainWindow::on_bt_save_opd_clicked() {
+    // Save OPD
+    _opd->save();
+
+    // Update CSR page
+    _current_csr = Invalid::gfx_page;
+    load_csrs();
 }
 
 // -----------------------------------------------------------------------------
@@ -141,6 +155,17 @@ void MainWindow::import_opd(const QString opd_path) {
     // Enable editing
     set_general_editing_enabled(true);
 }
+void MainWindow::export_opd(const QString opd_path) {
+    if (opd_path.isEmpty()) return;
+    const auto opd = Opd::open(opd_path);
+}
+
+void MainWindow::set_general_editing_enabled(bool enabled) {
+    ui->tab_main->setTabEnabled(1, enabled);
+    ui->tab_main->setTabEnabled(2, enabled);
+    ui->bt_add_frame->setEnabled(enabled);
+    bt_save->setEnabled(enabled);
+}
 
 void MainWindow::prompt_color_dialog(Color& color) const {
     QColor initial_color { color.r, color.g, color.b };
@@ -149,12 +174,6 @@ void MainWindow::prompt_color_dialog(Color& color) const {
     color = { (uchar) new_color.red(),
               (uchar) new_color.green(),
               (uchar) new_color.blue() };
-}
-
-void MainWindow::set_general_editing_enabled(bool enabled) {
-    ui->tab_main->setTabEnabled(1, enabled);
-    ui->tab_main->setTabEnabled(2, enabled);
-    ui->bt_add_frame->setEnabled(enabled);
 }
 
 void MainWindow::save_PNG(const QImage& image) {
@@ -316,25 +335,3 @@ void MainWindow::load_app_state() {
 
     file.close();
 }
-
-// void MainWindow::on_bt_save_col_clicked() {
-//     // Compute current palette hex
-//     std::string palette_hex {};
-//     for (const auto& color_pair : _csr_palette) {
-//         Color c = color_pair.display;
-//         palette_hex += c.b / _current_col_multiplier;
-//         palette_hex += c.g / _current_col_multiplier;
-//         palette_hex += c.r / _current_col_multiplier;
-//         palette_hex += '\000';
-//     }
-
-//     // Open col file
-//     std::ofstream col_file { _current_col_path.toStdString(),
-//                              std::ios::out | std::ios::binary | std::ios::in
-//                              };
-//     col_file.seekp(0x20 + _current_col_set * 0x40);
-
-//     // Replace color bytes
-//     col_file.write(palette_hex.data(), palette_hex.size());
-//     col_file.close();
-// }

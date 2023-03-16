@@ -20,9 +20,7 @@ struct GFXPage {
     void   initialize();
     QImage to_image(const Palette& palette, bool with_background = false) const;
 
-  private:
-    ushort _previous_width  = 0;
-    ushort _previous_height = 0;
+    void save() const;
 };
 typedef std::list<GFXPage>::iterator GFXPagePtr;
 

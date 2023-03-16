@@ -1,16 +1,14 @@
 #include "opd/gfx_page.h"
 
-#include <fstream>
+#include "file_utils.h"
 
 void GFXPage::initialize() {
     // Update pixel grid size
-    if (width != _previous_width || height != _previous_height) {
-        _previous_height = height;
-        _previous_width  = width;
-        pixels.resize(height);
-        for (auto& row : pixels)
-            row.resize(width);
-    }
+    pixels.resize(height);
+    for (auto& row : pixels)
+        row.resize(width);
+
+    if (height == 0 || width == 0) return;
 
     // Load csr file
     const auto    path = dir + name.toLower();
@@ -63,4 +61,29 @@ QImage GFXPage::to_image(const Palette& palette, bool with_background) const {
     }
 
     return image;
+}
+
+void GFXPage::save() const {
+    // Open new file
+    const auto    path = dir + name.toLower();
+    std::ofstream csr_file { path.toStdString(),
+                             std::ios::out | std::ios::binary };
+    if (!csr_file.is_open())
+        return throw std::runtime_error(
+            "CSR file at path: \"" + path.toStdString() + "\" not found."
+        );
+
+    // Skip unknown lines
+    csr_file.seekp(0x230);
+
+    // Write all pixels
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width / 2; j++) {
+            const uchar pixel =
+                (pixels[i][2 * j] << 4) | (pixels[i][2 * j + 1]);
+            write_type(csr_file, pixel);
+        }
+    }
+
+    csr_file.close();
 }

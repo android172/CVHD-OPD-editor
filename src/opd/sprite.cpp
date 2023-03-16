@@ -175,6 +175,34 @@ void Sprite::trim() {
     width  = (height == 0) ? 0 : pixels[0].size();
 }
 
+void Sprite::fill_margin() {
+    if (width == 0 || height == 0) return;
+
+    // Fill height
+    QVector<uchar> empty_row {};
+    if (pixels.size()) {
+        for (auto i = 0; i < pixels[0].size(); i++)
+            empty_row.push_front(0);
+    }
+    while (y_pos < 0) {
+        pixels.push_front(empty_row);
+        y_pos++;
+    }
+    while (pixels.size() < height)
+        pixels.push_back(empty_row);
+
+    // Fill width
+    while (x_pos < 0) {
+        for (auto& row : pixels)
+            row.push_front(0);
+        x_pos++;
+    }
+    while (pixels[0].size() < width) {
+        for (auto& row : pixels)
+            row.push_back(0);
+    }
+}
+
 // ////////////////////// //
 // SPRITE PRIVATE METHODS //
 // ////////////////////// //

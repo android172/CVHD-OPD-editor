@@ -3,8 +3,13 @@
 #include "file_utils.h"
 #include "util.h"
 
+const QString Opd::original_type      = QString("original");
+const QString Opd::palette_file_name  = QString("palette_modded.col");
+const QString Opd::csr_base_file_name = QString("gfx_page_modded");
+
 // Constructor & Destructor
 Opd::Opd(
+    const QString&                    path,
     std::list<GFXPage>&               gfx_pages,
     std::list<Sprite>&                sprites,
     std::list<Frame>&                 frames,
@@ -12,7 +17,7 @@ Opd::Opd(
     std::array<Palette, palette_max>& palettes,
     uchar                             palette_count
 )
-    : gfx_pages(gfx_pages), sprites(sprites), frames(frames),
+    : _path(path), gfx_pages(gfx_pages), sprites(sprites), frames(frames),
       animations(animations), palettes(palettes), palette_count(palette_count) {
 }
 Opd::~Opd() {}
@@ -54,7 +59,7 @@ Opd* Opd::open(const QString& path) {
     const auto palette_path = file_dir + palette_name;
 
     // Read palettes
-    auto palettes = read_palettes(palette_path);
+    const auto palettes = read_palettes(palette_path);
 
     // === GFX page section ===
     // Parse header
@@ -63,7 +68,7 @@ Opd* Opd::open(const QString& path) {
     opd_file.seekg(gfx_pages_offs + 16);
 
     // Read pages
-    auto gfx_pages = new std::list<GFXPage> {};
+    const auto gfx_pages = new std::list<GFXPage> {};
     for (auto i = 0; i < gfx_count; i++) {
         GFXPage gfx {};
         gfx.index  = i;
@@ -83,13 +88,13 @@ Opd* Opd::open(const QString& path) {
     opd_file.seekg(frames_offs + 16);
 
     // Keeping track of all sprites
-    auto sprites = new std::list<Sprite> {};
+    const auto sprites = new std::list<Sprite> {};
 
     // And of palette count
     auto palette_count = 0;
 
     // Read frames
-    auto frames = new std::list<Frame> {};
+    const auto frames = new std::list<Frame> {};
     for (auto i = 0; i < frame_count; i++) {
         Frame frame {};
         frame.index    = i;
@@ -138,11 +143,13 @@ Opd* Opd::open(const QString& path) {
             auto sprite_i = std::find(sprites->begin(), sprites->end(), sprite);
             if (sprite_i == sprites->end()) {
                 sprite.index = (ushort) sprites->size();
+                sprite.uses  = 0;
                 sprite.initialize();
                 sprites->push_back(sprite);
                 sprite_i = sprites->end();
                 sprite_i--;
             }
+            sprite_i->uses++;
             part.sprite = sprite_i;
 
             // read palette
@@ -180,7 +187,7 @@ Opd* Opd::open(const QString& path) {
     opd_file.seekg(animations_offs + 16);
 
     // Read animations
-    auto animations = new std::list<Animation> {};
+    const auto animations = new std::list<Animation> {};
     for (auto i = 0; i < animation_count; i++) {
         Animation animation {};
         animation.index = i;
@@ -214,11 +221,196 @@ Opd* Opd::open(const QString& path) {
     opd_file.close();
 
     return new Opd(
-        *gfx_pages, *sprites, *frames, *animations, *palettes, palette_count
+        path,
+        *gfx_pages,
+        *sprites,
+        *frames,
+        *animations,
+        *palettes,
+        palette_count
     );
 }
 
+void Opd::save() {
+    const QString file_name = _path.split('/').last().toLower().chopped(4);
+    const QString file_dir  = _path.chopped(file_name.size() + 4);
+    const QString file_type = file_name.split('_').last().toLower();
+
+    // Separate original from modded
+    QString path = _path;
+    if (file_type.compare(Opd::original_type) == 0) {
+        // Remove _original.opd (1 + original + 4) modifier
+        path.chop(Opd::original_type.size() + 5);
+        path += ".opd";
+    } else {
+        // Save original
+        const QString original_path_str =
+            file_dir + "/" + file_name + "_" + Opd::original_type + ".opd";
+
+        const auto original_path =
+            std::filesystem::path(original_path_str.toStdString());
+
+        // Save only if original opd doesn't exist already
+        if (std::filesystem::exists(original_path) == false)
+            std::filesystem::copy(
+                std::filesystem::path(path.toStdString()), original_path
+            );
+    }
+
+    // This will create a file if one doesn't exist
+    std::fstream opd_file { path.toStdString(),
+                            std::ios::binary | std::ios::out | std::ios::in };
+    if (!opd_file.is_open()) throw std::runtime_error("File not found.");
+
+    // === Palette section ===
+    // Skip gibberish section
+    opd_file.seekg(0x2C);
+    // Get palette offset
+    const uint palette_offs = read_type<uint>(opd_file);
+    opd_file.seekp(palette_offs);
+
+    // Write header
+    skip_over(opd_file, 5);                       // Unknown
+    write_type(opd_file, Opd::palette_file_name); // Name
+    skip_over(opd_file, 194);                     // Gibberish
+
+    // Get palette size
+    const uint palette_size = (uint) opd_file.tellp() - palette_offs;
+
+    // === GFX section ===
+    // Get gfx page offset
+    const uint gfx_pages_offs = opd_file.tellp();
+
+    // Compute new gfx pages
+    recompute_gfx_pages();
+
+    // GFX page header
+    write_type(opd_file, (ushort) gfx_pages.size()); // Gfx page count
+    write_type(opd_file, (uchar) 38);                // Gfx page size
+    skip_over(opd_file, 13);                         // Padding
+
+    // Write Gfx pages
+    for (const auto& page : gfx_pages) {
+        write_type(opd_file, page.name);   // Csr file name
+        write_type(opd_file, page.width);  // Width
+        write_type(opd_file, page.height); // Height
+        skip_over(opd_file, 1);            // Unknown
+    }
+
+    // Get gfx page size
+    const uint gfx_pages_size = (uint) opd_file.tellp() - gfx_pages_offs;
+
+    // === Frame section ===
+    // Get fame offset
+    const uint frames_offs = opd_file.tellp();
+
+    // Write header
+    write_type(opd_file, (ushort) frames.size()); // Frame Count
+    skip_over(opd_file, 14);                      // Padding
+
+    // Write frames
+    for (const auto& frame : frames) {
+        write_type(opd_file, frame.name);                     // Name
+        write_type(opd_file, frame.x_offset);                 // X offset
+        write_type(opd_file, frame.y_offset);                 // Y offset
+        skip_over(opd_file, 2);                               // Unknown
+        write_type(opd_file, (ushort) frame.hitboxes.size()); // Hitbox count
+        write_type(opd_file, (ushort) frame.parts.size());    // Part count
+        skip_over(opd_file, 2);                               // Unknown
+
+        // Write hitboxes
+        for (const auto& hitbox : frame.hitboxes) {
+            write_type(opd_file, hitbox.x_position); // Y offset
+            write_type(opd_file, hitbox.y_position); // X offset
+            write_type(opd_file, hitbox.width);      // Width
+            write_type(opd_file, hitbox.height);     // Height
+        }
+
+        // Write parts
+        for (const auto& part : frame.parts) {
+            write_type(opd_file, part.x_offset); // X offset
+            write_type(opd_file, part.y_offset); // y offset
+
+            // Sprite
+            write_type(opd_file, part.sprite->gfx_page->index);
+            write_type(opd_file, part.sprite->gfx_x_pos);
+            write_type(opd_file, part.sprite->gfx_y_pos);
+            write_type(opd_file, part.sprite->width);
+            write_type(opd_file, part.sprite->height);
+
+            write_type(opd_file, (uchar) part.palette->index); // Palette
+            write_type(opd_file, part.flip_mode);              // Flip mode
+            skip_over(opd_file, 6);                            // Unknown
+        }
+    }
+
+    // Get frame size
+    const uint frames_size = (uint) opd_file.tellp() - frames_offs;
+
+    // === Animation section ===
+    // Get animation offset
+    const uint animations_offs = opd_file.tellp();
+
+    // Write Animation header
+    write_type(opd_file, (ushort) animations.size());
+    skip_over(opd_file, 14); // Unknown + padding
+
+    // Write animations
+    for (const auto& animation : animations) {
+        write_type(opd_file, animation.name);                   // Name
+        write_type(opd_file, (ushort) animation.frames.size()); // Frame count
+        skip_over(opd_file, 4);                                 // Unknown
+
+        // Write animation frames
+        for (const auto& frame : animation.frames) {
+            write_type(opd_file, frame.data->index); // Frame index
+            write_type(opd_file, frame.delay);       // Delay
+            skip_over(opd_file, 1);                  // Unknown
+            write_type(opd_file, frame.x_offset);    // X offset
+            write_type(opd_file, frame.y_offset);    // Y offset
+            write_type(opd_file, (ushort) 1);        // Always one
+            skip_over(opd_file, 2);                  // Unknown
+            write_type(opd_file, (ushort) 1);        // Always one
+            skip_over(opd_file, 6);                  // Unknown
+        }
+    }
+
+    // Get animation size
+    const uint animations_size = (uint) opd_file.tellp() - animations_offs;
+
+    // === Save header ===
+    // Write file size
+    const uint file_size = opd_file.tellp();
+    opd_file.seekp(0x20);
+    write_type(opd_file, file_size);
+
+    // Skip gibberish section
+    skip_over(opd_file, 8);
+
+    // Write other sections
+    write_type(opd_file, palette_offs);
+    write_type(opd_file, palette_size);
+    write_type(opd_file, gfx_pages_offs);
+    write_type(opd_file, gfx_pages_size);
+    write_type(opd_file, frames_offs);
+    write_type(opd_file, frames_size);
+    write_type(opd_file, animations_offs);
+    write_type(opd_file, animations_size);
+
+    opd_file.close();
+
+    // === Write other files ===
+    // Save csrs
+    for (const auto& gfx_page : gfx_pages)
+        gfx_page.save();
+
+    // Save col
+    save_palettes(file_dir);
+}
+
+// -----------------------------------------------------------------------------
 // Add new
+// -----------------------------------------------------------------------------
 
 AnimationPtr Opd::add_new_animation() {
     animations.push_back({ (uchar) animations.size(), "", {} });
@@ -240,10 +432,6 @@ SpritePtr Opd::add_new_sprite() {
     auto new_sprite = sprites.end();
     new_sprite--;
     return new_sprite;
-}
-PalettePtr Opd::add_new_palette() {
-    // TODO: Implement
-    return {};
 }
 AnimationFramePtr Opd::add_new_animation_frame(
     const AnimationPtr animation, const FramePtr frame
@@ -270,6 +458,162 @@ HitBoxPtr Opd::add_new_hitbox(const FramePtr frame) {
     auto new_hitbox = frame->hitboxes.end();
     new_hitbox--;
     return new_hitbox;
+}
+
+// /////////////////// //
+// OPD PRIVATE METHODS //
+// /////////////////// //
+
+void Opd::save_palettes(const QString& palette_dir) {
+    // Create / Open col file
+    const auto    path = palette_dir + Opd::palette_file_name;
+    std::ofstream col_file { path.toStdString(),
+                             std::ios::out | std::ios::binary };
+    if (!col_file.is_open())
+        throw std::runtime_error("Couldn't create a palette file.");
+
+    // Skip unknown
+    col_file.seekp(0x1F);
+
+    // Compute multiplier
+    // TODO: Give more then one option (For now always one)
+    uchar const col_multiplier = 1;
+    write_type(col_file, (uchar) 0);
+
+    // Compute current palette hex
+    std::string palette_hex {};
+    for (const auto& palette : palettes) {
+        for (const auto& color : palette) {
+            palette_hex += color.b / col_multiplier;
+            palette_hex += color.g / col_multiplier;
+            palette_hex += color.r / col_multiplier;
+            palette_hex += '\000';
+        }
+    }
+
+    // Replace color bytes
+    col_file.write(palette_hex.data(), palette_hex.size());
+    col_file.close();
+}
+
+void Opd::recompute_gfx_pages() {
+    // Get sorted list of sprites (By height desc)
+    std::list<Sprite> sorted_sprites;
+    for (const auto& sprite : sprites) {
+        // Skip unused sprites
+        if (sprite.uses <= 0) continue;
+
+        // Copy sprite
+        Sprite sprite_copy { sprite.index,
+                             sprite.uses,
+                             Invalid::gfx_page,
+                             0,
+                             0,
+                             sprite.x_pos,
+                             sprite.y_pos,
+                             sprite.width,
+                             sprite.height,
+                             sprite.pixels };
+        sprite_copy.fill_margin();
+
+        // If this is the first sprite just add it
+        if (sorted_sprites.size() == 0) {
+            sorted_sprites.push_back(sprite_copy);
+            continue;
+        }
+
+        // Add sorted
+        auto insert_pos = std::lower_bound(
+            sorted_sprites.begin(),
+            sorted_sprites.end(),
+            sprite_copy,
+            [](const Sprite& s1, const Sprite& s2) {
+                // Sorted by height desc
+                if (s1.height == s2.height) return s1.width > s2.width;
+                return s1.height > s2.height;
+            }
+        );
+        sorted_sprites.insert(insert_pos, sprite_copy);
+    }
+
+    // Clear previous GFX page list
+    const auto dir = gfx_pages.begin()->dir;
+    gfx_pages.clear();
+
+    // Add sprites
+    for (auto& sprite : sorted_sprites) {
+        // Check if the sprite can fit into the container
+        if (sprite.width > 128 || sprite.height > 128)
+            throw std::runtime_error("Sprite can't excide then 128x128");
+
+        // Try to fit the sprite into an existing container
+        bool place_found = insert_sprite_into_gfx(sprite);
+
+        // If the image couldn't fit into any existing container create new
+        if (!place_found) {
+            const ushort index = gfx_pages.size();
+            GFXPage      gfx_page {};
+            gfx_page.index = index;
+            gfx_page.name =
+                Opd::csr_base_file_name + "_" + QString::number(index) + ".csr";
+            gfx_page.dir    = dir;
+            gfx_page.width  = 128;
+            gfx_page.height = 128;
+
+            // Initialize gfx page to empty
+            gfx_page.pixels.resize(gfx_page.height);
+            for (auto i = 0; i < gfx_page.width; i++) {
+                gfx_page.pixels[i].resize(gfx_page.width);
+                for (auto j = 0; j < gfx_page.height; j++)
+                    gfx_page.pixels[i][j] = (uchar) -1;
+            }
+
+            // Add gfx
+            gfx_pages.push_back(gfx_page);
+
+            // Add the image to the container
+            const auto sprite_it = get_it_at(sprites, sprite.index);
+            sprite_it->gfx_page  = get_it_at(gfx_pages, gfx_page.index);
+            sprite_it->gfx_x_pos = 0;
+            sprite_it->gfx_y_pos = 0;
+            for (auto i = 0; i < sprite.height; i++) {
+                for (auto j = 0; j < sprite.width; j++)
+                    gfx_page.pixels[i][j] = sprite.pixels[i][j];
+            }
+        }
+    }
+
+    // Replace all empty pixes with background
+    for (auto& gfx_page : gfx_pages) {
+        for (auto& row : gfx_page.pixels) {
+            for (auto& pixel : row)
+                if (pixel == (uchar) -1) pixel = 0;
+        }
+    }
+}
+
+bool Opd::insert_sprite_into_gfx(const Sprite& sprite) {
+    for (auto& gfx_page : gfx_pages) {
+        // Find the top-left corner of the sprite within the container
+        for (uchar y = 0; y < gfx_page.height - sprite.height; y++) {
+            for (uchar x = 0; x < gfx_page.width - sprite.width; x++) {
+                // Check if the sprite overlaps with any existing sprite
+                if (gfx_page.pixels[y][x] == (uchar) -1) {
+                    // Add the sprite to the container
+                    const auto sprite_it = get_it_at(sprites, sprite.index);
+                    sprite_it->gfx_page  = get_it_at(gfx_pages, gfx_page.index);
+                    sprite_it->gfx_x_pos = x;
+                    sprite_it->gfx_y_pos = y;
+                    for (auto i = 0; i < sprite.height; i++) {
+                        for (auto j = 0; j < sprite.width; j++)
+                            gfx_page.pixels[y + i][x + j] = sprite.pixels[i][j];
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 // //////////////////// //

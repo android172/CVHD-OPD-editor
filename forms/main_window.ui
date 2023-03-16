@@ -2070,7 +2070,7 @@ border: none;</string>
                  <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>65535</number>
+                 <number>128</number>
                 </property>
                </widget>
               </item>
@@ -2139,7 +2139,7 @@ border: none;</string>
                  <number>0</number>
                 </property>
                 <property name="maximum">
-                 <number>65535</number>
+                 <number>128</number>
                 </property>
                </widget>
               </item>

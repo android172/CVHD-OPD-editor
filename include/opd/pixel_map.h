@@ -5,7 +5,7 @@
 
 class PixelMap : public QVector<QVector<uchar>> {
   public:
-    using QVector::QVector;
+    using QVector<QVector<uchar>>::QVector;
 
     bool row_empty(ushort row) const {
         if (size() <= row) return true;

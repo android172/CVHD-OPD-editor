@@ -261,7 +261,7 @@ void MainWindow::on_ch_frame_part_flip_y_toggled(bool new_value) {
 }
 void MainWindow::on_cb_frame_part_color_set_currentIndexChanged(int new_index) {
     if (new_index < 0) return;
-    const auto new_palette = get_it_at(_opd->palettes, new_index);
+    const auto new_palette = &*get_it_at(_opd->palettes, new_index);
     change_frame_part_value(palette, new_palette);
     load_frame_part_palette();
 }

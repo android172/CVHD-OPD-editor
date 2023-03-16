@@ -51,13 +51,14 @@ class MainWindow : public QMainWindow {
 
   private slots:
     // General
+    void resizeEvent(QResizeEvent* event) override;
     void on_bt_import_opd_clicked();
     void on_bt_save_opd_clicked();
     // Drag and drop
-    void dropEvent(QDropEvent*);
-    void dragEnterEvent(QDragEnterEvent*);
-    void dragMoveEvent(QDragMoveEvent*);
-    void dragLeaveEvent(QDragLeaveEvent*);
+    void dropEvent(QDropEvent*) override;
+    void dragEnterEvent(QDragEnterEvent*) override;
+    void dragMoveEvent(QDragMoveEvent*) override;
+    void dragLeaveEvent(QDragLeaveEvent*) override;
 
     // Animations
     void on_tree_animations_itemPressed(QTreeWidgetItem* current, int);

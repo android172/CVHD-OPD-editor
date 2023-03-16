@@ -71,6 +71,11 @@ MainWindow::~MainWindow() { delete ui; }
 // MAIN WINDOW SLOTS //
 // ///////////////// //
 
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    bt_save->move(width() - bt_save->width() - 15, 5);
+    QMainWindow::resizeEvent(event);
+}
+
 void MainWindow::on_bt_import_opd_clicked() {
     // Load OPD
     const auto opd_path = QFileDialog::getOpenFileName(

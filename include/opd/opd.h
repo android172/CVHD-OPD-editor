@@ -9,10 +9,6 @@ class Opd {
 
     constexpr static const uchar palette_max = 128;
 
-    static const QString original_type;
-    static const QString palette_file_name;
-    static const QString csr_base_file_name;
-
     std::list<GFXPage>&   gfx_pages;
     std::list<Sprite>&    sprites;
     std::list<Frame>&     frames;
@@ -38,6 +34,11 @@ class Opd {
     HitBoxPtr add_new_hitbox(const FramePtr frame);
 
   private:
+    static const QString _original_type;
+
+    QString _palette_file;
+    QString _gfx_page_file;
+
     const QString _path;
 
     Opd(const QString&                    path,
@@ -51,7 +52,9 @@ class Opd {
     void save_palettes(const QString& palette_dir);
     void recompute_gfx_pages();
 
-    bool insert_sprite_into_gfx(const Sprite& sprite);
+    bool insert_sprite_into_gfx(
+        const Sprite& sprite, std::list<std::list<uchar>>& alignment_rows
+    );
 };
 
 #endif // __OPD_H__

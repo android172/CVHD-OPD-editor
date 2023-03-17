@@ -73,8 +73,13 @@ void GFXPage::save() const {
             "CSR file at path: \"" + path.toStdString() + "\" not found."
         );
 
-    // Skip unknown lines
-    csr_file.seekp(0x230);
+    // Unknown header
+    write_type(csr_file, (uchar) 0x03);
+    write_type(csr_file, (uchar) 0x74);
+    fill_zeros(csr_file, 30);
+    write_type(csr_file, width);
+    write_type(csr_file, height);
+    fill_zeros(csr_file, 0x230 - csr_file.tellp());
 
     // Write all pixels
     for (int i = 0; i < height; i++) {

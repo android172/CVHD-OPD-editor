@@ -67,6 +67,13 @@ inline void skip_over(std::ofstream& file, uint size) {
     file.seekp(size, std::ios::cur);
 }
 
+inline void fill_zeros(std::ofstream& file, uint size) {
+    std::vector<char> buffer(size);
+    for (auto& byte : buffer)
+        byte = 0;
+    file.write(buffer.data(), size);
+}
+
 template<typename T>
 void write_type(std::ofstream& file, T value) {
     auto size = sizeof(T);
@@ -105,6 +112,13 @@ inline void write_type<QString>(std::ofstream& file, QString value) {
 
 inline void skip_over(std::fstream& file, uint size) {
     file.seekp(size, std::ios::cur);
+}
+
+inline void fill_zeros(std::fstream& file, uint size) {
+    std::vector<char> buffer(size);
+    for (auto& byte : buffer)
+        byte = 0;
+    file.write(buffer.data(), size);
 }
 
 template<typename T>

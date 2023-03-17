@@ -3,9 +3,7 @@
 #include "file_utils.h"
 #include "util.h"
 
-const QString Opd::original_type      = QString("original");
-const QString Opd::palette_file_name  = QString("palette_modded.col");
-const QString Opd::csr_base_file_name = QString("gfx_page_modded");
+const QString Opd::_original_type = QString("original");
 
 // Constructor & Destructor
 Opd::Opd(
@@ -239,15 +237,19 @@ void Opd::save() {
     const QString file_type = file_name.split('_').last().toLower();
 
     // Separate original from modded
-    QString path = _path;
-    if (file_type.compare(Opd::original_type) == 0) {
+    QString path     = _path;
+    QString opd_name = file_name;
+    opd_name         = opd_name.remove(0, 2); // remove p_
+    if (file_type.compare(Opd::_original_type) == 0) {
         // Remove _original.opd (1 + original + 4) modifier
-        path.chop(Opd::original_type.size() + 5);
+        path.chop(Opd::_original_type.size() + 5);
         path += ".opd";
+        // Remove same from opd name (1 + original)
+        opd_name.chop(Opd::_original_type.size() + 1);
     } else {
         // Save original
         const QString original_path_str =
-            file_dir + "/" + file_name + "_" + Opd::original_type + ".opd";
+            file_dir + "/" + file_name + "_" + Opd::_original_type + ".opd";
 
         const auto original_path =
             std::filesystem::path(original_path_str.toStdString());
@@ -258,6 +260,10 @@ void Opd::save() {
                 std::filesystem::path(path.toStdString()), original_path
             );
     }
+
+    // Compute file prefixes
+    _palette_file  = "c_" + opd_name;
+    _gfx_page_file = "f_" + opd_name;
 
     // This will create a file if one doesn't exist
     std::fstream opd_file { path.toStdString(),
@@ -273,7 +279,7 @@ void Opd::save() {
 
     // Write header
     skip_over(opd_file, 5);                       // Unknown
-    write_type(opd_file, Opd::palette_file_name); // Name
+    write_type(opd_file, _palette_file + ".col"); // Name
     skip_over(opd_file, 194);                     // Gibberish
 
     // Get palette size
@@ -468,14 +474,21 @@ HitBoxPtr Opd::add_new_hitbox(const FramePtr frame) {
 
 void Opd::save_palettes(const QString& palette_dir) {
     // Create / Open col file
-    const auto    path = palette_dir + Opd::palette_file_name;
+    const auto    path = palette_dir + _palette_file + ".col";
     std::ofstream col_file { path.toStdString(),
                              std::ios::out | std::ios::binary };
     if (!col_file.is_open())
         throw std::runtime_error("Couldn't create a palette file.");
 
-    // Skip unknown
-    col_file.seekp(0x1F);
+    // Unknown header
+    write_type(col_file, (uchar) 0x03);
+    write_type(col_file, (uchar) 0x74);
+    // 6 unknown bytes
+    fill_zeros(col_file, 6);
+    // Unknown header
+    write_type(col_file, (uchar) 0x06);
+    // 22 unknown bytes
+    fill_zeros(col_file, 22);
 
     // Compute multiplier
     // TODO: Give more then one option (For now always one)
@@ -536,6 +549,9 @@ void Opd::recompute_gfx_pages() {
     const auto dir = gfx_pages.begin()->dir;
     gfx_pages.clear();
 
+    // List of rows at which addition of top left image pixels is allowed
+    std::list<std::list<uchar>> alignment_rows {};
+
     // Add sprites
     for (auto& sprite : sorted_sprites) {
         // Check if the sprite can fit into the container
@@ -543,14 +559,14 @@ void Opd::recompute_gfx_pages() {
             throw std::runtime_error("Sprite can't excide then 128x128");
 
         // Try to fit the sprite into an existing container
-        bool place_found = insert_sprite_into_gfx(sprite);
+        bool place_found = insert_sprite_into_gfx(sprite, alignment_rows);
 
         // If the image couldn't fit into any existing container create new
         if (!place_found) {
             // Add gfx
             const ushort index = gfx_pages.size();
             gfx_pages.push_back({ index,
-                                  Opd::csr_base_file_name + "_" +
+                                  _gfx_page_file + "_" +
                                       QString::number(index) + ".csr",
                                   dir,
                                   128,
@@ -575,6 +591,9 @@ void Opd::recompute_gfx_pages() {
                 for (auto j = 0; j < sprite.width; j++)
                     gfx_page->pixels[i][j] = sprite.pixels[i][j];
             }
+
+            // Add next available row as alignment row (together with first row)
+            alignment_rows.push_back({ 0, (uchar) sprite.height });
         }
     }
 
@@ -587,10 +606,15 @@ void Opd::recompute_gfx_pages() {
     }
 }
 
-bool Opd::insert_sprite_into_gfx(const Sprite& sprite) {
+bool Opd::insert_sprite_into_gfx(
+    const Sprite& sprite, std::list<std::list<uchar>>& alignment_rows
+) {
+    auto alignment_row = alignment_rows.begin();
     for (auto& gfx_page : gfx_pages) {
         // Find the top-left corner of the sprite within the container
-        for (uchar y = 0; y < gfx_page.height - sprite.height; y++) {
+        for (uchar y : *alignment_row) {
+            if (y >= gfx_page.height - sprite.height)
+                break; // Wont fit on this page
             for (uchar x = 0; x < gfx_page.width - sprite.width; x++) {
                 // Check if the sprite overlaps with any existing sprite
                 if (gfx_page.pixels[y][x] == (uchar) -1) {
@@ -603,10 +627,15 @@ bool Opd::insert_sprite_into_gfx(const Sprite& sprite) {
                         for (auto j = 0; j < sprite.width; j++)
                             gfx_page.pixels[y + i][x + j] = sprite.pixels[i][j];
                     }
+
+                    // Add new alignment row if applicable
+                    if (x == 0) alignment_row->push_back(y + sprite.height);
+
                     return true;
                 }
             }
         }
+        alignment_row++;
     }
     return false;
 }

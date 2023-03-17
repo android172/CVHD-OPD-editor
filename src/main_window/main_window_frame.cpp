@@ -10,8 +10,6 @@
 // MAIN WINDOW FRAME SLOTS //
 // /////////////////////// //
 
-#include <QDebug>
-
 void MainWindow::on_bt_add_frame_clicked() {
     const auto tree = ui->tree_animations;
 

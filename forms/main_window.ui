@@ -700,7 +700,7 @@ border: none;</string>
                      <x>0</x>
                      <y>0</y>
                      <width>405</width>
-                     <height>323</height>
+                     <height>342</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1453,8 +1453,8 @@ border: none;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>381</width>
-                     <height>323</height>
+                     <width>363</width>
+                     <height>342</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -3492,7 +3492,7 @@ border: none;</string>
      <x>0</x>
      <y>0</y>
      <width>1130</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

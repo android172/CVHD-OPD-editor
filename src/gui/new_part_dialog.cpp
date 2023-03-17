@@ -25,7 +25,7 @@ void NewPartDialog::on_list_sprites_currentItemChanged(
 }
 
 void NewPartDialog::on_cb_palette_currentIndexChanged(int new_index) {
-    selected_palette = get_it_at(_opd->palettes, new_index);
+    selected_palette = &*get_it_at(_opd->palettes, new_index);
     ui->gv_sprite->show_sprite(*selected_sprite, *selected_palette);
 }
 
@@ -40,7 +40,7 @@ void NewPartDialog::initialize_sprite_list() {
     // Setup palettes
     for (auto i = 1; i < _opd->palette_count; i++)
         ui->cb_palette->addItem(QString::number(i));
-    selected_palette = _opd->palettes.begin();
+    selected_palette = &*_opd->palettes.begin();
 
     // Setup sprite list
     ForEach(sprite, _opd->sprites)

@@ -18,23 +18,24 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+#define EXPAND(x) x
 #define APPLY_TO_COL(macro, ...)                                               \
-    macro(0, __VA_ARGS__);                                                     \
-    macro(1, __VA_ARGS__);                                                     \
-    macro(2, __VA_ARGS__);                                                     \
-    macro(3, __VA_ARGS__);                                                     \
-    macro(4, __VA_ARGS__);                                                     \
-    macro(5, __VA_ARGS__);                                                     \
-    macro(6, __VA_ARGS__);                                                     \
-    macro(7, __VA_ARGS__);                                                     \
-    macro(8, __VA_ARGS__);                                                     \
-    macro(9, __VA_ARGS__);                                                     \
-    macro(A, __VA_ARGS__);                                                     \
-    macro(B, __VA_ARGS__);                                                     \
-    macro(C, __VA_ARGS__);                                                     \
-    macro(D, __VA_ARGS__);                                                     \
-    macro(E, __VA_ARGS__);                                                     \
-    macro(F, __VA_ARGS__)
+    EXPAND(macro(0, __VA_ARGS__));                                             \
+    EXPAND(macro(1, __VA_ARGS__));                                             \
+    EXPAND(macro(2, __VA_ARGS__));                                             \
+    EXPAND(macro(3, __VA_ARGS__));                                             \
+    EXPAND(macro(4, __VA_ARGS__));                                             \
+    EXPAND(macro(5, __VA_ARGS__));                                             \
+    EXPAND(macro(6, __VA_ARGS__));                                             \
+    EXPAND(macro(7, __VA_ARGS__));                                             \
+    EXPAND(macro(8, __VA_ARGS__));                                             \
+    EXPAND(macro(9, __VA_ARGS__));                                             \
+    EXPAND(macro(A, __VA_ARGS__));                                             \
+    EXPAND(macro(B, __VA_ARGS__));                                             \
+    EXPAND(macro(C, __VA_ARGS__));                                             \
+    EXPAND(macro(D, __VA_ARGS__));                                             \
+    EXPAND(macro(E, __VA_ARGS__));                                             \
+    EXPAND(macro(F, __VA_ARGS__))
 
 #define __COL_SLOT__(i, button, signal) void on_##button##_##i##_##signal()
 #define COL_SLOTS(button, signal) APPLY_TO_COL(__COL_SLOT__, button, signal)

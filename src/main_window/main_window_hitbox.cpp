@@ -23,6 +23,8 @@ void MainWindow::on_bt_add_hitbox_clicked() {
     check_if_valid(_current_frame);
     const auto list = ui->list_hitboxes;
 
+    _redrawing_frame = true;
+
     // Add hitbox to the end of hitbox list
     auto new_hitbox = _opd->add_new_hitbox(_current_frame);
 
@@ -34,11 +36,14 @@ void MainWindow::on_bt_add_hitbox_clicked() {
     list->setCurrentItem(hitbox_lwi);
 
     // Redraw frame
+    _redrawing_frame = false;
     redraw_frame();
 }
 void MainWindow::on_bt_remove_hitbox_clicked() {
     check_if_valid(_current_hitbox);
     const auto list = ui->list_hitboxes;
+
+    _redrawing_frame = true;
 
     // Get current hitbox lwi
     const auto hitbox_lwi = dynamic_cast<HitBoxLwi*>(list->currentItem());
@@ -60,6 +65,7 @@ void MainWindow::on_bt_remove_hitbox_clicked() {
         hitbox.index = index++;
 
     // Redraw frame
+    _redrawing_frame = false;
     redraw_frame();
 }
 void MainWindow::on_bt_hitbox_up_clicked() {
@@ -172,6 +178,9 @@ void MainWindow::load_hitboxes() {
 void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
     _current_hitbox = hitbox;
 
+    bool parent_redrawing = _redrawing_frame;
+    _redrawing_frame      = true;
+
     ui->spin_hitbox_pos_x->setValue(hitbox->x_position);
     ui->spin_hitbox_pos_y->setValue(hitbox->y_position);
     ui->spin_hitbox_width->setValue(hitbox->width);
@@ -179,7 +188,10 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
 
     // Redraw
     ui->gv_frame->current_index = _current_hitbox->index;
-    redraw_frame();
+    if (parent_redrawing == false) {
+        _redrawing_frame = false;
+        redraw_frame();
+    }
 
     // Enable editing
     set_hitbox_edit_enabled(true);

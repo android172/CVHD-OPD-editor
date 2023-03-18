@@ -29,8 +29,12 @@ void NewPartDialog::on_cb_palette_currentIndexChanged(int new_index) {
     ui->gv_sprite->show_sprite(*selected_sprite, *selected_palette);
 }
 
-void NewPartDialog::on_bt_add_clicked() { accept(); }
-void NewPartDialog::on_bt_cancel_clicked() { close(); }
+#define DONE(with)                                                             \
+    ui->gv_sprite->clear();                                                    \
+    with()
+
+void NewPartDialog::on_bt_add_clicked() { DONE(accept); }
+void NewPartDialog::on_bt_cancel_clicked() { DONE(close); }
 
 // /////////////////////////////// //
 // NEW PART DIALOG PRIVATE METHODS //

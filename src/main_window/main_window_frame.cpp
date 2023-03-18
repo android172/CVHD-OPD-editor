@@ -265,6 +265,8 @@ void MainWindow::load_frame(
     _current_frame      = frame_info_in;
     _current_anim_frame = animation_info_in;
 
+    _redrawing_frame = true;
+
     // Update ui
     auto animation_info = Animation::Frame {};
     if (_current_frame->uses > 0) animation_info = *animation_info_in;
@@ -275,7 +277,6 @@ void MainWindow::load_frame(
     ui->spin_frame_delay->setValue(animation_info.delay);
 
     // Frame data
-    redraw_frame();
     ui->line_frame_name->setText(_current_frame->name);
     ui->spin_frame_pos_x->setValue(_current_frame->x_offset);
     ui->spin_frame_pos_y->setValue(_current_frame->y_offset);
@@ -285,6 +286,10 @@ void MainWindow::load_frame(
     else clear_frame_part();
     if (_current_frame->hitboxes.size()) load_hitboxes();
     else clear_hitbox();
+
+    // Redraw frame
+    _redrawing_frame = false;
+    redraw_frame();
 
     // Enable editing
     set_frame_edit_enabled(true);
@@ -384,4 +389,7 @@ void MainWindow::on_activate_frame_move_mode() {
     });
 }
 
-void MainWindow::redraw_frame() { ui->gv_frame->show_frame(*_current_frame); }
+void MainWindow::redraw_frame() {
+    if (_redrawing_frame) return;
+    ui->gv_frame->show_frame(*_current_frame);
+}

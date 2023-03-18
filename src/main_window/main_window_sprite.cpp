@@ -343,6 +343,7 @@ void MainWindow::on_activate_sprite_move_mode() {
 }
 
 void MainWindow::redraw_sprite() {
+    if (_redrawing_sprite) return;
     ui->gv_sprite->show_sprite(*_current_sprite, _current_sprite_palette);
     if (_current_sprite_import)
         ui->gv_sprite->add_sprite(

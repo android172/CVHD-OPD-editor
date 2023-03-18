@@ -110,5 +110,6 @@ void MainWindow::set_csr_edit_enabled(bool enabled) {
 }
 
 void MainWindow::redraw_csr() {
+    if (_redrawing_csr) return;
     ui->gv_csr->show_csr(*_current_csr, _current_csr_palette);
 }

@@ -175,8 +175,12 @@ class MainWindow : public QMainWindow {
     // Opd file
     Opd* _opd;
 
-    // Animation state
-    bool _in_animation = false;
+    // State booleans
+    bool _in_animation     = false;
+    bool _redrawing_frame  = false;
+    bool _redrawing_sprite = false;
+    bool _redrawing_image  = false;
+    bool _redrawing_csr    = false;
 
     // Default load locations
     QString _default_opd_import_location   = QDir::homePath();

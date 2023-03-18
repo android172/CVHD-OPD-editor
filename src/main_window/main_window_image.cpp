@@ -327,6 +327,7 @@ void MainWindow::set_image_edit_enabled(bool enabled) {
 }
 
 void MainWindow::redraw_image(const PixelMap pixels) {
+    if (_redrawing_image) return;
     ui->gv_image->show_image(pixels, _current_image_palette.display);
     ui->gv_image->add_selection(
         ui->spin_img_pos_x->value(),
@@ -337,6 +338,7 @@ void MainWindow::redraw_image(const PixelMap pixels) {
 }
 
 void MainWindow::redraw_image() {
+    if (_redrawing_image) return;
     const auto image_lwi =
         dynamic_cast<ImageLwi*>(ui->list_images->currentItem());
     if (image_lwi == nullptr) return;

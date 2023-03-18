@@ -33,9 +33,13 @@ void NewFrameDialog::initialize_frame_list() {
     ui->list_frames->setCurrentRow(0);
 }
 
-void NewFrameDialog::on_bt_add_clicked() { done(1); }
-void NewFrameDialog::on_bt_cancel_clicked() { done(0); }
+#define DONE(i)                                                                \
+    ui->gv_frame->clear();                                                     \
+    done(i)
+
+void NewFrameDialog::on_bt_add_clicked() { DONE(1); }
+void NewFrameDialog::on_bt_cancel_clicked() { DONE(0); }
 void NewFrameDialog::on_bt_create_clicked() {
     selected_frame = _opd->add_new_frame();
-    done(2);
+    DONE(2);
 }

@@ -50,6 +50,7 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     ui->list_frame_parts->setCurrentItem(frame_part_lwi);
 }
 void MainWindow::on_bt_remove_frame_part_clicked() {
+    _redrawing_frame = true;
     check_if_valid(_current_frame_part);
     const auto list = ui->list_frame_parts;
 
@@ -76,6 +77,7 @@ void MainWindow::on_bt_remove_frame_part_clicked() {
         part.index = index++;
 
     // Redraw frame
+    _redrawing_frame = false;
     redraw_frame();
 }
 void MainWindow::on_bt_frame_part_up_clicked() {
@@ -298,6 +300,9 @@ void MainWindow::load_frame_parts() {
 void MainWindow::load_frame_part(const FramePartPtr frame_part) {
     _current_frame_part = frame_part;
 
+    bool parent_redrawing = _redrawing_frame;
+    _redrawing_frame      = true;
+
     ui->spin_frame_part_off_x->setValue(frame_part->x_offset);
     ui->spin_frame_part_off_y->setValue(frame_part->y_offset);
     ui->ch_frame_part_flip_x->setChecked(frame_part->flip_mode & 0b10);
@@ -306,7 +311,10 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
 
     // Redraw
     ui->gv_frame->current_index = _current_frame_part->index;
-    redraw_frame();
+    if (parent_redrawing == false) {
+        _redrawing_frame = false;
+        redraw_frame();
+    }
 
     // Load palette colors
     load_frame_part_palette();

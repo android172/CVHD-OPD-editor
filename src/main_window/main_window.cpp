@@ -220,22 +220,28 @@ void MainWindow::update_palettes(
 void MainWindow::update_palettes(const uchar color_set, const Palette palette) {
     // Update frame part color buttons
     if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
-        _current_part_palette         = palette;
-        *_current_frame_part->palette = palette;
-        bt_frame_part_col_ALL(set_color());
-        redraw_frame();
+        if (_current_frame_part->index != Invalid::index) {
+            _current_part_palette         = palette;
+            *_current_frame_part->palette = palette;
+            bt_frame_part_col_ALL(set_color());
+            redraw_frame();
+        }
     }
     // Update sprite color buttons
     if (ui->cb_sprite_palette->currentIndex() == color_set) {
-        _current_sprite_palette = palette;
-        bt_sprite_col_ALL(set_color());
-        redraw_sprite();
+        if (_current_sprite->index != Invalid::index) {
+            _current_sprite_palette = palette;
+            bt_sprite_col_ALL(set_color());
+            redraw_sprite();
+        }
     }
     // Update CSR color buttons
     if (ui->cb_csr_palette->currentIndex() == color_set) {
-        _current_csr_palette = palette;
-        bt_csr_col_ALL(set_color());
-        redraw_csr();
+        if (_current_csr->index != Invalid::index) {
+            _current_csr_palette = palette;
+            bt_csr_col_ALL(set_color());
+            redraw_csr();
+        }
     }
 
     // Update palette

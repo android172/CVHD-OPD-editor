@@ -100,12 +100,14 @@ void MainWindow::on_bt_sprite_trim_clicked() {
     }
     redraw_sprite();
 }
+
 void MainWindow::on_bt_merge_layers_clicked() {
     check_if_valid(_current_sprite);
     if (_current_sprite_import == nullptr) return;
 
     // Replace sprite
     _current_sprite_import->index = _current_sprite->index;
+    _current_sprite_import->uses  = _current_sprite->uses;
     *_current_sprite              = *_current_sprite_import;
 
     // Replace palette

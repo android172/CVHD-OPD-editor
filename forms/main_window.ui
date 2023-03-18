@@ -746,7 +746,7 @@ border: none;</string>
                      <x>0</x>
                      <y>0</y>
                      <width>405</width>
-                     <height>287</height>
+                     <height>272</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1500,7 +1500,7 @@ border: none;</string>
                      <x>0</x>
                      <y>0</y>
                      <width>381</width>
-                     <height>287</height>
+                     <height>271</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -2074,7 +2074,7 @@ border: none;</string>
                <item>
                 <widget class="QPushButton" name="bt_merge_layers">
                  <property name="text">
-                  <string>Merge layers</string>
+                  <string>Replace with import</string>
                  </property>
                 </widget>
                </item>

@@ -110,11 +110,15 @@ void Sprite::from_frame_parts(const QVector<FramePartPtr>& frame_parts) {
 
         for (auto i = 0; i < sprite->height; i++) {
             // Current sprite position space
-            const auto y     = sprite->y_pos + i;
+            const auto y     = (part->flip_mode & 0b01)
+                                   ? sprite->y_pos + (sprite->height - i - 1)
+                                   : sprite->y_pos + i;
             // New sprite position space
             const auto y_res = part->y_offset + i - min_y;
             for (auto j = 0; j < sprite->width; j++) {
-                const auto x     = sprite->x_pos + j;
+                const auto x     = (part->flip_mode & 0b10)
+                                       ? sprite->x_pos + (sprite->width - j - 1)
+                                       : sprite->x_pos + j;
                 const auto x_res = part->x_offset + j - min_x;
 
                 // Compute color index of current sprite

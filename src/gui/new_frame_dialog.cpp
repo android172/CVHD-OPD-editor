@@ -20,8 +20,7 @@ void NewFrameDialog::on_list_frames_currentItemChanged(
 ) {
     auto frame_lwi = dynamic_cast<FrameLwi*>(current);
     if (frame_lwi == nullptr) return;
-    selected_frame = frame_lwi->frame;
-    ui->gv_frame->show_frame(*selected_frame);
+    ui->gv_frame->show_frame(*frame_lwi->frame);
 }
 
 // //////////////////////////////// //
@@ -37,9 +36,18 @@ void NewFrameDialog::initialize_frame_list() {
     ui->gv_frame->clear();                                                     \
     done(i)
 
-void NewFrameDialog::on_bt_add_clicked() { DONE(1); }
+void NewFrameDialog::on_bt_add_clicked() {
+    selected_frames.clear();
+    for (const auto& lwi : ui->list_frames->selectedItems()) {
+        auto frame_lwi = dynamic_cast<FrameLwi*>(lwi);
+        if (frame_lwi == nullptr) continue;
+        selected_frames.push_back(frame_lwi->frame);
+    }
+    DONE(1);
+}
 void NewFrameDialog::on_bt_cancel_clicked() { DONE(0); }
 void NewFrameDialog::on_bt_create_clicked() {
-    selected_frame = _opd->add_new_frame();
+    selected_frames.clear();
+    selected_frames.push_back(_opd->add_new_frame());
     DONE(2);
 }

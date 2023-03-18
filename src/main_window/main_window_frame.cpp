@@ -41,39 +41,41 @@ void MainWindow::on_bt_add_frame_clicked() {
         if (result == 0) return;
 
         // Get selected frame
-        auto frame = dialog.selected_frame;
-
-        // If an unused (previously existing) frame is added we need to remove
-        // it from the unused section
-        if (result == 1 && frame->uses == 0) {
-            // Find selected frame twi
-            FrameTwi* selected_frame_twi = nullptr;
-            for (auto i = 0; i < unused_twi->childCount(); i++) {
-                auto frame_twi = dynamic_cast<FrameTwi*>(unused_twi->child(i));
-                if (frame_twi->frame_info->index == frame->index) {
-                    selected_frame_twi = frame_twi;
-                    break;
+        for (const auto& frame : dialog.selected_frames) {
+            // If an unused (previously existing) frame is added we need to
+            // remove it from the unused section
+            if (result == 1 && frame->uses == 0) {
+                // Find selected frame twi
+                FrameTwi* selected_frame_twi = nullptr;
+                for (auto i = 0; i < unused_twi->childCount(); i++) {
+                    auto frame_twi =
+                        dynamic_cast<FrameTwi*>(unused_twi->child(i));
+                    if (frame_twi->frame_info->index == frame->index) {
+                        selected_frame_twi = frame_twi;
+                        break;
+                    }
                 }
+
+                // If selected frame was not found something is fishy...
+                if (selected_frame_twi == nullptr) return;
+
+                // Otherwise remove it
+                unused_twi->removeChild(selected_frame_twi);
+                delete selected_frame_twi;
             }
 
-            // If selected frame was not found something is fishy...
-            if (selected_frame_twi == nullptr) return;
+            // Add as animation frame
+            auto animation_frame =
+                _opd->add_new_animation_frame(animation_twi->animation, frame);
+            frame->uses++;
 
-            // Otherwise remove it
-            unused_twi->removeChild(selected_frame_twi);
-            delete selected_frame_twi;
+            // Add to tree
+            const auto frame_twi = animation_twi->add_frame(animation_frame);
         }
-
-        // Add as animation frame
-        auto animation_frame =
-            _opd->add_new_animation_frame(animation_twi->animation, frame);
-        frame->uses++;
-
-        // Add to tree
-        const auto frame_twi = animation_twi->add_frame(animation_frame);
-
-        // Set as current
-        tree->setCurrentItem(frame_twi);
+        // Set last added as current
+        tree->setCurrentItem(
+            animation_twi->child(animation_twi->childCount() - 1)
+        );
     }
 }
 void MainWindow::on_bt_remove_frame_clicked() {

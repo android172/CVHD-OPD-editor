@@ -18,7 +18,7 @@ class NewFrameDialog : public QDialog {
     explicit NewFrameDialog(Opd* const opd, QWidget* parent = nullptr);
     ~NewFrameDialog();
 
-    FramePtr selected_frame = Invalid::frame;
+    QVector<FramePtr> selected_frames {};
 
   private slots:
     void on_list_frames_currentItemChanged(

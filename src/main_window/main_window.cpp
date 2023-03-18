@@ -11,27 +11,16 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    setWindowTitle("CHD sprite and palette swapper");
+    setWindowTitle("CVHD OPD editor");
     setAcceptDrops(true);
     load_app_state();
 
     // Additional UI elements
-    // Add save button
-    bt_save = new QPushButton(ui->centralwidget);
-    bt_save->setText("Save OPD");
-    bt_save->move(width() - bt_save->width() - 15, 5);
-    bt_save->show();
     // Add mode change button where necessary
     const auto bt_change_mode_frame  = add_bt_change_mode(ui->gv_frame);
     const auto bt_change_mode_sprite = add_bt_change_mode(ui->gv_sprite);
 
     // Additional connections
-    connect(
-        bt_save,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::on_bt_save_opd_clicked
-    );
     connect(bt_change_mode_frame, &QPushButton::clicked, this, [=]() {
         on_bt_change_mode_clicked(bt_change_mode_frame);
         if (bt_change_mode_frame->isChecked()) on_activate_frame_move_mode();
@@ -44,13 +33,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     // Initially disable editing
-    set_general_editing_enabled(false);
-    set_animation_edit_enabled(false);
-    set_frame_edit_enabled(false);
-    set_frame_part_edit_enabled(false);
-    set_hitbox_edit_enabled(false);
-    set_image_edit_enabled(false);
-    set_csr_edit_enabled(false);
+    set_general_edit_enabled(false);
 
     // Add default with background setting for GV gui items
     ui->gv_image->with_background  = true;
@@ -70,27 +53,6 @@ MainWindow::~MainWindow() { delete ui; }
 // ///////////////// //
 // MAIN WINDOW SLOTS //
 // ///////////////// //
-
-void MainWindow::resizeEvent(QResizeEvent* event) {
-    bt_save->move(width() - bt_save->width() - 15, 5);
-    QMainWindow::resizeEvent(event);
-}
-
-void MainWindow::on_bt_import_opd_clicked() {
-    // Load OPD
-    const auto opd_path = QFileDialog::getOpenFileName(
-        this, "Import CSR file", _default_opd_import_location, "CHD_opd (*.opd)"
-    );
-    import_opd(opd_path);
-}
-void MainWindow::on_bt_save_opd_clicked() {
-    // Save OPD
-    _opd->save();
-
-    // Update CSR page
-    _current_csr = Invalid::gfx_page;
-    load_csrs();
-}
 
 // -----------------------------------------------------------------------------
 // Drag and drop
@@ -137,39 +99,14 @@ void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }
 // MAIN WINDOW PRIVATE METHODS //
 // /////////////////////////// //
 
-void MainWindow::import_opd(const QString opd_path) {
-    if (opd_path.isEmpty()) return;
-    _opd = Opd::open(opd_path);
-
-    // Save default_location
-    const auto opd_name          = opd_path.split('/').last();
-    _default_opd_import_location = opd_path.chopped(opd_name.size());
-    save_app_state();
-
-    // Update palette count
-    ui->cb_frame_part_color_set->clear();
-    ui->cb_frame_part_color_set->addItem("Default");
-    for (auto i = 1; i < _opd->palette_count; i++)
-        ui->cb_frame_part_color_set->addItem(QString::number(i));
-
-    // Load animations, sprites & CSRs
-    load_animations();
-    load_sprites();
-    load_csrs();
-
-    // Enable editing
-    set_general_editing_enabled(true);
-}
-void MainWindow::export_opd(const QString opd_path) {
-    if (opd_path.isEmpty()) return;
-    const auto opd = Opd::open(opd_path);
-}
-
-void MainWindow::set_general_editing_enabled(bool enabled) {
-    ui->tab_main->setTabEnabled(1, enabled);
-    ui->tab_main->setTabEnabled(2, enabled);
-    ui->bt_add_frame->setEnabled(enabled);
-    bt_save->setEnabled(enabled);
+void MainWindow::set_general_edit_enabled(bool enabled) {
+    set_opd_edit_enabled(enabled);
+    set_animation_edit_enabled(enabled);
+    set_frame_edit_enabled(enabled);
+    set_frame_part_edit_enabled(enabled);
+    set_hitbox_edit_enabled(enabled);
+    set_image_edit_enabled(enabled);
+    set_csr_edit_enabled(enabled);
 }
 
 void MainWindow::prompt_color_dialog(Color& color) const {

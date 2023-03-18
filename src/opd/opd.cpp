@@ -7,6 +7,7 @@ const QString Opd::_original_type = QString("original");
 
 // Constructor & Destructor
 Opd::Opd(
+    const QString&                    file_name,
     const QString&                    path,
     std::list<GFXPage>&               gfx_pages,
     std::list<Sprite>&                sprites,
@@ -15,9 +16,9 @@ Opd::Opd(
     std::array<Palette, palette_max>& palettes,
     uchar                             palette_count
 )
-    : _path(path), gfx_pages(gfx_pages), sprites(sprites), frames(frames),
-      animations(animations), palettes(palettes), palette_count(palette_count) {
-}
+    : file_name(file_name), file_path(path), gfx_pages(gfx_pages),
+      sprites(sprites), frames(frames), animations(animations),
+      palettes(palettes), palette_count(palette_count) {}
 Opd::~Opd() {}
 
 // ////////////////// //
@@ -221,6 +222,7 @@ Opd* Opd::open(const QString& path) {
     opd_file.close();
 
     return new Opd(
+        file_name,
         path,
         *gfx_pages,
         *sprites,
@@ -232,12 +234,12 @@ Opd* Opd::open(const QString& path) {
 }
 
 void Opd::save() {
-    const QString file_name = _path.split('/').last().toLower().chopped(4);
-    const QString file_dir  = _path.chopped(file_name.size() + 4);
+    const QString file_name = file_path.split('/').last().toLower().chopped(4);
+    const QString file_dir  = file_path.chopped(file_name.size() + 4);
     const QString file_type = file_name.split('_').last().toLower();
 
     // Separate original from modded
-    QString path     = _path;
+    QString path     = file_path;
     QString opd_name = file_name;
     opd_name         = opd_name.remove(0, 2); // remove p_
     if (file_type.compare(Opd::_original_type) == 0) {
@@ -262,8 +264,8 @@ void Opd::save() {
     }
 
     // Compute file prefixes
-    _palette_file  = "c_" + opd_name;
-    _gfx_page_file = "f_" + opd_name;
+    _palette_file  = "c_" + opd_name + "_mod";
+    _gfx_page_file = "f_" + opd_name + "_mod";
 
     // This will create a file if one doesn't exist
     std::fstream opd_file { path.toStdString(),
@@ -555,7 +557,7 @@ void Opd::recompute_gfx_pages() {
     // Add sprites
     for (auto& sprite : sorted_sprites) {
         // Check if the sprite can fit into the container
-        if (sprite.width > 128 || sprite.height > 128)
+        if (sprite.width > gfx_w || sprite.height > gfx_h)
             throw std::runtime_error("Sprite can't excide then 128x128");
 
         // Try to fit the sprite into an existing container
@@ -569,8 +571,8 @@ void Opd::recompute_gfx_pages() {
                                   _gfx_page_file + "_" +
                                       QString::number(index) + ".csr",
                                   dir,
-                                  128,
-                                  128,
+                                  gfx_w,
+                                  gfx_h,
                                   {} });
             const auto gfx_page = get_it_at(gfx_pages, gfx_pages.size() - 1);
 

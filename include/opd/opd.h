@@ -7,7 +7,12 @@ class Opd {
   public:
     ~Opd();
 
-    constexpr static const uchar palette_max = 128;
+    constexpr static const uchar palette_max = UCHAR_MAX;
+    constexpr static const uchar gfx_w       = 128;
+    constexpr static const uchar gfx_h       = 128;
+
+    const QString file_name;
+    const QString file_path;
 
     std::list<GFXPage>&   gfx_pages;
     std::list<Sprite>&    sprites;
@@ -39,9 +44,8 @@ class Opd {
     QString _palette_file;
     QString _gfx_page_file;
 
-    const QString _path;
-
-    Opd(const QString&                    path,
+    Opd(const QString&                    file_name,
+        const QString&                    path,
         std::list<GFXPage>&               gfx_pages,
         std::list<Sprite>&                sprites,
         std::list<Frame>&                 frames,

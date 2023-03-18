@@ -52,14 +52,16 @@ class MainWindow : public QMainWindow {
 
   private slots:
     // General
-    void resizeEvent(QResizeEvent* event) override;
-    void on_bt_import_opd_clicked();
-    void on_bt_save_opd_clicked();
     // Drag and drop
     void dropEvent(QDropEvent*) override;
     void dragEnterEvent(QDragEnterEvent*) override;
     void dragMoveEvent(QDragMoveEvent*) override;
     void dragLeaveEvent(QDragLeaveEvent*) override;
+
+    // OPD
+    void on_bt_import_opd_clicked();
+    void on_bt_save_opd_clicked();
+    void on_bt_open_folder_clicked();
 
     // Animations
     void on_tree_animations_itemPressed(QTreeWidgetItem* current, int);
@@ -168,7 +170,6 @@ class MainWindow : public QMainWindow {
 
   private:
     Ui::MainWindow* ui;
-    QPushButton*    bt_save = nullptr;
 
     // Application state
     // Opd file
@@ -201,17 +202,9 @@ class MainWindow : public QMainWindow {
     QHash<Color, uchar> _color_index {};
 
     // General methods
-    void import_opd(const QString opd_path);
-    void export_opd(const QString opd_path);
-    void set_general_editing_enabled(bool enabled);
+    void set_general_edit_enabled(bool enabled);
     void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
-    void on_bt_change_mode_clicked(QPushButton* const button) const;
-
-    QPushButton* add_bt_change_mode( //
-        GraphicsViewer* const graphics_viewer
-    ) const;
-
     // Color buttons
     void setup_color_buttons();
     void update_palettes(
@@ -221,6 +214,16 @@ class MainWindow : public QMainWindow {
     // (De)Serialization
     void save_app_state();
     void load_app_state();
+    // Change mod button
+    void on_bt_change_mode_clicked(QPushButton* const button) const;
+
+    QPushButton* add_bt_change_mode( //
+        GraphicsViewer* const graphics_viewer
+    ) const;
+
+    // OPD
+    void import_opd(const QString opd_path);
+    void set_opd_edit_enabled(bool enabled);
 
     // Animation
     void load_animations();

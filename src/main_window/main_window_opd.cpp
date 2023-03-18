@@ -24,7 +24,6 @@ void MainWindow::on_bt_save_opd_clicked() {
 
     // Reload
     load_csrs();
-    load_sprites();
     on_tree_animations_itemPressed(ui->tree_animations->currentItem(), 0);
 }
 

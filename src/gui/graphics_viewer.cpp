@@ -10,7 +10,7 @@ GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
     _selection_pen.setWidthF(1.5);
     _selection_pen.setColor(Qt::blue);
 }
-GraphicsViewer::~GraphicsViewer() {}
+GraphicsViewer::~GraphicsViewer() { clear(); }
 
 // ///////////////////// //
 // GRAPHICS VIEWER SLOTS //

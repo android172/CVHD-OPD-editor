@@ -558,7 +558,8 @@ void Opd::recompute_gfx_pages() {
     for (auto& sprite : sorted_sprites) {
         // Check if the sprite can fit into the container
         if (sprite.width > gfx_w || sprite.height > gfx_h)
-            throw std::runtime_error("Sprite can't excide then 128x128");
+            // throw std::runtime_error("Sprite can't excide then 128x128");
+            continue;
 
         // Try to fit the sprite into an existing container
         bool place_found = insert_sprite_into_gfx(sprite, alignment_rows);

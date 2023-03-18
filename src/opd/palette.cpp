@@ -49,8 +49,8 @@ void PalettePair::compute_from_image(
     auto initial_size = original.size;
 
     // Compute original palette
-    for (int i = 0; i < image.width(); ++i) {
-        for (int j = 0; j < image.height(); ++j) {
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
             const QColor pixel { image.pixel(j, i) };
             const Color  color { (uchar) pixel.red(),
                                 (uchar) pixel.green(),

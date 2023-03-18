@@ -16,9 +16,9 @@ class ImageLwi : public QListWidgetItem {
     )
         : QListWidgetItem(name), name(name), _imported_image(image),
           _color_map(color_map) {
-        _pixels.resize(_imported_image.width());
-        for (auto i = 0; i < _imported_image.width(); ++i)
-            _pixels[i].resize(_imported_image.height());
+        _pixels.resize(_imported_image.height());
+        for (auto i = 0; i < _imported_image.height(); ++i)
+            _pixels[i].resize(_imported_image.width());
     }
 
     void            update_color() { _is_up_to_date = false; }
@@ -37,8 +37,8 @@ class ImageLwi : public QListWidgetItem {
     PixelMap                   _pixels;
 
     void compute_pixels() {
-        for (auto i = 0; i < _imported_image.width(); ++i) {
-            for (auto j = 0; j < _imported_image.height(); ++j) {
+        for (auto i = 0; i < _imported_image.height(); ++i) {
+            for (auto j = 0; j < _imported_image.width(); ++j) {
                 QColor pixel { _imported_image.pixel(j, i) };
                 Color  color  = { (uchar) pixel.red(),
                                   (uchar) pixel.green(),

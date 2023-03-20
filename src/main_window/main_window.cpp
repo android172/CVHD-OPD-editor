@@ -263,28 +263,41 @@ void MainWindow::update_palettes(const uchar color_set, Palette palette) {
 
 #define write_state(state)                                                     \
     file.write(state.toStdString().data(), state.size());                      \
-    file.write("\n", 1);
+    file.write("\n", 1)
 #define read_state(state)                                                      \
     std::getline(file, line);                                                  \
-    state = QString::fromStdString(line);
+    state = QString::fromStdString(line)
 
 void MainWindow::save_app_state() {
     std::ofstream file { app_state_file, std::ios::out };
 
     write_state(_default_opd_import_location);
     write_state(_default_image_import_location);
+    for (const auto& opd_path : _recently_opd_paths) {
+        write_state(opd_path);
+    }
 
     file.close();
 }
 
 void MainWindow::load_app_state() {
     std::ifstream file { app_state_file, std::ios::in };
-
     if (file.is_open() == false) return;
 
+    // Load default locations
     std::string line;
     read_state(_default_opd_import_location);
     read_state(_default_image_import_location);
+
+    // Load recent opd's
+    _recently_opd_paths.clear();
+    while (!file.eof()) {
+        QString recent_opd;
+        read_state(recent_opd);
+        if (!recent_opd.isEmpty()) //
+            _recently_opd_paths.push_back(recent_opd);
+    }
+    update_recent_menubar();
 
     file.close();
 }

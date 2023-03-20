@@ -58,8 +58,14 @@ class MainWindow : public QMainWindow {
     void dragMoveEvent(QDragMoveEvent*) override;
     void dragLeaveEvent(QDragLeaveEvent*) override;
 
+    // Menubar
+    void on_action_open_opd_triggered();
+    void on_action_save_opd_triggered();
+    void on_action_exit_triggered();
+    void on_action_change_value_globally_triggered();
+
     // OPD
-    void on_bt_import_opd_clicked();
+    void on_bt_open_opd_clicked();
     void on_bt_save_opd_clicked();
     void on_bt_open_folder_clicked();
 
@@ -183,8 +189,9 @@ class MainWindow : public QMainWindow {
     bool _redrawing_csr    = false;
 
     // Default load locations
-    QString _default_opd_import_location   = QDir::homePath();
-    QString _default_image_import_location = QDir::homePath();
+    QStringList _recently_opd_paths {};
+    QString     _default_opd_import_location   = QDir::homePath();
+    QString     _default_image_import_location = QDir::homePath();
 
     // Currently selected
     GFXPagePtr        _current_csr           = Invalid::gfx_page;
@@ -209,15 +216,15 @@ class MainWindow : public QMainWindow {
     void set_general_edit_enabled(bool enabled);
     void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
+    // (De)Serialization
+    void save_app_state();
+    void load_app_state();
     // Color buttons
     void setup_color_buttons();
     void update_palettes(
         const uchar color_set, const uchar index, const Color color
     );
     void update_palettes(const uchar color_set, Palette palette);
-    // (De)Serialization
-    void save_app_state();
-    void load_app_state();
     // Change mod button
     void on_bt_change_mode_clicked(QPushButton* const button) const;
 
@@ -225,8 +232,14 @@ class MainWindow : public QMainWindow {
         GraphicsViewer* const graphics_viewer
     ) const;
 
+    // Menubar
+    void add_to_recent(const QString opd_path);
+    void update_recent_menubar();
+    void set_menu_bar_edit_enabled(bool enabled);
+
     // OPD
     void import_opd(const QString opd_path);
+    void export_opd();
     void set_opd_edit_enabled(bool enabled);
 
     // Animation

@@ -348,7 +348,6 @@ void MainWindow::clear_frame_part() {
 void MainWindow::load_frame_part_palette() {
     check_if_valid(_current_frame_part);
     _current_part_palette = *_current_frame_part->palette;
-    bt_frame_part_col_ALL(clear_color());
     bt_frame_part_col_ALL(set_color());
 }
 

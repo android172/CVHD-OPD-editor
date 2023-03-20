@@ -35,7 +35,6 @@ void MainWindow::on_cb_csr_palette_currentIndexChanged(int new_index) {
 
     // Set current palette
     _current_csr_palette = _opd->palettes[new_index];
-    bt_csr_col_ALL(clear_color());
     bt_csr_col_ALL(set_color());
     redraw_csr();
 }

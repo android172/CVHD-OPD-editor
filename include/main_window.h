@@ -214,7 +214,7 @@ class MainWindow : public QMainWindow {
     void update_palettes(
         const uchar color_set, const uchar index, const Color color
     );
-    void update_palettes(const uchar color_set, const Palette palette);
+    void update_palettes(const uchar color_set, Palette palette);
     // (De)Serialization
     void save_app_state();
     void load_app_state();

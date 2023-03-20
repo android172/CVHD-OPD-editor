@@ -111,7 +111,6 @@ void MainWindow::on_bt_merge_layers_clicked() {
     *_current_sprite              = *_current_sprite_import;
 
     // Replace palette
-    _current_sprite_import_palette.index = _current_sprite_palette.index;
     update_palettes(
         _current_sprite_palette.index, _current_sprite_import_palette
     );
@@ -199,7 +198,6 @@ void MainWindow::on_cb_sprite_palette_currentIndexChanged(int new_index) {
 
     // Set current palette
     _current_sprite_palette = _opd->palettes[new_index];
-    bt_sprite_col_ALL(clear_color());
     bt_sprite_col_ALL(set_color());
 
     redraw_sprite();

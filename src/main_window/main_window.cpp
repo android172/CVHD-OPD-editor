@@ -193,36 +193,44 @@ void MainWindow::setup_color_buttons() {
 void MainWindow::update_palettes(
     const uchar color_set, const uchar index, const Color color
 ) {
-    // Update frame part color buttons
-    if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
-        _current_part_palette[index]           = color;
-        (*_current_frame_part->palette)[index] = color;
-        bt_frame_part_col_ALL(set_color());
-        redraw_frame();
-    }
-    // Update sprite color buttons
-    if (ui->cb_sprite_palette->currentIndex() == color_set) {
-        _current_sprite_palette[index] = color;
-        bt_sprite_col_ALL(set_color());
-        redraw_sprite();
-    }
-    // Update CSR color buttons
-    if (ui->cb_csr_palette->currentIndex() == color_set) {
-        _current_csr_palette[index] = color;
-        bt_csr_col_ALL(set_color());
-        redraw_csr();
-    }
-
     // Update palette
     _opd->palettes[color_set][index] = color;
-}
 
-void MainWindow::update_palettes(const uchar color_set, const Palette palette) {
     // Update frame part color buttons
     if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
         if (_current_frame_part->index != Invalid::index) {
-            _current_part_palette         = palette;
-            *_current_frame_part->palette = palette;
+            _current_part_palette[index] = color;
+            bt_frame_part_col_ALL(set_color());
+            redraw_frame();
+        }
+    }
+    // Update sprite color buttons
+    if (ui->cb_sprite_palette->currentIndex() == color_set) {
+        if (_current_sprite->index != Invalid::index) {
+            _current_sprite_palette[index] = color;
+            bt_sprite_col_ALL(set_color());
+            redraw_sprite();
+        }
+    }
+    // Update CSR color buttons
+    if (ui->cb_csr_palette->currentIndex() == color_set) {
+        if (_current_csr->index != Invalid::index) {
+            _current_csr_palette[index] = color;
+            bt_csr_col_ALL(set_color());
+            redraw_csr();
+        }
+    }
+}
+
+void MainWindow::update_palettes(const uchar color_set, Palette palette) {
+    // Update palette
+    palette.index             = color_set;
+    _opd->palettes[color_set] = palette;
+
+    // Update frame part color buttons
+    if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
+        if (_current_frame_part->index != Invalid::index) {
+            _current_part_palette = palette;
             bt_frame_part_col_ALL(set_color());
             redraw_frame();
         }
@@ -243,9 +251,6 @@ void MainWindow::update_palettes(const uchar color_set, const Palette palette) {
             redraw_csr();
         }
     }
-
-    // Update palette
-    _opd->palettes[color_set] = palette;
 }
 
 // -----------------------------------------------------------------------------

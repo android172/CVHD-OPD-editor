@@ -113,6 +113,7 @@ void MainWindow::on_bt_import_all_clicked() {
 }
 
 void MainWindow::on_bt_import_palette_clicked() {
+    check_if_valid(_current_sprite);
     update_palettes(
         _current_sprite_palette.index, _current_image_palette.display
     );
@@ -235,7 +236,6 @@ void MainWindow::load_images(QStringList path_list) {
             _current_image_palette.compute_from_image(image, _color_index);
 
             // Setup button colors
-            bt_image_col_ALL(clear_color());
             bt_image_col_ALL(set_color());
         } else if (_current_image_palette.original.size < 16) {
             _current_image_palette.compute_from_image(image, _color_index);

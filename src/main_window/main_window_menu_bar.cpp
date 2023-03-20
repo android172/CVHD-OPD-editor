@@ -1,6 +1,8 @@
 #include "main_window.h"
 #include "../../forms/ui_main_window.h"
 
+#include "gui/global_change_dialog.h"
+
 #include <QFileDialog>
 
 // ////////////////////////// //
@@ -21,7 +23,22 @@ void MainWindow::on_action_exit_triggered() {
     exit(EXIT_SUCCESS); // :D
 }
 
-void MainWindow::on_action_change_value_globally_triggered() {}
+void MainWindow::on_action_change_value_globally_triggered() {
+    const auto tree = ui->tree_animations;
+
+    // Get all animation twi's
+    QVector<QTreeWidgetItem*> animation_list {};
+    animation_list.reserve(tree->topLevelItemCount());
+
+    // Get all the animations (+ unused section optionally)
+    for (auto i = 0; i < tree->topLevelItemCount(); i++)
+        animation_list.push_back(tree->topLevelItem(i));
+
+    // Create a global change dialog
+    GlobalChangeDialog dialog { animation_list };
+    dialog.setModal(true);
+    if (dialog.exec()) on_tree_animations_itemPressed(tree->currentItem(), 0);
+}
 
 // //////////////////////////////////// //
 // MAIN WINDOW MENU BAR PRIVATE METHODS //

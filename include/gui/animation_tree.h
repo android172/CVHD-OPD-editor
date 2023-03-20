@@ -16,9 +16,11 @@ class AnimationTree : public QTreeWidget {
 
     void delete_animation(AnimationTwi* animation_twi);
 
-    AnimationTwi*    get_current_animation();
-    QTreeWidgetItem* get_unused_section();
-    FrameTwi*        get_current_frame();
+    QTreeWidgetItem* get_unused_section() const;
+    AnimationTwi*    get_animation_section(const int i) const;
+
+    AnimationTwi* get_current_animation() const;
+    FrameTwi*     get_current_frame() const;
 };
 
 #endif // __ANIMATION_TREE_H__

@@ -3,7 +3,7 @@
 
 #include "gui/twi/frame_twi.h"
 
-#include <QValidator>
+#include <QRegularExpressionValidator>
 
 GlobalChangeDialog::GlobalChangeDialog(
     const QVector<QTreeWidgetItem*>& animation_list, QWidget* parent
@@ -51,8 +51,8 @@ void GlobalChangeDialog::load_animation_list() {
 }
 
 void GlobalChangeDialog::setup_input_filters() {
-    const auto validator = new QRegExpValidator(
-        QRegExp("^[+*/-](?:[1-9][0-9]{0,2}|[0-9])$"), this
+    const auto validator = new QRegularExpressionValidator(
+        QRegularExpression("^[+*/-](?:[1-9][0-9]{0,2}|[0-9])$"), this
     );
     ui->edit_frame_pos_x->setValidator(validator);
     ui->edit_frame_pos_y->setValidator(validator);

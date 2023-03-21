@@ -77,7 +77,7 @@ void MainWindow::update_recent_menubar() {
 
         // Elided text (if req)
         QFontMetrics font_metrics(recent_path_action->font());
-        if (font_metrics.width(recent_path_action->text()) > 500) {
+        if (font_metrics.horizontalAdvance(recent_path_action->text()) > 500) {
             const auto text = font_metrics.elidedText(
                 recent_path_action->text(), Qt::ElideLeft, 500
             );

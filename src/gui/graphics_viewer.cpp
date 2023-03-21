@@ -198,9 +198,6 @@ void GraphicsViewer::show_frame(const Frame& frame) {
             }
         }
     }
-
-    // Set into postion
-    translate(frame.x_offset, frame.y_offset);
 }
 
 void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {

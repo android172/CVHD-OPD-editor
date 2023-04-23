@@ -291,13 +291,14 @@ void MainWindow::import_image_as_sprite(
     if (_current_sprite_import != nullptr) delete _current_sprite_import;
     _current_sprite_import = new Sprite();
     _current_sprite_import->from_image(pixels, x, y, w, h);
+    _current_sprite_import->gfx_page = Invalid::gfx_page;
 
     // Set it's palette
     _current_sprite_import_palette.size = _current_image_palette.display.size;
     for (auto i = 0; i < _current_image_palette.display.size; i++)
         _current_sprite_import_palette[i] = _current_image_palette.display[i];
 
-    // Add layer to sprite view
+    // Add layer to spr ite view
     redraw_sprite();
 
     // Update UI

@@ -31,6 +31,11 @@ class AnimationTwi : public QTreeWidgetItem {
         addChild(frame_twi);
         return frame_twi;
     }
+
+    FrameTwi* get_frame(const int i) {
+        if (i >= animation->frames.size()) return nullptr;
+        return dynamic_cast<FrameTwi*>(child(i));
+    }
 };
 
 #endif // __ANIMATION_TWI_H__

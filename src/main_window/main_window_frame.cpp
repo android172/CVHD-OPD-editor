@@ -11,17 +11,19 @@
 // /////////////////////// //
 
 void MainWindow::on_bt_add_frame_clicked() {
-    const auto tree = ui->tree_animations;
-
-    // Get current animation twi & unused twi (JIC)
+    // === Get context ===
+    const auto tree          = ui->tree_animations;
     const auto animation_twi = tree->get_current_animation();
     const auto unused_twi    = tree->get_unused_section();
 
-    // If current section is unused new frame is created by default
+    // Here code forks
+    // For unused section
     if (animation_twi == nullptr) {
-        // Create new frame
+        // === UPDATE VALUE ===
+        save_previous_state();
         auto new_frame = _opd->add_new_frame();
 
+        // === UPDATE UI ===
         // Create new twi for this frame
         const auto frame_twi =
             new FrameTwi(new_frame, Invalid::animation_frame);
@@ -30,7 +32,7 @@ void MainWindow::on_bt_add_frame_clicked() {
         // Set it as current
         tree->setCurrentItem(frame_twi);
     }
-    // Otherwise we prompt the user for further instructions
+    // For animation
     else {
         // Ask for new frame
         NewFrameDialog dialog { _opd };
@@ -40,8 +42,18 @@ void MainWindow::on_bt_add_frame_clicked() {
         // Canceled
         if (result == 0) return;
 
-        // Get selected frame
+        save_previous_state();
         for (const auto& frame : dialog.selected_frames) {
+            // === UPDATE VALUE ===
+            // Add as animation frame
+            auto animation_frame =
+                _opd->add_new_animation_frame(animation_twi->animation, frame);
+            frame->uses++;
+
+            // === UPDATE UI ===
+            // Add to tree
+            const auto frame_twi = animation_twi->add_frame(animation_frame);
+
             // If an unused (previously existing) frame is added we need to
             // remove it from the unused section
             if (result == 1 && frame->uses == 0) {
@@ -63,15 +75,8 @@ void MainWindow::on_bt_add_frame_clicked() {
                 unused_twi->removeChild(selected_frame_twi);
                 delete selected_frame_twi;
             }
-
-            // Add as animation frame
-            auto animation_frame =
-                _opd->add_new_animation_frame(animation_twi->animation, frame);
-            frame->uses++;
-
-            // Add to tree
-            const auto frame_twi = animation_twi->add_frame(animation_frame);
         }
+
         // Set last added as current
         tree->setCurrentItem(
             animation_twi->child(animation_twi->childCount() - 1)
@@ -80,6 +85,37 @@ void MainWindow::on_bt_add_frame_clicked() {
 }
 void MainWindow::on_bt_remove_frame_clicked() {
     check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    // If frame is used we just remove it from animation
+    bool frame_is_used = _current_frame->uses != 0;
+    if (frame_is_used) {
+        // Remove animation frame
+        _current_animation->frames.erase(_current_anim_frame);
+        _current_frame->uses--;
+
+        // Update indices
+        ushort index = 0;
+        for (auto& frame : _current_animation->frames)
+            frame.index = index++;
+    }
+    // Otherwise we remove it completely
+    else {
+        // Remove sprite uses
+        for (auto& part : _current_frame->parts)
+            part.sprite->uses--;
+
+        // Remove frame itself
+        _opd->frames.erase(_current_frame);
+
+        // Update indices
+        ushort index = 0;
+        for (auto& frame : _opd->frames)
+            frame.index = index++;
+    }
+
+    // === UPDATE UI ===
     const auto tree = ui->tree_animations;
 
     // Get current frame
@@ -87,20 +123,12 @@ void MainWindow::on_bt_remove_frame_clicked() {
     if (frame_twi == nullptr) return;
 
     // If frame is used we just remove it from animation
-    if (_current_frame->uses) {
-        const auto animation_twi =
-            dynamic_cast<AnimationTwi*>(frame_twi->parent());
+    if (frame_is_used) {
+        const auto animation_twi = tree->get_current_animation();
         if (!animation_twi) return;
 
         // Remove animation frame
-        _current_animation->frames.erase(_current_anim_frame);
-        _current_frame->uses--;
         animation_twi->removeChild(frame_twi); // This invokes on_item_changed
-
-        // Update indices
-        ushort index = 0;
-        for (auto& frame : _current_animation->frames)
-            frame.index = index++;
 
         // Clear frame view if animation has none left
         if (animation_twi->childCount() == 0) clear_frame();
@@ -117,25 +145,13 @@ void MainWindow::on_bt_remove_frame_clicked() {
 
             frame_twi->animation_info = Invalid::animation_frame;
             unused_twi->addChild(frame_twi);
-        }
+        } else delete frame_twi;
     }
     // Otherwise we remove it completely
     else {
-        // Remove sprite uses
-        for (auto& part : _current_frame->parts)
-            part.sprite->uses--;
-
-        // Remove frame itself
-        _opd->frames.erase(_current_frame);
-
         const auto unused_twi = frame_twi->parent();
         unused_twi->removeChild(frame_twi); // This invokes on_item_changed
         delete frame_twi;
-
-        // Update indices
-        ushort index = 0;
-        for (auto& frame : _opd->frames)
-            frame.index = index++;
 
         // If unused section has no more frames we delete it too
         if (unused_twi->childCount() == 0) delete tree->takeTopLevelItem(0);
@@ -144,6 +160,23 @@ void MainWindow::on_bt_remove_frame_clicked() {
 void MainWindow::on_bt_frame_up_clicked() {
     check_if_valid(_current_frame);
 
+    // === UPDATE VALUE ===
+    if (_current_animation->index != Invalid::index &&
+        _current_anim_frame->index != 0) {
+        save_previous_state();
+        // Move frame up
+        AnimationFramePtr frame_neighbour = _current_anim_frame;
+        frame_neighbour--;
+        _current_animation->frames.splice(
+            frame_neighbour, _current_animation->frames, _current_anim_frame
+        );
+
+        // Update indices
+        _current_anim_frame->index--;
+        frame_neighbour->index++;
+    }
+
+    // === UPDATE UI ===
     // Get current frame
     const auto frame_twi = ui->tree_animations->get_current_frame();
     if (frame_twi == nullptr) return;
@@ -160,25 +193,29 @@ void MainWindow::on_bt_frame_up_clicked() {
         dynamic_cast<FrameTwi*>(parent_twi->takeChild(frame_index - 1));
     parent_twi->insertChild(frame_index, frame_neighbour);
 
-    // Update location in animation (if applicable)
-    if (_current_animation->index != Invalid::index) {
-        _current_animation->frames.splice(
-            frame_neighbour->animation_info,
-            _current_animation->frames,
-            frame_twi->animation_info
-        );
-    }
-
     // Update arrows
     set_frame_movement_enabled(true);
-
-    // Update indices
-    frame_twi->animation_info->index       = frame_index - 1;
-    frame_neighbour->animation_info->index = frame_index;
 }
 void MainWindow::on_bt_frame_down_clicked() {
     check_if_valid(_current_frame);
 
+    // === UPDATE VALUE ===
+    if (_current_animation->index != Invalid::index &&
+        _current_anim_frame->index != _current_animation->frames.size()) {
+        save_previous_state();
+        // Move frame down
+        AnimationFramePtr frame_neighbour = _current_anim_frame;
+        frame_neighbour++;
+        _current_animation->frames.splice(
+            _current_anim_frame, _current_animation->frames, frame_neighbour
+        );
+
+        // Update indices
+        _current_anim_frame->index++;
+        frame_neighbour->index--;
+    }
+
+    // === UPDATE UI ===
     // Get current frame
     const auto frame_twi = ui->tree_animations->get_current_frame();
     if (frame_twi == nullptr) return;
@@ -196,21 +233,8 @@ void MainWindow::on_bt_frame_down_clicked() {
         dynamic_cast<FrameTwi*>(parent_twi->takeChild(frame_index + 1));
     parent_twi->insertChild(frame_index, frame_neighbour);
 
-    // Update location in animation (if applicable)
-    if (_current_animation->index != Invalid::index) {
-        _current_animation->frames.splice(
-            frame_twi->animation_info,
-            _current_animation->frames,
-            frame_neighbour->animation_info
-        );
-    }
-
     // Update arrows
     set_frame_movement_enabled(true);
-
-    // Update indices
-    frame_twi->animation_info->index       = frame_index + 1;
-    frame_neighbour->animation_info->index = frame_index;
 }
 
 void MainWindow::on_tool_box_frame_currentChanged(int current) {
@@ -228,8 +252,12 @@ void MainWindow::on_tool_box_frame_currentChanged(int current) {
 
 void MainWindow::on_line_frame_name_textEdited(QString new_text) {
     check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_frame->name = new_text;
 
+    // === UPDATE UI ===
     const auto frame_twi = ui->tree_animations->get_current_frame();
     if (frame_twi == nullptr) return;
     frame_twi->compute_name();
@@ -237,22 +265,37 @@ void MainWindow::on_line_frame_name_textEdited(QString new_text) {
 
 void MainWindow::on_spin_frame_pos_x_valueChanged(int new_value) {
     check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_frame->x_offset = new_value;
 }
 void MainWindow::on_spin_frame_pos_y_valueChanged(int new_value) {
     check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_frame->y_offset = new_value;
 }
 void MainWindow::on_spin_frame_off_x_valueChanged(int new_value) {
     check_if_valid(_current_anim_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_anim_frame->x_offset = new_value;
 }
 void MainWindow::on_spin_frame_off_y_valueChanged(int new_value) {
     check_if_valid(_current_anim_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_anim_frame->y_offset = new_value;
 }
 void MainWindow::on_spin_frame_delay_valueChanged(int new_value) {
     check_if_valid(_current_anim_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_anim_frame->delay = new_value;
 }
 
@@ -274,14 +317,14 @@ void MainWindow::load_frame(
     if (_current_frame->uses > 0) animation_info = *animation_info_in;
 
     // Animation frame data (if in animation)
-    ui->spin_frame_off_x->setValue(animation_info.x_offset);
-    ui->spin_frame_off_y->setValue(animation_info.y_offset);
-    ui->spin_frame_delay->setValue(animation_info.delay);
+    change_ui(spin_frame_off_x, setValue(animation_info.x_offset));
+    change_ui(spin_frame_off_y, setValue(animation_info.y_offset));
+    change_ui(spin_frame_delay, setValue(animation_info.delay));
 
     // Frame data
-    ui->line_frame_name->setText(_current_frame->name);
-    ui->spin_frame_pos_x->setValue(_current_frame->x_offset);
-    ui->spin_frame_pos_y->setValue(_current_frame->y_offset);
+    change_ui(line_frame_name, setText(_current_frame->name));
+    change_ui(spin_frame_pos_x, setValue(_current_frame->x_offset));
+    change_ui(spin_frame_pos_y, setValue(_current_frame->y_offset));
 
     // Add parts & hitboxes
     if (_current_frame->parts.size()) load_frame_parts();
@@ -303,13 +346,13 @@ void MainWindow::clear_frame() {
     _current_frame      = Invalid::frame;
     _current_anim_frame = Invalid::animation_frame;
 
-    ui->gv_frame->clear();
-    ui->line_frame_name->clear();
-    ui->spin_frame_delay->clear();
-    ui->spin_frame_pos_x->clear();
-    ui->spin_frame_pos_y->clear();
-    ui->spin_frame_off_x->clear();
-    ui->spin_frame_off_y->clear();
+    change_ui(gv_frame, clear());
+    change_ui(line_frame_name, clear());
+    change_ui(spin_frame_delay, clear());
+    change_ui(spin_frame_pos_x, clear());
+    change_ui(spin_frame_pos_y, clear());
+    change_ui(spin_frame_off_x, clear());
+    change_ui(spin_frame_off_y, clear());
 
     // Clear part & hitbox
     clear_frame_part();
@@ -358,36 +401,41 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
 }
 
 void MainWindow::on_activate_frame_move_mode() {
-    ui->gv_frame->activate_move([=](short dx, short dy) {
+    ui->gv_frame->activate_move([=](short dx, short dy, bool save) {
         if (ui->tool_box_frame->currentIndex() == 0) {
             check_if_valid(_current_frame_part);
+            if (save) save_previous_state();
 
             // Change values
             _current_frame_part->x_offset += dx;
             _current_frame_part->y_offset += dy;
 
             // Change their display
-            ui->spin_frame_part_off_x->setValue(
-                ui->spin_frame_part_off_x->value() + dx
+            change_ui(
+                spin_frame_part_off_x,
+                setValue(ui->spin_frame_part_off_x->value() + dx)
             );
-            ui->spin_frame_part_off_y->setValue(
-                ui->spin_frame_part_off_y->value() + dy
+            change_ui(
+                spin_frame_part_off_y,
+                setValue(ui->spin_frame_part_off_y->value() + dy)
             );
         } else {
             check_if_valid(_current_hitbox);
+            if (save) save_previous_state();
 
             // Change values
             _current_hitbox->x_position += dx;
             _current_hitbox->y_position += dy;
 
             // Change their display
-            ui->spin_hitbox_pos_x->setValue(
-                ui->spin_hitbox_pos_x->value() + dx
+            change_ui(
+                spin_hitbox_pos_x, setValue(ui->spin_hitbox_pos_x->value() + dx)
             );
-            ui->spin_hitbox_pos_y->setValue(
-                ui->spin_hitbox_pos_y->value() + dy
+            change_ui(
+                spin_hitbox_pos_y, setValue(ui->spin_hitbox_pos_y->value() + dy)
             );
         }
+        redraw_frame();
     });
 }
 

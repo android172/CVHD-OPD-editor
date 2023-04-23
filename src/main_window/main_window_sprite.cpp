@@ -19,9 +19,12 @@ void MainWindow::on_list_sprites_currentItemChanged(
 }
 
 void MainWindow::on_bt_add_sprite_clicked() {
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Create new sprite
     auto new_sprite_ptr = _opd->add_new_sprite();
 
+    // === UPDATE UI ===
     // Add to list
     const auto sprite_lwi = new SpriteLwi(new_sprite_ptr);
     ui->list_sprites->addItem(sprite_lwi);
@@ -32,12 +35,10 @@ void MainWindow::on_bt_add_sprite_clicked() {
 void MainWindow::on_bt_remove_sprite_clicked() {
     check_if_valid(_current_sprite);
 
-    // Get current lwi
-    const auto sprite_lwi =
-        dynamic_cast<SpriteLwi*>(ui->list_sprites->currentItem());
-    if (sprite_lwi == nullptr) return;
-
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Remove frame parts which use this sprite
+    bool current_frame_changed = false;
     for (auto& frame : _opd->frames) {
         auto change_occurred = false;
 
@@ -54,30 +55,42 @@ void MainWindow::on_bt_remove_sprite_clicked() {
             ushort index = 0;
             for (auto& part : frame.parts)
                 part.index = index++;
-        }
 
-        // Update animation tab if necessary
-        if (_current_frame->index == frame.index) {
-            // Find current frame part list
-            const auto frame_part_row = ui->list_frame_parts->currentRow();
-            if (frame_part_row != -1)
-                // Remove it
-                delete ui->list_frame_parts->takeItem(frame_part_row);
+            // Update flag
+            if (frame.index == _current_frame->index)
+                current_frame_changed = true;
         }
     }
 
-    // Remove sprite itself
+    // Remove Sprite
     _opd->sprites.erase(_current_sprite);
-    ui->list_sprites->removeItemWidget(sprite_lwi);
-    delete sprite_lwi;
-
-    // If this is the last sprite
-    if (_opd->sprites.size() == 0) clear_sprite();
 
     // Update indices
     ushort index = 0;
     for (auto& sprite : _opd->sprites)
         sprite.index = index++;
+
+    // === UPDATE UI ===
+    // Get current lwi
+    const auto sprite_lwi =
+        dynamic_cast<SpriteLwi*>(ui->list_sprites->currentItem());
+    if (sprite_lwi == nullptr) return;
+
+    // Update animation tab if necessary
+    if (current_frame_changed) {
+        // Find current frame part list
+        const auto frame_part_row = ui->list_frame_parts->currentRow();
+        if (frame_part_row != -1)
+            // Remove it
+            delete ui->list_frame_parts->takeItem(frame_part_row);
+    }
+
+    // Remove sprite itself
+    ui->list_sprites->removeItemWidget(sprite_lwi);
+    delete sprite_lwi;
+
+    // If this is the last sprite
+    if (_opd->sprites.size() == 0) clear_sprite();
 }
 
 void MainWindow::on_bt_sprite_trim_clicked() {
@@ -86,17 +99,20 @@ void MainWindow::on_bt_sprite_trim_clicked() {
     if (_current_sprite_import != nullptr) {
         _current_sprite_import->trim();
 
-        ui->spin_sprite_pos_x->setValue(_current_sprite_import->x_pos);
-        ui->spin_sprite_pos_y->setValue(_current_sprite_import->y_pos);
-        ui->spin_sprite_width->setValue(_current_sprite_import->width);
-        ui->spin_sprite_height->setValue(_current_sprite_import->height);
+        change_ui(spin_sprite_pos_x, setValue(_current_sprite_import->x_pos));
+        change_ui(spin_sprite_pos_y, setValue(_current_sprite_import->y_pos));
+        change_ui(spin_sprite_width, setValue(_current_sprite_import->width));
+        change_ui(spin_sprite_height, setValue(_current_sprite_import->height));
     } else {
+        // === UPDATE VALUE ===
+        save_previous_state();
         _current_sprite->trim();
 
-        ui->spin_sprite_pos_x->setValue(_current_sprite->x_pos);
-        ui->spin_sprite_pos_y->setValue(_current_sprite->y_pos);
-        ui->spin_sprite_width->setValue(_current_sprite->width);
-        ui->spin_sprite_height->setValue(_current_sprite->height);
+        // === UPDATE UI ===
+        change_ui(spin_sprite_pos_x, setValue(_current_sprite->x_pos));
+        change_ui(spin_sprite_pos_y, setValue(_current_sprite->y_pos));
+        change_ui(spin_sprite_width, setValue(_current_sprite->width));
+        change_ui(spin_sprite_height, setValue(_current_sprite->height));
     }
     redraw_sprite();
 }
@@ -105,6 +121,8 @@ void MainWindow::on_bt_merge_layers_clicked() {
     check_if_valid(_current_sprite);
     if (_current_sprite_import == nullptr) return;
 
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Replace sprite
     _current_sprite_import->index = _current_sprite->index;
     _current_sprite_import->uses  = _current_sprite->uses;
@@ -143,36 +161,44 @@ void MainWindow::on_slider_transparency_valueChanged(int new_value) {
 void MainWindow::on_spin_sprite_pos_x_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) //
-        _current_sprite_import->x_pos = new_value;
-    else _current_sprite->x_pos = new_value;
+    if (!_current_sprite_import) {
+        // === UPDATE VALUE ===
+        save_previous_state();
+        _current_sprite->x_pos = new_value;
+    } else _current_sprite_import->x_pos = new_value;
 
     redraw_sprite();
 }
 void MainWindow::on_spin_sprite_pos_y_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) //
-        _current_sprite_import->y_pos = new_value;
-    else _current_sprite->y_pos = new_value;
+    if (!_current_sprite_import) {
+        // === UPDATE VALUE ===
+        save_previous_state();
+        _current_sprite->y_pos = new_value;
+    } else _current_sprite_import->y_pos = new_value;
 
     redraw_sprite();
 }
 void MainWindow::on_spin_sprite_width_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) //
-        _current_sprite_import->width = new_value;
-    else _current_sprite->width = new_value;
+    if (!_current_sprite_import) {
+        // === UPDATE VALUE ===
+        save_previous_state();
+        _current_sprite->width = new_value;
+    } else _current_sprite_import->width = new_value;
 
     redraw_sprite();
 }
 void MainWindow::on_spin_sprite_height_valueChanged(int new_value) {
     check_if_valid(_current_sprite);
 
-    if (_current_sprite_import) //
-        _current_sprite_import->height = new_value;
-    else _current_sprite->height = new_value;
+    if (!_current_sprite_import) {
+        // === UPDATE VALUE ===
+        save_previous_state();
+        _current_sprite->height = new_value;
+    } else _current_sprite_import->height = new_value;
 
     redraw_sprite();
 }
@@ -221,10 +247,11 @@ APPLY_TO_COL(button_click_method);
 void MainWindow::load_sprites() {
     // Setup palettes
     ui->cb_sprite_palette->clear();
-    ui->cb_sprite_palette->addItem("Default");
-    ui->cb_sprite_palette->addItem("Add New");
-    for (auto i = 1; i < _opd->palette_count; i++)
-        ui->cb_sprite_palette->insertItem(i, QString::number(i));
+    change_ui(cb_sprite_palette, addItem("Default"));
+    change_ui(cb_sprite_palette, addItem("Add New"));
+    for (auto i = 1; i < _opd->palette_count; i++) {
+        change_ui(cb_sprite_palette, insertItem(i, QString::number(i)));
+    }
     _current_sprite_palette = *_opd->palettes.begin();
 
     // Add all loaded sprites
@@ -245,10 +272,10 @@ void MainWindow::load_sprite(const SpritePtr sprite) {
     }
 
     // Update ui
-    ui->spin_sprite_pos_x->setValue(sprite->x_pos);
-    ui->spin_sprite_pos_y->setValue(sprite->y_pos);
-    ui->spin_sprite_width->setValue(sprite->width);
-    ui->spin_sprite_height->setValue(sprite->height);
+    change_ui(spin_sprite_pos_x, setValue(sprite->x_pos));
+    change_ui(spin_sprite_pos_y, setValue(sprite->y_pos));
+    change_ui(spin_sprite_width, setValue(sprite->width));
+    change_ui(spin_sprite_height, setValue(sprite->height));
     redraw_sprite();
 
     // Enable editing
@@ -265,10 +292,10 @@ void MainWindow::clear_sprite() {
 
     // Update ui
     ui->gv_sprite->clear();
-    ui->spin_sprite_pos_x->clear();
-    ui->spin_sprite_pos_y->clear();
-    ui->spin_sprite_width->clear();
-    ui->spin_sprite_height->clear();
+    change_ui(spin_sprite_pos_x, clear());
+    change_ui(spin_sprite_pos_y, clear());
+    change_ui(spin_sprite_width, clear());
+    change_ui(spin_sprite_height, clear());
 
     // Disable editing
     set_sprite_edit_enabled(false);
@@ -299,9 +326,9 @@ void MainWindow::set_sprite_edit_enabled(bool enabled) {
 }
 
 void MainWindow::on_activate_sprite_move_mode() {
-    ui->gv_sprite->activate_move([=](short dx, short dy) {
+    ui->gv_sprite->activate_move([=](short dx, short dy, bool save) {
         check_if_valid(_current_sprite);
-
+        if (save) save_previous_state();
         if (_current_sprite_import != nullptr) {
             // Cap min width and height
             if (_current_sprite_import->width + dx <= 0)
@@ -316,10 +343,18 @@ void MainWindow::on_activate_sprite_move_mode() {
             _current_sprite_import->height += dy;
 
             // Change their display
-            ui->spin_sprite_pos_x->setValue(_current_sprite_import->x_pos);
-            ui->spin_sprite_pos_y->setValue(_current_sprite_import->y_pos);
-            ui->spin_sprite_width->setValue(_current_sprite_import->width);
-            ui->spin_sprite_height->setValue(_current_sprite_import->height);
+            change_ui(
+                spin_sprite_pos_x, setValue(_current_sprite_import->x_pos)
+            );
+            change_ui(
+                spin_sprite_pos_y, setValue(_current_sprite_import->y_pos)
+            );
+            change_ui(
+                spin_sprite_width, setValue(_current_sprite_import->width)
+            );
+            change_ui(
+                spin_sprite_height, setValue(_current_sprite_import->height)
+            );
         } else {
             // Cap min width and height
             if (_current_sprite->width + dx <= 0)
@@ -334,11 +369,12 @@ void MainWindow::on_activate_sprite_move_mode() {
             _current_sprite->height += dy;
 
             // Change their display
-            ui->spin_sprite_pos_x->setValue(_current_sprite->x_pos);
-            ui->spin_sprite_pos_y->setValue(_current_sprite->y_pos);
-            ui->spin_sprite_width->setValue(_current_sprite->width);
-            ui->spin_sprite_height->setValue(_current_sprite->height);
+            change_ui(spin_sprite_pos_x, setValue(_current_sprite->x_pos));
+            change_ui(spin_sprite_pos_y, setValue(_current_sprite->y_pos));
+            change_ui(spin_sprite_width, setValue(_current_sprite->width));
+            change_ui(spin_sprite_height, setValue(_current_sprite->height));
         }
+        redraw_sprite();
     });
 }
 

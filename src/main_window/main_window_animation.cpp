@@ -13,19 +13,11 @@
 
 void MainWindow::on_tree_animations_itemPressed(QTreeWidgetItem* current, int) {
     if (current == nullptr) return;
-    auto is_frame = current->parent() != nullptr;
 
     // Get current frame twi and its corresponding animation (if applicable)
-    AnimationTwi* animation_twi = nullptr;
-    FrameTwi*     frame_twi     = nullptr;
-    if (is_frame) {
-        animation_twi = dynamic_cast<AnimationTwi*>(current->parent());
-        frame_twi     = dynamic_cast<FrameTwi*>(current);
-    } else {
-        animation_twi = dynamic_cast<AnimationTwi*>(current);
-        if (animation_twi && animation_twi->animation->frames.size() > 0)
-            frame_twi = dynamic_cast<FrameTwi*>(animation_twi->child(0));
-    }
+    AnimationTwi* animation_twi = ui->tree_animations->get_current_animation();
+    FrameTwi*     frame_twi     = ui->tree_animations->get_current_frame();
+    if (!frame_twi && animation_twi) frame_twi = animation_twi->get_frame(0);
 
     // Load animation
     if (animation_twi) load_animation(animation_twi->animation);
@@ -43,9 +35,12 @@ void MainWindow::on_tree_animations_currentItemChanged(
 }
 
 void MainWindow::on_bt_add_animation_clicked() {
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Create new animation
-    auto new_animation = _opd->add_new_animation();
+    const auto new_animation = _opd->add_new_animation();
 
+    // === UPDATE UI ===
     // Create new animation TWI and add it to tree
     const auto animation_twi =
         ui->tree_animations->add_animation(new_animation);
@@ -56,16 +51,29 @@ void MainWindow::on_bt_add_animation_clicked() {
 
 void MainWindow::on_bt_remove_animation_clicked() {
     check_if_valid(_current_animation);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    // Remove animation
+    for (const auto frame : _current_animation->frames)
+        frame.data->uses--;
+    _opd->animations.erase(_current_animation);
+
+    // Update indices
+    ushort index = 0;
+    for (auto& animation : _opd->animations)
+        animation.index = index++;
+
+    // === UPDATE UI ===
     auto tree = ui->tree_animations;
 
-    // Cast current animation (if exist)
+    // Get current animation
     const auto animation_twi = tree->get_current_animation();
-    if (animation_twi == nullptr) return;
 
     // Remove all of its frames
     for (auto i = animation_twi->childCount() - 1; i >= 0; i--) {
-        auto frame_twi = dynamic_cast<FrameTwi*>(animation_twi->takeChild(0));
-        frame_twi->frame_info->uses--;
+        const auto frame_twi =
+            dynamic_cast<FrameTwi*>(animation_twi->takeChild(0));
 
         // If this was the last animation that used this frame move it to
         // unused section
@@ -77,17 +85,11 @@ void MainWindow::on_bt_remove_animation_clicked() {
 
             frame_twi->animation_info = Invalid::animation_frame;
             unused_twi->addChild(frame_twi);
-        }
+        } else delete frame_twi;
     }
 
-    // Remove it
-    _opd->animations.erase(_current_animation);
+    // Remove the animation
     tree->delete_animation(animation_twi);
-
-    // Update indices
-    ushort index = 0;
-    for (auto& animation : _opd->animations)
-        animation.index = index++;
 
     // Inform rest
     clear_animation();
@@ -95,9 +97,13 @@ void MainWindow::on_bt_remove_animation_clicked() {
 }
 
 void MainWindow::on_line_animation_name_textEdited(QString new_text) {
-    if (_current_animation->index == Invalid::index) return;
+    check_if_valid(_current_animation);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_animation->name = new_text;
 
+    // === UPDATE UI ===
     const auto animation_twi = ui->tree_animations->get_current_animation();
     if (animation_twi == nullptr) return;
     animation_twi->compute_name();
@@ -152,7 +158,9 @@ void MainWindow::load_animations() {
 
 void MainWindow::load_animation(const AnimationPtr animation) {
     _current_animation = animation;
-    ui->line_animation_name->setText(animation->name);
+
+    change_ui(line_animation_name, setText(animation->name));
+
     set_animation_edit_enabled(true);
 
     // Stop playing animation
@@ -160,7 +168,9 @@ void MainWindow::load_animation(const AnimationPtr animation) {
 }
 void MainWindow::clear_animation() {
     _current_animation = Invalid::animation;
-    ui->line_animation_name->setText("");
+
+    change_ui(line_animation_name, setText(""));
+
     set_animation_edit_enabled(false);
 
     // Stop playing animation

@@ -1,5 +1,7 @@
 #include "gui/graphics_viewer.h"
 
+#include <QScrollBar>
+
 GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
     setDragMode(QGraphicsView::ScrollHandDrag);
 
@@ -17,8 +19,22 @@ GraphicsViewer::~GraphicsViewer() { clear(); }
 // ///////////////////// //
 
 void GraphicsViewer::wheelEvent(QWheelEvent* event) {
+    QPointF current_center = mapToScene(viewport()->rect().center());
+
+    // Scale up / down
     if (event->angleDelta().y() > 0) scale(1.1, 1.1);
     else scale(0.9, 0.9);
+
+    // Set minimum and maximum scale
+    if (transform().m11() > 100.0f) {
+        resetTransform();
+        scale(100.0f, 100.0f);
+        centerOn(current_center);
+    } else if (transform().m11() < 0.5f) {
+        resetTransform();
+        scale(0.5f, 0.5f);
+        centerOn(current_center);
+    }
 
     // Calculate the desired pen width in pixels
     const auto desiredPenWidth = 1.5; // adjust this as needed
@@ -33,12 +49,14 @@ void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Plus) scale(1.1, 1.1);
     else if (event->key() == Qt::Key_Minus) scale(0.9, 0.9);
     else if (_current_mode == ControlMode::Move && !_in_move_mode) {
-        if (event->key() == Qt::Key_Up) _on_move_preformed(0, -1);
-        else if (event->key() == Qt::Key_Down) _on_move_preformed(0, 1);
-        else if (event->key() == Qt::Key_Left) _on_move_preformed(-1, 0);
-        else if (event->key() == Qt::Key_Right) _on_move_preformed(1, 0);
+        if (event->key() == Qt::Key_Up) _on_move_preformed(0, -1, true);
+        else if (event->key() == Qt::Key_Down) _on_move_preformed(0, 1, true);
+        else if (event->key() == Qt::Key_Left) _on_move_preformed(-1, 0, true);
+        else if (event->key() == Qt::Key_Right) _on_move_preformed(1, 0, true);
     }
 }
+
+#include <QDebug>
 
 void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
@@ -63,8 +81,11 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             // Get pivot
             _move_pivot   = mapToScene(event->pos()).toPoint();
             _in_move_mode = true;
-        } else
-            ;
+            _on_move_preformed(_move_pivot.x(), _move_pivot.y(), true);
+        } else if (_current_mode == ControlMode::Pan) {
+            const QPoint pos = mapToScene(event->pos()).toPoint();
+            qDebug() << pos.x() << " " << pos.y();
+        }
     }
     QGraphicsView::mousePressEvent(event);
 }
@@ -99,9 +120,10 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
             _move_pivot.setY(end_point.y());
 
             // Move current object
-            _on_move_preformed(delta_x, delta_y);
+            _on_move_preformed(delta_x, delta_y, false);
         }
-    }
+    } else if (_current_mode == ControlMode::Pan)
+        ;
     QGraphicsView::mouseMoveEvent(event);
 }
 void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
@@ -198,6 +220,14 @@ void GraphicsViewer::show_frame(const Frame& frame) {
             }
         }
     }
+
+    const auto rect = scene->itemsBoundingRect();
+    setSceneRect(QRectF(
+        rect.x() - rect.width(),
+        rect.y() - rect.height(),
+        3 * rect.width(),
+        3 * rect.height()
+    ));
 }
 
 void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
@@ -385,7 +415,7 @@ void GraphicsViewer::activate_selection(
 }
 
 void GraphicsViewer::activate_move(
-    const std::function<void(short, short)>& on_move_preformed
+    const std::function<void(short, short, bool)>& on_move_preformed
 ) {
     // Change current mode to move
     _current_mode      = ControlMode::Move;

@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow {
 
   private slots:
     // General
+    bool eventFilter(QObject* obj, QEvent* event) override;
     // Drag and drop
     void dropEvent(QDropEvent*) override;
     void dragEnterEvent(QDragEnterEvent*) override;
@@ -212,7 +213,14 @@ class MainWindow : public QMainWindow {
 
     QHash<Color, uchar> _color_index {};
 
+    // State timeline
+    const uchar     _undo_max = 128;
+    std::list<Opd*> _previous_states;
+    std::list<Opd*> _future_states;
+
     // General methods
+    void load_ui();
+    void reload_ui();
     void set_general_edit_enabled(bool enabled);
     void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
@@ -225,6 +233,10 @@ class MainWindow : public QMainWindow {
         const uchar color_set, const uchar index, const Color color
     );
     void update_palettes(const uchar color_set, Palette palette);
+    // State timeline
+    void save_previous_state();
+    void undo();
+    void redo();
     // Change mod button
     void on_bt_change_mode_clicked(QPushButton* const button) const;
 
@@ -307,6 +319,11 @@ class MainWindow : public QMainWindow {
     void set_csr_edit_enabled(bool enabled);
     void redraw_csr();
 };
+
+#define change_ui(element, change_method)                                      \
+    ui->element->blockSignals(true);                                           \
+    ui->element->change_method;                                                \
+    ui->element->blockSignals(false)
 
 #define __COL_ACTIVATE__(i, button_set, action) ui->button_set##_##i->action
 #define COL_ACTIVATE_ALL(button_set, action)                                   \

@@ -31,6 +31,8 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     dialog.setModal(true);
     if (!dialog.exec()) return; // Rejected
 
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Get selected sprite & palette
     const auto sprite  = dialog.selected_sprite;
     const auto palette = dialog.selected_palette;
@@ -42,6 +44,7 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     const auto new_frame_part =
         _opd->add_new_frame_part(_current_frame, sprite, palette);
 
+    // === UPDATE UI ===
     // Add to list
     const auto frame_part_lwi = new FramePartLwi(new_frame_part);
     ui->list_frame_parts->addItem(frame_part_lwi);
@@ -50,19 +53,28 @@ void MainWindow::on_bt_add_frame_part_clicked() {
     ui->list_frame_parts->setCurrentItem(frame_part_lwi);
 }
 void MainWindow::on_bt_remove_frame_part_clicked() {
-    _redrawing_frame = true;
     check_if_valid(_current_frame_part);
-    const auto list = ui->list_frame_parts;
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    // Remove it
+    _current_frame_part->sprite->uses--;
+    _current_frame->parts.erase(_current_frame_part);
+
+    // Update indices
+    ushort index = 0;
+    for (auto& part : _current_frame->parts)
+        part.index = index++;
+
+    // === UPDATE UI ===
+    const auto list  = ui->list_frame_parts;
+    _redrawing_frame = true;
 
     // Get current part lwi
     const auto part_lwi = dynamic_cast<FramePartLwi*>(list->currentItem());
     if (part_lwi == nullptr) return;
 
-    // Decrement sprite use
-    part_lwi->frame_part->sprite->uses--;
-
     // Remove it
-    _current_frame->parts.erase(_current_frame_part);
     list->removeItemWidget(part_lwi);
     delete part_lwi;
 
@@ -71,36 +83,36 @@ void MainWindow::on_bt_remove_frame_part_clicked() {
     // Otherwise update arrows
     else set_frame_part_movement_enabled(true);
 
-    // Update indices
-    ushort index = 0;
-    for (auto& part : _current_frame->parts)
-        part.index = index++;
-
     // Redraw frame
     _redrawing_frame = false;
     redraw_frame();
 }
 void MainWindow::on_bt_frame_part_up_clicked() {
     check_if_valid(_current_frame_part);
-    const auto list = ui->list_frame_parts;
 
-    // Get index
+    // === UPDATE VALUE ===
+    save_previous_state();
     const auto part_index = _current_frame_part->index;
-    if (part_index == 0) return; // Cant go up further
+    if (part_index == 0) return;
+
+    // Move it up
+    auto neighboring_frame_part = _current_frame_part;
+    neighboring_frame_part--;
+    _current_frame->parts.splice(
+        neighboring_frame_part, _current_frame->parts, _current_frame_part
+    );
+
+    // Update indices
+    neighboring_frame_part->index = part_index;
+    _current_frame_part->index    = part_index - 1;
+
+    // === UPDATE UI ===
+    const auto list = ui->list_frame_parts;
 
     // Update ui list location
     const auto part_neighbour =
         dynamic_cast<FramePartLwi*>(list->takeItem(part_index - 1));
     list->insertItem(part_index, part_neighbour);
-
-    // Update location in frame (frame part order)
-    _current_frame->parts.splice(
-        part_neighbour->frame_part, _current_frame->parts, _current_frame_part
-    );
-
-    // Update indices
-    part_neighbour->frame_part->index = part_index;
-    _current_frame_part->index        = part_index - 1;
 
     // Update gv indices
     ui->gv_frame->current_index = part_index - 1;
@@ -116,26 +128,31 @@ void MainWindow::on_bt_frame_part_up_clicked() {
 }
 void MainWindow::on_bt_frame_part_down_clicked() {
     check_if_valid(_current_frame_part);
-    const auto list = ui->list_frame_parts;
 
-    // Get index
+    // === UPDATE VALUE ===
+    save_previous_state();
     const auto part_index = _current_frame_part->index;
     if (part_index == _current_frame->parts.size() - 1)
         return; // Cant go down further
+
+    // Move down
+    auto neighboring_frame_part = _current_frame_part;
+    neighboring_frame_part++;
+    _current_frame->parts.splice(
+        _current_frame_part, _current_frame->parts, neighboring_frame_part
+    );
+
+    // Update indices
+    neighboring_frame_part->index = part_index;
+    _current_frame_part->index    = part_index + 1;
+
+    // === UPDATE UI ===
+    const auto list = ui->list_frame_parts;
 
     // Update ui list location
     const auto part_neighbour =
         dynamic_cast<FramePartLwi*>(list->takeItem(part_index + 1));
     list->insertItem(part_index, part_neighbour);
-
-    // Update location in frame (frame part order)
-    _current_frame->parts.splice(
-        _current_frame_part, _current_frame->parts, part_neighbour->frame_part
-    );
-
-    // Update indices
-    part_neighbour->frame_part->index = part_index;
-    _current_frame_part->index        = part_index + 1;
 
     // Update gv indices
     ui->gv_frame->current_index = part_index + 1;
@@ -154,13 +171,17 @@ void MainWindow::on_bt_merge_frame_parts_clicked() {
     check_if_valid(_current_frame_part);
 
     // Get selected frames
-    const auto            selected_lwi = ui->list_frame_parts->selectedItems();
+    const auto selected_lwi = ui->list_frame_parts->selectedItems();
+
+    // Accumulate used frame parts
     QVector<FramePartPtr> used_frame_parts;
     used_frame_parts.reserve(selected_lwi.size());
     for (const auto& lwi : selected_lwi) {
         const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
         used_frame_parts.push_back(frame_part_lwi->frame_part);
     }
+
+    // We need at least 2
     if (used_frame_parts.size() < 2) return;
 
     // Compute min offsets
@@ -183,18 +204,18 @@ void MainWindow::on_bt_merge_frame_parts_clicked() {
         if (frame_part->y_offset < min_y) min_y = frame_part->y_offset;
     }
 
+    // === UPDATE VALUE ===
+    save_previous_state();
     // Merge selected frame parts into a new sprite
     const auto new_sprite = _opd->add_new_sprite();
     new_sprite->from_frame_parts(used_frame_parts);
+    new_sprite->gfx_page = Invalid::gfx_page;
     new_sprite->uses++;
 
-    // Remove now unused frame parts
-    for (const auto& lwi : selected_lwi) {
-        const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
-        frame_part_lwi->frame_part->sprite->uses--;
-        _current_frame->parts.erase(frame_part_lwi->frame_part);
-        ui->list_frame_parts->removeItemWidget(frame_part_lwi);
-        delete frame_part_lwi;
+    // Remove unused frame parts
+    for (const auto& frame_part : used_frame_parts) {
+        frame_part->sprite->uses--;
+        _current_frame->parts.erase(frame_part);
     }
 
     // Add new frame part
@@ -208,6 +229,14 @@ void MainWindow::on_bt_merge_frame_parts_clicked() {
     ushort index = 0;
     for (auto& frame_part : _current_frame->parts)
         frame_part.index = index++;
+
+    // === UPDATE UI ===
+    // Remove now unused frame parts
+    for (const auto& lwi : selected_lwi) {
+        const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
+        ui->list_frame_parts->removeItemWidget(frame_part_lwi);
+        delete frame_part_lwi;
+    }
 
     // Add new lwi
     const auto new_frame_part_lwi = new FramePartLwi(new_frame_part);
@@ -231,7 +260,10 @@ void MainWindow::on_bt_edit_frame_part_clicked() {
 
 #define change_frame_part_value(attribute, new_value)                          \
     check_if_valid(_current_frame_part);                                       \
+                                                                               \
+    save_previous_state();                                                     \
     _current_frame_part->attribute = new_value;                                \
+                                                                               \
     if (_in_animation) stop_animation();                                       \
     redraw_frame()
 
@@ -243,9 +275,13 @@ void MainWindow::on_spin_frame_part_off_y_valueChanged(int new_value) {
 }
 void MainWindow::on_ch_frame_part_flip_x_toggled(bool new_value) {
     check_if_valid(_current_frame_part);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_frame_part->flip_mode &= 0b01;
     _current_frame_part->flip_mode |= new_value << 1;
 
+    // === UPDATE UI ===
     // Stop playing animation
     if (_in_animation) stop_animation();
 
@@ -253,9 +289,13 @@ void MainWindow::on_ch_frame_part_flip_x_toggled(bool new_value) {
 }
 void MainWindow::on_ch_frame_part_flip_y_toggled(bool new_value) {
     check_if_valid(_current_frame_part);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
     _current_frame_part->flip_mode &= 0b10;
     _current_frame_part->flip_mode |= (uchar) new_value;
 
+    // === UPDATE UI ===
     // Stop playing animation
     if (_in_animation) stop_animation();
 
@@ -303,11 +343,13 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
     bool parent_redrawing = _redrawing_frame;
     _redrawing_frame      = true;
 
-    ui->spin_frame_part_off_x->setValue(frame_part->x_offset);
-    ui->spin_frame_part_off_y->setValue(frame_part->y_offset);
-    ui->ch_frame_part_flip_x->setChecked(frame_part->flip_mode & 0b10);
-    ui->ch_frame_part_flip_y->setChecked(frame_part->flip_mode & 0b01);
-    ui->cb_frame_part_color_set->setCurrentIndex(frame_part->palette->index);
+    change_ui(spin_frame_part_off_x, setValue(frame_part->x_offset));
+    change_ui(spin_frame_part_off_y, setValue(frame_part->y_offset));
+    change_ui(ch_frame_part_flip_x, setChecked(frame_part->flip_mode & 0b10));
+    change_ui(ch_frame_part_flip_y, setChecked(frame_part->flip_mode & 0b01));
+    change_ui(
+        cb_frame_part_color_set, setCurrentIndex(frame_part->palette->index)
+    );
 
     // Redraw
     ui->gv_frame->current_index = _current_frame_part->index;
@@ -328,12 +370,12 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
 void MainWindow::clear_frame_part() {
     _current_frame_part = Invalid::frame_part;
 
-    ui->list_frame_parts->clear();
-    ui->spin_frame_part_off_x->clear();
-    ui->spin_frame_part_off_y->clear();
-    ui->ch_frame_part_flip_x->setChecked(false);
-    ui->ch_frame_part_flip_y->setChecked(false);
-    ui->cb_frame_part_color_set->setCurrentIndex(0);
+    change_ui(list_frame_parts, clear());
+    change_ui(spin_frame_part_off_x, clear());
+    change_ui(spin_frame_part_off_y, clear());
+    change_ui(ch_frame_part_flip_x, setChecked(false));
+    change_ui(ch_frame_part_flip_y, setChecked(false));
+    change_ui(cb_frame_part_color_set, setCurrentIndex(0));
 
     // Load palette colors
     bt_frame_part_col_ALL(clear_color());

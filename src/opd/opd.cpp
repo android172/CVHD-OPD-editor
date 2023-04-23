@@ -233,6 +233,89 @@ Opd* Opd::open(const QString& path) {
     );
 }
 
+Opd* Opd::copy(const Opd* other) {
+    // Create list copies
+    std::list<GFXPage>*   gfx_pages_copy  = new std::list<GFXPage>();
+    std::list<Sprite>*    sprites_copy    = new std::list<Sprite>();
+    std::list<Frame>*     frames_copy     = new std::list<Frame>();
+    std::list<Animation>* animations_copy = new std::list<Animation>();
+    std::array<Palette, palette_max>* palettes_copy =
+        new std::array<Palette, palette_max>();
+
+    // Copy palette
+    uchar index = 0;
+    for (const auto palette : other->palettes)
+        (*palettes_copy)[index++] = { palette };
+    // Copy GFX
+    for (const auto gfx_page : other->gfx_pages)
+        gfx_pages_copy->push_back({ gfx_page });
+    // Copy sprites
+    for (const auto sprite : other->sprites)
+        sprites_copy->push_back(
+            { sprite.index,
+              sprite.uses,
+              (sprite.gfx_page->index == (ushort) -1)
+                  ? Invalid::gfx_page
+                  : get_it_at(*gfx_pages_copy, sprite.gfx_page->index),
+              sprite.gfx_x_pos,
+              sprite.gfx_y_pos,
+              sprite.x_pos,
+              sprite.y_pos,
+              sprite.width,
+              sprite.height,
+              sprite.pixels }
+        );
+    // Copy frames
+    for (const auto frame : other->frames) {
+        Frame frame_copy = { frame.index,    frame.name, frame.x_offset,
+                             frame.y_offset, {},         {},
+                             frame.uses };
+        for (const auto part : frame.parts) {
+            frame_copy.parts.push_back(
+                { part.index,
+                  get_it_at(*sprites_copy, part.sprite->index),
+                  get_it_at(*palettes_copy, part.palette->index),
+                  part.x_offset,
+                  part.y_offset,
+                  part.flip_mode }
+            );
+        }
+        for (const auto hitbox : frame.hitboxes) {
+            frame_copy.hitboxes.push_back({ hitbox.index,
+                                            hitbox.x_position,
+                                            hitbox.y_position,
+                                            hitbox.width,
+                                            hitbox.height });
+        }
+        frames_copy->push_back(frame_copy);
+    }
+    // Copy animations
+    for (const auto animation : other->animations) {
+        Animation animation_copy { animation.index, animation.name, {} };
+        for (const auto frame : animation.frames) {
+            animation_copy.frames.push_back(
+                { frame.index,
+                  get_it_at(*frames_copy, frame.data->index),
+                  frame.delay,
+                  frame.x_offset,
+                  frame.y_offset }
+            );
+        }
+        animations_copy->push_back(animation_copy);
+    }
+
+    return new Opd(
+        other->file_name,
+        other->file_path,
+        *gfx_pages_copy,
+        *sprites_copy,
+        *frames_copy,
+        *animations_copy,
+        *palettes_copy,
+        other->palette_count
+    );
+}
+
 void Opd::save() {
     const QString file_name = file_path.split('/').last().toLower().chopped(4);
     const QString file_dir  = file_path.chopped(file_name.size() + 4);

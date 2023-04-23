@@ -37,6 +37,7 @@ void MainWindow::on_action_change_value_globally_triggered() {
     // Create a global change dialog
     GlobalChangeDialog dialog { animation_list };
     dialog.setModal(true);
+    save_previous_state();
     if (dialog.exec()) on_tree_animations_itemPressed(tree->currentItem(), 0);
 }
 

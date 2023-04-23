@@ -44,7 +44,7 @@ class GraphicsViewer : public QGraphicsView {
             on_selection_preformed
     );
     void activate_move(
-        const std::function<void(short, short)>& on_move_preformed
+        const std::function<void(short, short, bool)>& on_move_preformed
     );
 
   protected Q_SLOTS:
@@ -70,9 +70,9 @@ class GraphicsViewer : public QGraphicsView {
     QGraphicsLineItem* _selection_y_line = nullptr;
 
     // Move
-    std::function<void(short, short)> _on_move_preformed;
-    bool                              _in_move_mode = false;
-    QPoint                            _move_pivot {};
+    std::function<void(short, short, bool)> _on_move_preformed;
+    bool                                    _in_move_mode = false;
+    QPoint                                  _move_pivot {};
 
     void clear_state();
 };

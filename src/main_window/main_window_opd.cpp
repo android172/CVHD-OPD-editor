@@ -2,6 +2,7 @@
 #include "../../forms/ui_main_window.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QDesktopServices>
 
 // ///////////////////// //
@@ -31,7 +32,12 @@ void MainWindow::on_bt_open_folder_clicked() {
 
 void MainWindow::import_opd(const QString opd_path) {
     if (opd_path.isEmpty()) return;
-    _opd = Opd::open(opd_path);
+    try {
+        _opd = Opd::open(opd_path);
+    } catch (std::runtime_error e) {
+        QMessageBox::warning(this, "Couldn't load the OPD file", e.what());
+        return;
+    }
 
     // Save default_location
     const auto opd_name          = opd_path.split('/').last();
@@ -41,22 +47,21 @@ void MainWindow::import_opd(const QString opd_path) {
     // Save to recent
     add_to_recent(opd_path);
 
-    // Update palette count
-    ui->cb_frame_part_color_set->clear();
-    ui->cb_frame_part_color_set->addItem("Default");
-    for (auto i = 1; i < _opd->palette_count; i++)
-        ui->cb_frame_part_color_set->addItem(QString::number(i));
+    // Forge previous and future states
+    while (_previous_states.size()) {
+        delete _previous_states.back();
+        _previous_states.pop_back();
+    }
+    while (_future_states.size()) {
+        delete _future_states.back();
+        _future_states.pop_back();
+    }
 
-    // Load animations, sprites & CSRs
-    load_animations();
-    load_sprites();
-    load_csrs();
-
-    // Enable editing
-    set_opd_edit_enabled(true);
+    // Load UI elements
+    load_ui();
 
     // Set name
-    ui->label_opd_name->setText(_opd->file_name);
+    change_ui(label_opd_name, setText(_opd->file_name));
 }
 
 void MainWindow::export_opd() {
@@ -68,7 +73,7 @@ void MainWindow::export_opd() {
 
     // Reload
     load_csrs();
-    on_tree_animations_itemPressed(ui->tree_animations->currentItem(), 0);
+    ui->tree_animations->setCurrentItem(ui->tree_animations->currentItem());
 }
 
 void MainWindow::set_opd_edit_enabled(bool enabled) {

@@ -7,10 +7,12 @@
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QMimeData>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    qApp->installEventFilter(this);
     setWindowTitle("CVHD OPD editor");
     setAcceptDrops(true);
     load_app_state();
@@ -53,6 +55,20 @@ MainWindow::~MainWindow() { delete ui; }
 // ///////////////// //
 // MAIN WINDOW SLOTS //
 // ///////////////// //
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event) {
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+        if (key_event->modifiers() == Qt::ControlModifier) {
+            switch (key_event->key()) {
+            case Qt::Key_Z: undo(); return true;
+            case Qt::Key_Y: redo(); return true;
+            default: break;
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
 
 // -----------------------------------------------------------------------------
 // Drag and drop
@@ -98,6 +114,99 @@ void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }
 // /////////////////////////// //
 // MAIN WINDOW PRIVATE METHODS //
 // /////////////////////////// //
+
+void MainWindow::load_ui() {
+    // Update palette count
+    ui->cb_frame_part_color_set->clear();
+    change_ui(cb_frame_part_color_set, addItem("Default"));
+    for (auto i = 1; i < _opd->palette_count; i++) {
+        change_ui(cb_frame_part_color_set, addItem(QString::number(i)));
+    }
+
+    // Load animations, sprites & CSRs
+    load_animations();
+    load_sprites();
+    load_csrs();
+
+    // Enable editing
+    set_opd_edit_enabled(true);
+
+    // Stop animations if applicable
+    if (_in_animation) stop_animation();
+}
+
+#define selected_list_item(list)                                               \
+    (ui->list->count()) ? ui->list->currentRow() : -1
+
+void MainWindow::reload_ui() {
+    // Get current state of animation tree
+    int tree_item_at_level_1 = -1;
+    int tree_item_at_level_2 = -1;
+
+    const auto tree = ui->tree_animations;
+    if (tree->topLevelItemCount()) {
+        const auto current_tree_item   = tree->currentItem();
+        const auto current_item_parent = current_tree_item->parent();
+        if (current_item_parent) {
+            tree_item_at_level_1 =
+                tree->indexOfTopLevelItem(current_item_parent);
+            tree_item_at_level_2 =
+                current_item_parent->indexOfChild(current_tree_item);
+        } else
+            tree_item_at_level_1 = tree->indexOfTopLevelItem(current_tree_item);
+    }
+
+    // Get current state of lists
+    int list_fp_item = selected_list_item(list_frame_parts);
+    int list_hb_item = selected_list_item(list_hitboxes);
+    int list_sp_item = selected_list_item(list_sprites);
+    int list_cs_item = selected_list_item(list_csrs);
+
+    // Get current scroll values
+    const auto tree_scroll = tree->verticalScrollBar()->value();
+    const auto list_fp_scroll =
+        ui->list_frame_parts->verticalScrollBar()->value();
+    const auto list_hb_scroll = ui->list_hitboxes->verticalScrollBar()->value();
+    const auto list_sp_scroll = ui->list_sprites->verticalScrollBar()->value();
+    const auto list_cs_scroll = ui->list_csrs->verticalScrollBar()->value();
+
+    // Reload ui
+    load_ui();
+
+    // Recover current animation state
+    if (tree_item_at_level_1 >= tree->topLevelItemCount()) {
+        tree_item_at_level_1 = tree->topLevelItemCount() - 1;
+        tree_item_at_level_2 = -1;
+    }
+
+    if (tree_item_at_level_2 != -1) {
+        const auto parent_twi = tree->topLevelItem(tree_item_at_level_1);
+        if (tree_item_at_level_2 < parent_twi->childCount()) {
+            const auto current_twi = parent_twi->child(tree_item_at_level_2);
+            tree->setCurrentItem(current_twi);
+        } else {
+            tree->setCurrentItem(parent_twi);
+            parent_twi->setExpanded(true);
+        }
+    } else if (tree_item_at_level_1 != -1) {
+        const auto current_twi = tree->topLevelItem(tree_item_at_level_1);
+        tree->setCurrentItem(current_twi);
+        current_twi->setExpanded(true);
+    }
+
+    // Recover other states
+    if (list_fp_item != -1) ui->list_frame_parts->setCurrentRow(list_fp_item);
+    if (list_hb_item != -1) ui->list_hitboxes->setCurrentRow(list_hb_item);
+    if (list_sp_item != -1) ui->list_sprites->setCurrentRow(list_sp_item);
+    if (list_cs_item != -1) ui->list_csrs->setCurrentRow(list_cs_item);
+
+    // Recover scroll
+    tree->verticalScrollBar()->setValue(tree_scroll);
+    ui->list_frame_parts->verticalScrollBar()->setValue(list_fp_scroll);
+    ui->list_hitboxes->verticalScrollBar()->setValue(list_hb_scroll);
+    ui->list_sprites->verticalScrollBar()->setValue(list_sp_scroll);
+    ui->list_csrs->verticalScrollBar()->setValue(list_cs_scroll);
+}
 
 void MainWindow::set_general_edit_enabled(bool enabled) {
     set_opd_edit_enabled(enabled);
@@ -193,9 +302,12 @@ void MainWindow::setup_color_buttons() {
 void MainWindow::update_palettes(
     const uchar color_set, const uchar index, const Color color
 ) {
+    // === UPDATE VALUE ===
     // Update palette
+    save_previous_state();
     _opd->palettes[color_set][index] = color;
 
+    // === UPDATE UI ===
     // Update frame part color buttons
     if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
         if (_current_frame_part->index != Invalid::index) {
@@ -223,10 +335,13 @@ void MainWindow::update_palettes(
 }
 
 void MainWindow::update_palettes(const uchar color_set, Palette palette) {
+    // === UPDATE VALUE ===
     // Update palette
+    save_previous_state();
     palette.index             = color_set;
     _opd->palettes[color_set] = palette;
 
+    // === UPDATE UI ===
     // Update frame part color buttons
     if (ui->cb_frame_part_color_set->currentIndex() == color_set) {
         if (_current_frame_part->index != Invalid::index) {
@@ -251,6 +366,54 @@ void MainWindow::update_palettes(const uchar color_set, Palette palette) {
             redraw_csr();
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+// State timeline
+// -----------------------------------------------------------------------------
+
+#include <QDebug>
+
+void MainWindow::save_previous_state() {
+    qDebug() << "CHANGE";
+    // Clear future states
+    while (!_future_states.empty()) {
+        delete _future_states.back();
+        _future_states.pop_back();
+    }
+    // Append previous states
+    _previous_states.push_back(Opd::copy(_opd));
+    // Undo limit
+    if (_previous_states.size() > _undo_max) {
+        delete _previous_states.front();
+        _previous_states.pop_front();
+    }
+}
+void MainWindow::undo() {
+    qDebug() << "UNDO";
+    if (_previous_states.size() == 0) return;
+
+    // Add future state
+    _future_states.push_back(_opd);
+    // Get past state
+    _opd = _previous_states.back();
+    _previous_states.pop_back();
+
+    // Update UI
+    reload_ui();
+}
+void MainWindow::redo() {
+    qDebug() << "REDO";
+    if (_future_states.size() == 0) return;
+
+    // Add previous state
+    _previous_states.push_back(_opd);
+    // Get future state
+    _opd = _future_states.back();
+    _future_states.pop_back();
+
+    // Update UI
+    reload_ui();
 }
 
 // -----------------------------------------------------------------------------

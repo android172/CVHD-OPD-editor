@@ -21,12 +21,16 @@ void MainWindow::on_list_hitboxes_currentItemChanged(
 
 void MainWindow::on_bt_add_hitbox_clicked() {
     check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    // Add hitbox to the end of hitbox list
+    auto new_hitbox = _opd->add_new_hitbox(_current_frame);
+
+    // === UPDATE UI ===
     const auto list = ui->list_hitboxes;
 
     _redrawing_frame = true;
-
-    // Add hitbox to the end of hitbox list
-    auto new_hitbox = _opd->add_new_hitbox(_current_frame);
 
     // Create new LWI
     auto hitbox_lwi = new HitBoxLwi(new_hitbox);
@@ -41,6 +45,18 @@ void MainWindow::on_bt_add_hitbox_clicked() {
 }
 void MainWindow::on_bt_remove_hitbox_clicked() {
     check_if_valid(_current_hitbox);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    // Remove it
+    _current_frame->hitboxes.erase(_current_hitbox);
+
+    // Update indices
+    ushort index = 0;
+    for (auto& hitbox : _current_frame->hitboxes)
+        hitbox.index = index++;
+
+    // === UPDATE UI ===
     const auto list = ui->list_hitboxes;
 
     _redrawing_frame = true;
@@ -50,7 +66,6 @@ void MainWindow::on_bt_remove_hitbox_clicked() {
     if (hitbox_lwi == nullptr) return;
 
     // Remove it
-    _current_frame->hitboxes.erase(_current_hitbox);
     list->removeItemWidget(hitbox_lwi);
     delete hitbox_lwi;
 
@@ -59,36 +74,36 @@ void MainWindow::on_bt_remove_hitbox_clicked() {
     // Otherwise update arrows
     else set_hitbox_movement_enabled(true);
 
-    // Update indices
-    ushort index = 0;
-    for (auto& hitbox : _current_frame->hitboxes)
-        hitbox.index = index++;
-
     // Redraw frame
     _redrawing_frame = false;
     redraw_frame();
 }
 void MainWindow::on_bt_hitbox_up_clicked() {
     check_if_valid(_current_hitbox);
-    const auto list = ui->list_hitboxes;
 
-    // Get index
+    // === UPDATE VALUE ===
+    save_previous_state();
     const auto hitbox_index = _current_hitbox->index;
     if (hitbox_index == 0) return; // Cant go up further
+
+    // Update location in frame's hitbox list
+    auto neighboring_hitbox = _current_hitbox;
+    neighboring_hitbox--;
+    _current_frame->hitboxes.splice(
+        neighboring_hitbox, _current_frame->hitboxes, _current_hitbox
+    );
+
+    // Update indices
+    neighboring_hitbox->index = hitbox_index;
+    _current_hitbox->index    = hitbox_index - 1;
+
+    // === UPDATE UI ===
+    const auto list = ui->list_hitboxes;
 
     // Update ui list location
     const auto hitbox_neighbour =
         dynamic_cast<HitBoxLwi*>(list->takeItem(hitbox_index - 1));
     list->insertItem(hitbox_index, hitbox_neighbour);
-
-    // Update location in frame's hitbox list
-    _current_frame->hitboxes.splice(
-        hitbox_neighbour->hitbox, _current_frame->hitboxes, _current_hitbox
-    );
-
-    // Update indices
-    hitbox_neighbour->hitbox->index = hitbox_index;
-    _current_hitbox->index          = hitbox_index - 1;
 
     // Update gv indices
     ui->gv_frame->current_index = hitbox_index - 1;
@@ -104,26 +119,31 @@ void MainWindow::on_bt_hitbox_up_clicked() {
 }
 void MainWindow::on_bt_hitbox_down_clicked() {
     check_if_valid(_current_hitbox);
-    const auto list = ui->list_hitboxes;
 
-    // Get index
+    // === UPDATE VALUE ===
+    save_previous_state();
     const auto hitbox_index = _current_hitbox->index;
     if (hitbox_index == _current_frame->hitboxes.size() - 1)
         return; // Cant go down further
+
+    // Update location in frame's hitbox list
+    auto neighboring_hitbox = _current_hitbox;
+    neighboring_hitbox++;
+    _current_frame->hitboxes.splice(
+        _current_hitbox, _current_frame->hitboxes, neighboring_hitbox
+    );
+
+    // Update indices
+    neighboring_hitbox->index = hitbox_index;
+    _current_hitbox->index    = hitbox_index + 1;
+
+    // === UPDATE UI ===
+    const auto list = ui->list_hitboxes;
 
     // Update ui list location
     const auto hitbox_neighbour =
         dynamic_cast<HitBoxLwi*>(list->takeItem(hitbox_index + 1));
     list->insertItem(hitbox_index, hitbox_neighbour);
-
-    // Update location in frame's hitbox list
-    _current_frame->hitboxes.splice(
-        _current_hitbox, _current_frame->hitboxes, hitbox_neighbour->hitbox
-    );
-
-    // Update indices
-    hitbox_neighbour->hitbox->index = hitbox_index;
-    _current_hitbox->index          = hitbox_index + 1;
 
     // Update gv indices
     ui->gv_frame->current_index = hitbox_index + 1;
@@ -140,7 +160,10 @@ void MainWindow::on_bt_hitbox_down_clicked() {
 
 #define change_hitbox_value(attribute, new_value)                              \
     check_if_valid(_current_hitbox);                                           \
+                                                                               \
+    save_previous_state();                                                     \
     _current_hitbox->attribute = new_value;                                    \
+                                                                               \
     if (_in_animation) stop_animation();                                       \
     redraw_frame()
 
@@ -202,11 +225,11 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
 void MainWindow::clear_hitbox() {
     _current_hitbox = Invalid::hitbox;
 
-    ui->list_hitboxes->clear();
-    ui->spin_hitbox_pos_x->clear();
-    ui->spin_hitbox_pos_y->clear();
-    ui->spin_hitbox_width->clear();
-    ui->spin_hitbox_height->clear();
+    change_ui(list_hitboxes, clear());
+    change_ui(spin_hitbox_pos_x, clear());
+    change_ui(spin_hitbox_pos_y, clear());
+    change_ui(spin_hitbox_width, clear());
+    change_ui(spin_hitbox_height, clear());
 
     // Enable editing
     set_hitbox_edit_enabled(false);
@@ -215,11 +238,11 @@ void MainWindow::clear_hitbox() {
     if (_in_animation) stop_animation();
 }
 void MainWindow::set_hitbox_edit_enabled(bool enabled) {
-    ui->bt_remove_hitbox->setEnabled(enabled);
-    ui->spin_hitbox_pos_x->setEnabled(enabled);
-    ui->spin_hitbox_pos_y->setEnabled(enabled);
-    ui->spin_hitbox_width->setEnabled(enabled);
-    ui->spin_hitbox_height->setEnabled(enabled);
+    change_ui(bt_remove_hitbox, setEnabled(enabled));
+    change_ui(spin_hitbox_pos_x, setEnabled(enabled));
+    change_ui(spin_hitbox_pos_y, setEnabled(enabled));
+    change_ui(spin_hitbox_width, setEnabled(enabled));
+    change_ui(spin_hitbox_height, setEnabled(enabled));
 
     // Enable up / down arrows only if movement is possible
     set_hitbox_movement_enabled(enabled);

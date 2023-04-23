@@ -23,6 +23,7 @@ class Opd {
     uchar                             palette_count = 0;
 
     static Opd* open(QString const& path);
+    static Opd* copy(const Opd* other);
     void        save();
 
     AnimationPtr      add_new_animation();

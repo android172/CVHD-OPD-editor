@@ -65,6 +65,11 @@ class MainWindow : public QMainWindow {
     void on_action_exit_triggered();
     void on_action_change_value_globally_triggered();
 
+    // Graphics viewers
+    void on_bt_reset_view_anim_pressed();
+    void on_bt_grid_visible_anim_pressed();
+    void on_bt_change_mode_anim_pressed();
+
     // OPD
     void on_bt_open_opd_clicked();
     void on_bt_save_opd_clicked();
@@ -237,12 +242,6 @@ class MainWindow : public QMainWindow {
     void save_previous_state();
     void undo();
     void redo();
-    // Change mod button
-    void on_bt_change_mode_clicked(QPushButton* const button) const;
-
-    QPushButton* add_bt_change_mode( //
-        GraphicsViewer* const graphics_viewer
-    ) const;
 
     // Menubar
     void add_to_recent(const QString opd_path);
@@ -269,7 +268,6 @@ class MainWindow : public QMainWindow {
     void clear_frame();
     void set_frame_edit_enabled(bool enabled);
     void set_frame_movement_enabled(bool enabled);
-    void on_activate_frame_move_mode();
     void redraw_frame();
 
     // Frame part

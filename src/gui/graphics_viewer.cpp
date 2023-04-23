@@ -48,7 +48,7 @@ void GraphicsViewer::wheelEvent(QWheelEvent* event) {
 void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Plus) scale(1.1, 1.1);
     else if (event->key() == Qt::Key_Minus) scale(0.9, 0.9);
-    else if (_current_mode == ControlMode::Move && !_in_move_mode) {
+    else if (_current_control_mode == ControlMode::Move && !_in_move_mode) {
         if (event->key() == Qt::Key_Up) _on_move_preformed(0, -1, true);
         else if (event->key() == Qt::Key_Down) _on_move_preformed(0, 1, true);
         else if (event->key() == Qt::Key_Left) _on_move_preformed(-1, 0, true);
@@ -60,7 +60,7 @@ void GraphicsViewer::keyPressEvent(QKeyEvent* event) {
 
 void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        if (_current_mode == ControlMode::Select) {
+        if (_current_control_mode == ControlMode::Select) {
             if (_selection_rect == nullptr) return;
 
             // Get pivot
@@ -77,12 +77,12 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             delete _selection_y_line;
             _selection_x_line = nullptr;
             _selection_y_line = nullptr;
-        } else if (_current_mode == ControlMode::Move) {
+        } else if (_current_control_mode == ControlMode::Move) {
             // Get pivot
             _move_pivot   = mapToScene(event->pos()).toPoint();
             _in_move_mode = true;
             _on_move_preformed(_move_pivot.x(), _move_pivot.y(), true);
-        } else if (_current_mode == ControlMode::Pan) {
+        } else if (_current_control_mode == ControlMode::Pan) {
             const QPoint pos = mapToScene(event->pos()).toPoint();
             qDebug() << pos.x() << " " << pos.y();
         }
@@ -90,7 +90,7 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
     QGraphicsView::mousePressEvent(event);
 }
 void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
-    if (_current_mode == ControlMode::Select) {
+    if (_current_control_mode == ControlMode::Select) {
         if (_in_selection_mode) {
             if (_selection_rect == nullptr) return;
 
@@ -108,7 +108,7 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
             _selection_x_line->setLine(-10000, pos.y(), 10000, pos.y());
             _selection_y_line->setLine(pos.x(), -10000, pos.x(), 10000);
         }
-    } else if (_current_mode == ControlMode::Move) {
+    } else if (_current_control_mode == ControlMode::Move) {
         if (_in_move_mode) {
             // Get distance traveled
             const auto end_point = mapToScene(event->pos()).toPoint();
@@ -122,16 +122,16 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
             // Move current object
             _on_move_preformed(delta_x, delta_y, false);
         }
-    } else if (_current_mode == ControlMode::Pan)
+    } else if (_current_control_mode == ControlMode::Pan)
         ;
     QGraphicsView::mouseMoveEvent(event);
 }
 void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        if (_current_mode == ControlMode::Select) {
+        if (_current_control_mode == ControlMode::Select) {
             // Back to pan
-            _in_selection_mode = false;
-            _current_mode      = ControlMode::Pan;
+            _in_selection_mode    = false;
+            _current_control_mode = ControlMode::Pan;
             setDragMode(QGraphicsView::ScrollHandDrag);
 
             // Activate on completion callback
@@ -142,7 +142,7 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
                 (ushort) qMax(rect.width(), 0.0),
                 (ushort) qMax(rect.height(), 0.0)
             );
-        } else if (_current_mode == ControlMode::Move) {
+        } else if (_current_control_mode == ControlMode::Move) {
             // Finish movement
             _in_move_mode = false;
         } else
@@ -190,7 +190,9 @@ void GraphicsViewer::show_frame(const Frame& frame) {
                 part.sprite->width,
                 part.sprite->height
             );
-            _selection_rect->setVisible(_current_mode == ControlMode::Move);
+            _selection_rect->setVisible(
+                _current_control_mode == ControlMode::Move
+            );
         }
     }
 
@@ -216,7 +218,9 @@ void GraphicsViewer::show_frame(const Frame& frame) {
                     hitbox.width,
                     hitbox.height
                 );
-                _selection_rect->setVisible(_current_mode == ControlMode::Move);
+                _selection_rect->setVisible(
+                    _current_control_mode == ControlMode::Move
+                );
             }
         }
     }
@@ -244,7 +248,7 @@ void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
 
     // Show as currently selected if in MOVE mode
     add_selection(0, 0, sprite.width, sprite.height);
-    _selection_rect->setVisible(_current_mode == ControlMode::Move);
+    _selection_rect->setVisible(_current_control_mode == ControlMode::Move);
 
     scene->addItem(pixmap_gpi);
 }
@@ -311,6 +315,8 @@ void GraphicsViewer::clear() {
     scene->clear();
 }
 
+void GraphicsViewer::reset_view() { resetTransform(); }
+
 void GraphicsViewer::add_sprite(
     const Sprite& sprite, const Palette& palette, const float alpha
 ) {
@@ -326,7 +332,7 @@ void GraphicsViewer::add_sprite(
 
     // Show as currently selected if in MOVE mode
     add_selection(0, 0, sprite.width, sprite.height);
-    _selection_rect->setVisible(_current_mode == ControlMode::Move);
+    _selection_rect->setVisible(_current_control_mode == ControlMode::Move);
 
     scene->addItem(pixmap_gpi);
 }
@@ -360,7 +366,7 @@ void GraphicsViewer::add_selection(
 }
 
 void GraphicsViewer::activate_pan() {
-    if (_current_mode == ControlMode::Select) {
+    if (_current_control_mode == ControlMode::Select) {
         _in_selection_mode = false;
 
         // Clear selection lines if already present
@@ -374,12 +380,12 @@ void GraphicsViewer::activate_pan() {
             delete _selection_y_line;
             _selection_y_line = nullptr;
         }
-    } else if (_current_mode == ControlMode::Move) {
+    } else if (_current_control_mode == ControlMode::Move) {
         if (_selection_rect) _selection_rect->setVisible(false);
     }
 
     // Back to pan
-    _current_mode = ControlMode::Pan;
+    _current_control_mode = ControlMode::Pan;
     setDragMode(QGraphicsView::ScrollHandDrag);
 }
 
@@ -388,7 +394,7 @@ void GraphicsViewer::activate_selection(
         on_selection_preformed
 ) {
     // Change current mode to select
-    _current_mode           = ControlMode::Select;
+    _current_control_mode   = ControlMode::Select;
     _on_selection_preformed = on_selection_preformed;
 
     // Clear selection lines if already present
@@ -418,14 +424,93 @@ void GraphicsViewer::activate_move(
     const std::function<void(short, short, bool)>& on_move_preformed
 ) {
     // Change current mode to move
-    _current_mode      = ControlMode::Move;
-    _on_move_preformed = on_move_preformed;
+    _current_control_mode = ControlMode::Move;
+    _on_move_preformed    = on_move_preformed;
 
     // Set visiblity of selection
     if (_selection_rect) _selection_rect->setVisible(true);
 
     // Disable drag
     setDragMode(QGraphicsView::NoDrag);
+}
+
+void GraphicsViewer::grid_set_xy() {
+    _current_grid_mode = GridMode::XYAxis;
+    viewport()->update();
+}
+void GraphicsViewer::grid_set_full() {
+    _current_grid_mode = GridMode::FullGrid;
+    viewport()->update();
+}
+void GraphicsViewer::grid_disable() {
+    _current_grid_mode = GridMode::NoGrid;
+    viewport()->update();
+}
+
+QString GraphicsViewer::get_current_control_mod() const {
+    switch (_current_control_mode) {
+    case ControlMode::Pan: return "Pan";
+    case ControlMode::Move: return "Move";
+    case ControlMode::Select: return "Select";
+    }
+    return "Error";
+}
+QString GraphicsViewer::get_current_grid_mod() const {
+    switch (_current_grid_mode) {
+    case GridMode::NoGrid: return "NoGrid";
+    case GridMode::XYAxis: return "XYAxis";
+    case GridMode::FullGrid: return "FullGrid";
+    }
+    return "Error";
+}
+
+// /////////////////////////////// //
+// GRAPHICS VIEWER PRIVATE METHODS //
+// /////////////////////////////// //
+
+void GraphicsViewer::drawBackground(QPainter* painter, const QRectF& rect) {
+    // Draws background differently if grid is enabled
+    if (_current_grid_mode == GridMode::NoGrid) return; // Not enabled
+    const auto scale = transform().m11();
+
+    // Get pen
+    QPen pen(Qt::DotLine);
+    pen.setWidthF(1.5f / scale);
+
+    // Expand top / bottom / left / right
+    const auto left   = int(rect.left() - 1.0f);
+    const auto right  = int(rect.right() + 1.0f);
+    const auto top    = int(rect.top() - 1.0f);
+    const auto bottom = int(rect.bottom() + 1.0f);
+
+    // Draw grid
+    if (_current_grid_mode == GridMode::FullGrid) {
+        pen.setColor(QColor(200, 200, 200));
+        painter->setPen(pen);
+
+        const auto grid_scale = (scale < 1)    ? 20
+                                : (scale < 3)  ? 10
+                                : (scale < 7)  ? 5
+                                : (scale < 12) ? 2
+                                               : 1;
+
+        // Draw vertical lines
+        for (int x = left - left % grid_scale; x < right; x += grid_scale)
+            painter->drawLine(x, top, x, bottom);
+
+        // Draw horizontal lines
+        for (int y = top - top % grid_scale; y < bottom; y += grid_scale)
+            painter->drawLine(left, y, right, y);
+    }
+
+    // Draw X & Y axis
+    pen.setColor(Qt::red);
+    painter->setPen(pen);
+    painter->drawLine(0, top, 0, bottom);
+
+    pen.setColor(Qt::green);
+    painter->setPen(pen);
+    painter->drawLine(left, 0, right, 0);
 }
 
 // /////////////////////////////// //

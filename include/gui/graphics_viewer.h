@@ -28,6 +28,8 @@ class GraphicsViewer : public QGraphicsView {
 
     void clear();
 
+    void reset_view();
+
     void add_sprite(
         const Sprite& sprite, const Palette& palette, const float alpha = 1.0f
     );
@@ -47,6 +49,13 @@ class GraphicsViewer : public QGraphicsView {
         const std::function<void(short, short, bool)>& on_move_preformed
     );
 
+    void grid_set_xy();
+    void grid_set_full();
+    void grid_disable();
+
+    QString get_current_control_mod() const;
+    QString get_current_grid_mod() const;
+
   protected Q_SLOTS:
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
@@ -55,9 +64,15 @@ class GraphicsViewer : public QGraphicsView {
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
+  protected:
+    void drawBackground(QPainter* painter, const QRectF& rect) override;
+
   private:
     enum class ControlMode { Pan, Move, Select };
-    ControlMode _current_mode = ControlMode::Pan;
+    ControlMode _current_control_mode = ControlMode::Pan;
+
+    enum class GridMode { NoGrid, XYAxis, FullGrid };
+    GridMode _current_grid_mode = GridMode::NoGrid;
 
     // Selection
     std::function<void(short, short, ushort, ushort)> _on_selection_preformed;

@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons_general">
+    <file>axis.png</file>
+    <file>blank.png</file>
+    <file>fit.png</file>
+    <file>grid.png</file>
     <file>expand-arrows.png</file>
     <file>move.png</file>
     <file>add.png</file>

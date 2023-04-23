@@ -400,45 +400,6 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
     ui->bt_frame_down->setEnabled(enabled && not_last);
 }
 
-void MainWindow::on_activate_frame_move_mode() {
-    ui->gv_frame->activate_move([=](short dx, short dy, bool save) {
-        if (ui->tool_box_frame->currentIndex() == 0) {
-            check_if_valid(_current_frame_part);
-            if (save) save_previous_state();
-
-            // Change values
-            _current_frame_part->x_offset += dx;
-            _current_frame_part->y_offset += dy;
-
-            // Change their display
-            change_ui(
-                spin_frame_part_off_x,
-                setValue(ui->spin_frame_part_off_x->value() + dx)
-            );
-            change_ui(
-                spin_frame_part_off_y,
-                setValue(ui->spin_frame_part_off_y->value() + dy)
-            );
-        } else {
-            check_if_valid(_current_hitbox);
-            if (save) save_previous_state();
-
-            // Change values
-            _current_hitbox->x_position += dx;
-            _current_hitbox->y_position += dy;
-
-            // Change their display
-            change_ui(
-                spin_hitbox_pos_x, setValue(ui->spin_hitbox_pos_x->value() + dx)
-            );
-            change_ui(
-                spin_hitbox_pos_y, setValue(ui->spin_hitbox_pos_y->value() + dy)
-            );
-        }
-        redraw_frame();
-    });
-}
-
 void MainWindow::redraw_frame() {
     if (_redrawing_frame) return;
     ui->gv_frame->show_frame(*_current_frame);

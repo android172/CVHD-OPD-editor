@@ -357,9 +357,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="bt_play_animation">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
                 <property name="styleSheet">
                  <string notr="true">background: none;
 border: none;</string>
@@ -380,9 +377,6 @@ border: none;</string>
                 </property>
                 <property name="checkable">
                  <bool>true</bool>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -1867,9 +1861,26 @@ border: none;</string>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
-                   <widget class="QPushButton" name="bt_change_mode">
+                   <widget class="QPushButton" name="bt_reset_view_anim">
+                    <property name="styleSheet">
+                     <string notr="true">
+</string>
+                    </property>
                     <property name="text">
-                     <string>PushButton</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../assets/icons/icons.qrc">
+                      <normaloff>:/icons_general/fit.png</normaloff>:/icons_general/fit.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -1887,16 +1898,51 @@ border: none;</string>
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="bt_grid_visible">
+                   <widget class="QPushButton" name="bt_grid_visible_anim">
+                    <property name="styleSheet">
+                     <string notr="true">
+</string>
+                    </property>
                     <property name="text">
-                     <string>PushButton</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../assets/icons/icons.qrc">
+                      <normaloff>:/icons_general/blank.png</normaloff>:/icons_general/blank.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="pushButton_3">
+                   <widget class="QPushButton" name="bt_change_mode_anim">
+                    <property name="styleSheet">
+                     <string notr="true">
+</string>
+                    </property>
                     <property name="text">
-                     <string>PushButton</string>
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../assets/icons/icons.qrc">
+                      <normaloff>:/icons_general/expand-arrows.png</normaloff>
+                      <normalon>:/icons_general/move.png</normalon>:/icons_general/expand-arrows.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="flat">
+                     <bool>true</bool>
                     </property>
                    </widget>
                   </item>
@@ -1918,7 +1964,7 @@ border: none;</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_24">
         <item>
-         <widget class="QWidget" name="verticalWidget_2" native="true">
+         <widget class="QWidget" name="verticalWidget_21" native="true">
           <property name="minimumSize">
            <size>
             <width>120</width>
@@ -2298,7 +2344,7 @@ border: none;</string>
              </layout>
             </item>
             <item>
-             <widget class="QWidget" name="verticalWidget_2" native="true">
+             <widget class="QWidget" name="verticalWidget_22" native="true">
               <property name="minimumSize">
                <size>
                 <width>180</width>
@@ -3109,7 +3155,7 @@ border: none;</string>
          </layout>
         </item>
         <item>
-         <widget class="QWidget" name="verticalWidget_2" native="true">
+         <widget class="QWidget" name="verticalWidget_23" native="true">
           <property name="minimumSize">
            <size>
             <width>250</width>

@@ -11,6 +11,7 @@ GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
     _selection_pen.setColor(Qt::blue);
 
     activate_pan();
+    set_scene_rectangle();
 }
 GraphicsViewer::~GraphicsViewer() { clear(); }
 
@@ -319,7 +320,10 @@ void GraphicsViewer::clear() {
     scene->clear();
 }
 
-void GraphicsViewer::reset_view() { resetTransform(); }
+void GraphicsViewer::reset_view() {
+    resetTransform();
+    centerOn(0, 0);
+}
 
 void GraphicsViewer::add_sprite(
     const Sprite& sprite, const Palette& palette, const float alpha
@@ -541,10 +545,10 @@ void GraphicsViewer::set_scene_rectangle() {
     if (_in_move_mode == false) {
         const auto rect = scene()->itemsBoundingRect();
         setSceneRect(QRectF(
-            rect.x() - rect.width(),
-            rect.y() - rect.height(),
-            3 * rect.width(),
-            3 * rect.height()
+            rect.x() - 500.0f,
+            rect.y() - 500.0f,
+            1000.0f + rect.width(),
+            1000.0f + rect.height()
         ));
     }
 }

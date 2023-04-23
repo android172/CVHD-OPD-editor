@@ -14,22 +14,22 @@ class GraphicsViewer : public QGraphicsView {
     Q_OBJECT
   public:
     // Draw settings
-    bool   hitbox_visible  = false;
-    bool   with_background = false;
-    ushort current_index   = 0;
+    bool with_background = false;
 
     explicit GraphicsViewer(QWidget* parent);
     ~GraphicsViewer();
 
-    void show_frame(const Frame& frame);
+    // Show element
+    void show_frame(
+        const Frame& frame,
+        const ushort current_index,
+        const bool   with_hitbox = false
+    );
     void show_sprite(const Sprite& sprite, const Palette& palette);
     void show_image(const PixelMap& pixels, const Palette& palette);
     void show_csr(const GFXPage& csr, const Palette& palette);
 
-    void clear();
-
-    void reset_view();
-
+    // Add element
     void add_sprite(
         const Sprite& sprite, const Palette& palette, const float alpha = 1.0f
     );
@@ -40,6 +40,11 @@ class GraphicsViewer : public QGraphicsView {
         const ushort height
     );
 
+    // Clear all
+    void clear();
+    void reset_view();
+
+    // Change mode
     void activate_pan();
     void activate_selection(
         const std::function<void(short, short, ushort, ushort)>&
@@ -49,10 +54,12 @@ class GraphicsViewer : public QGraphicsView {
         const std::function<void(short, short, bool)>& on_move_preformed
     );
 
+    // Change grid
     void grid_set_xy();
     void grid_set_full();
     void grid_disable();
 
+    // Getters
     QString get_current_control_mod() const;
     QString get_current_grid_mod() const;
 
@@ -90,6 +97,7 @@ class GraphicsViewer : public QGraphicsView {
     QPoint                                  _move_pivot {};
 
     void clear_state();
+    void set_scene_rectangle();
 };
 
 #endif // __GRAPHICS_VIEWER_H__

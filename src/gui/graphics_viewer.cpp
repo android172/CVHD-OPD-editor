@@ -3,14 +3,14 @@
 #include <QScrollBar>
 
 GraphicsViewer::GraphicsViewer(QWidget* parent) : QGraphicsView(parent) {
-    setDragMode(QGraphicsView::ScrollHandDrag);
-
     QGraphicsScene* scene = new QGraphicsScene();
     setScene(scene);
 
     // Setup selection
     _selection_pen.setWidthF(1.5);
     _selection_pen.setColor(Qt::blue);
+
+    activate_pan();
 }
 GraphicsViewer::~GraphicsViewer() { clear(); }
 
@@ -81,11 +81,9 @@ void GraphicsViewer::mousePressEvent(QMouseEvent* event) {
             // Get pivot
             _move_pivot   = mapToScene(event->pos()).toPoint();
             _in_move_mode = true;
-            _on_move_preformed(_move_pivot.x(), _move_pivot.y(), true);
-        } else if (_current_control_mode == ControlMode::Pan) {
-            const QPoint pos = mapToScene(event->pos()).toPoint();
-            qDebug() << pos.x() << " " << pos.y();
-        }
+            _on_move_preformed(0, 0, true);
+        } else if (_current_control_mode == ControlMode::Pan)
+            ;
     }
     QGraphicsView::mousePressEvent(event);
 }
@@ -129,11 +127,6 @@ void GraphicsViewer::mouseMoveEvent(QMouseEvent* event) {
 void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         if (_current_control_mode == ControlMode::Select) {
-            // Back to pan
-            _in_selection_mode    = false;
-            _current_control_mode = ControlMode::Pan;
-            setDragMode(QGraphicsView::ScrollHandDrag);
-
             // Activate on completion callback
             const auto rect = _selection_rect->rect();
             _on_selection_preformed(
@@ -142,9 +135,15 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
                 (ushort) qMax(rect.width(), 0.0),
                 (ushort) qMax(rect.height(), 0.0)
             );
+
+            // Back to pan
+            activate_pan();
         } else if (_current_control_mode == ControlMode::Move) {
             // Finish movement
             _in_move_mode = false;
+
+            // Set rectangle
+            set_scene_rectangle();
         } else
             ;
     }
@@ -155,7 +154,9 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
 // GRAPHICS VIEWER PUBLIC METHODS //
 // ////////////////////////////// //
 
-void GraphicsViewer::show_frame(const Frame& frame) {
+void GraphicsViewer::show_frame(
+    const Frame& frame, const ushort current_index, const bool with_hitbox
+) {
     auto scene = this->scene();
     clear_state();
     scene->clear();
@@ -181,7 +182,7 @@ void GraphicsViewer::show_frame(const Frame& frame) {
 
         scene->addItem(pixmap_gpi);
 
-        if (!hitbox_visible && part.index == current_index) {
+        if (!with_hitbox && part.index == current_index) {
             // Show currently selected frame part
             // Only visible if move control mode is active
             add_selection(
@@ -197,7 +198,7 @@ void GraphicsViewer::show_frame(const Frame& frame) {
     }
 
     // Draw hitboxes
-    if (hitbox_visible) {
+    if (with_hitbox) {
         for (auto const& hitbox : frame.hitboxes) {
             auto hitbox_rectangle = new QGraphicsRectItem(
                 hitbox.x_position,
@@ -225,13 +226,8 @@ void GraphicsViewer::show_frame(const Frame& frame) {
         }
     }
 
-    const auto rect = scene->itemsBoundingRect();
-    setSceneRect(QRectF(
-        rect.x() - rect.width(),
-        rect.y() - rect.height(),
-        3 * rect.width(),
-        3 * rect.height()
-    ));
+    // Set rectangle
+    set_scene_rectangle();
 }
 
 void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
@@ -251,6 +247,9 @@ void GraphicsViewer::show_sprite(const Sprite& sprite, const Palette& palette) {
     _selection_rect->setVisible(_current_control_mode == ControlMode::Move);
 
     scene->addItem(pixmap_gpi);
+
+    // Set rectangle
+    set_scene_rectangle();
 }
 
 void GraphicsViewer::show_image(
@@ -291,6 +290,9 @@ void GraphicsViewer::show_image(
 
     // Show
     scene->addItem(pixmap_gpi);
+
+    // Set rectangle
+    set_scene_rectangle();
 }
 
 void GraphicsViewer::show_csr(const GFXPage& csr, const Palette& palette) {
@@ -306,11 +308,13 @@ void GraphicsViewer::show_csr(const GFXPage& csr, const Palette& palette) {
 
     // Show
     scene->addItem(pixmap_gpi);
+
+    // Set rectangle
+    set_scene_rectangle();
 }
 
 void GraphicsViewer::clear() {
     auto scene = this->scene();
-    activate_pan();
     clear_state();
     scene->clear();
 }
@@ -530,5 +534,17 @@ void GraphicsViewer::clear_state() {
     if (_selection_rect) {
         delete _selection_rect;
         _selection_rect = nullptr;
+    }
+}
+
+void GraphicsViewer::set_scene_rectangle() {
+    if (_in_move_mode == false) {
+        const auto rect = scene()->itemsBoundingRect();
+        setSceneRect(QRectF(
+            rect.x() - rect.width(),
+            rect.y() - rect.height(),
+            3 * rect.width(),
+            3 * rect.height()
+        ));
     }
 }

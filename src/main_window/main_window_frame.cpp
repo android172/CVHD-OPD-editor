@@ -238,11 +238,7 @@ void MainWindow::on_bt_frame_down_clicked() {
 }
 
 void MainWindow::on_tool_box_frame_currentChanged(int current) {
-    ui->gv_frame->hitbox_visible = current == 1;
     check_if_valid(_current_frame);
-
-    if (current == 0) ui->gv_frame->current_index = _current_frame_part->index;
-    else ui->gv_frame->current_index = _current_hitbox->index;
 
     // Stop playing animation
     if (_in_animation) stop_animation();
@@ -402,5 +398,8 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
 
 void MainWindow::redraw_frame() {
     if (_redrawing_frame) return;
-    ui->gv_frame->show_frame(*_current_frame);
+    if (ui->tool_box_frame->currentIndex() == 0)
+        ui->gv_frame->show_frame(*_current_frame, _current_frame_part->index);
+    else
+        ui->gv_frame->show_frame(*_current_frame, _current_hitbox->index, true);
 }

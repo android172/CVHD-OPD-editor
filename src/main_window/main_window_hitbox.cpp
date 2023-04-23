@@ -105,9 +105,6 @@ void MainWindow::on_bt_hitbox_up_clicked() {
         dynamic_cast<HitBoxLwi*>(list->takeItem(hitbox_index - 1));
     list->insertItem(hitbox_index, hitbox_neighbour);
 
-    // Update gv indices
-    ui->gv_frame->current_index = hitbox_index - 1;
-
     // Update arrows
     set_hitbox_movement_enabled(true);
 
@@ -144,9 +141,6 @@ void MainWindow::on_bt_hitbox_down_clicked() {
     const auto hitbox_neighbour =
         dynamic_cast<HitBoxLwi*>(list->takeItem(hitbox_index + 1));
     list->insertItem(hitbox_index, hitbox_neighbour);
-
-    // Update gv indices
-    ui->gv_frame->current_index = hitbox_index + 1;
 
     // Update arrows
     set_hitbox_movement_enabled(true);
@@ -210,7 +204,6 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
     ui->spin_hitbox_height->setValue(hitbox->height);
 
     // Redraw
-    ui->gv_frame->current_index = _current_hitbox->index;
     if (parent_redrawing == false) {
         _redrawing_frame = false;
         redraw_frame();

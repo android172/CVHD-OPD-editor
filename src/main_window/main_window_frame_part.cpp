@@ -114,9 +114,6 @@ void MainWindow::on_bt_frame_part_up_clicked() {
         dynamic_cast<FramePartLwi*>(list->takeItem(part_index - 1));
     list->insertItem(part_index, part_neighbour);
 
-    // Update gv indices
-    ui->gv_frame->current_index = part_index - 1;
-
     // Update arrows
     set_frame_part_movement_enabled(true);
 
@@ -153,9 +150,6 @@ void MainWindow::on_bt_frame_part_down_clicked() {
     const auto part_neighbour =
         dynamic_cast<FramePartLwi*>(list->takeItem(part_index + 1));
     list->insertItem(part_index, part_neighbour);
-
-    // Update gv indices
-    ui->gv_frame->current_index = part_index + 1;
 
     // Update arrows
     set_frame_part_movement_enabled(true);
@@ -352,7 +346,6 @@ void MainWindow::load_frame_part(const FramePartPtr frame_part) {
     );
 
     // Redraw
-    ui->gv_frame->current_index = _current_frame_part->index;
     if (parent_redrawing == false) {
         _redrawing_frame = false;
         redraw_frame();

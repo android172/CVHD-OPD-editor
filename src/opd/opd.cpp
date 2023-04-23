@@ -274,7 +274,7 @@ Opd* Opd::copy(const Opd* other) {
             frame_copy.parts.push_back(
                 { part.index,
                   get_it_at(*sprites_copy, part.sprite->index),
-                  get_it_at(*palettes_copy, part.palette->index),
+                  &*get_it_at(*palettes_copy, part.palette->index),
                   part.x_offset,
                   part.y_offset,
                   part.flip_mode }

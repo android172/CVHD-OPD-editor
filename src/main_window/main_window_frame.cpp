@@ -56,7 +56,7 @@ void MainWindow::on_bt_add_frame_clicked() {
 
             // If an unused (previously existing) frame is added we need to
             // remove it from the unused section
-            if (result == 1 && frame->uses == 0) {
+            if (result == 1 && frame->uses == 1) {
                 // Find selected frame twi
                 FrameTwi* selected_frame_twi = nullptr;
                 for (auto i = 0; i < unused_twi->childCount(); i++) {
@@ -91,9 +91,11 @@ void MainWindow::on_bt_remove_frame_clicked() {
     // If frame is used we just remove it from animation
     bool frame_is_used = _current_frame->uses != 0;
     if (frame_is_used) {
+        check_if_valid(_current_animation);
+
         // Remove animation frame
-        _current_animation->frames.erase(_current_anim_frame);
         _current_frame->uses--;
+        _current_animation->frames.erase(_current_anim_frame);
 
         // Update indices
         ushort index = 0;
@@ -119,8 +121,7 @@ void MainWindow::on_bt_remove_frame_clicked() {
     const auto tree = ui->tree_animations;
 
     // Get current frame
-    const auto frame_twi = tree->get_current_frame();
-    if (frame_twi == nullptr) return;
+    auto frame_twi = tree->get_current_frame();
 
     // If frame is used we just remove it from animation
     if (frame_is_used) {
@@ -128,7 +129,16 @@ void MainWindow::on_bt_remove_frame_clicked() {
         if (!animation_twi) return;
 
         // Remove animation frame
-        animation_twi->removeChild(frame_twi); // This invokes on_item_changed
+        if (frame_twi)
+            // This invokes on_item_changed
+            animation_twi->removeChild(frame_twi);
+        else {
+            auto cc = animation_twi->childCount();
+            if (animation_twi->childCount() == 0) return;
+            frame_twi = dynamic_cast<FrameTwi*>(animation_twi->takeChild(0));
+            // Invoke manually
+            on_tree_animations_itemPressed(animation_twi, 0);
+        }
 
         // Clear frame view if animation has none left
         if (animation_twi->childCount() == 0) clear_frame();
@@ -149,6 +159,7 @@ void MainWindow::on_bt_remove_frame_clicked() {
     }
     // Otherwise we remove it completely
     else {
+        if (frame_twi == nullptr) return;
         const auto unused_twi = frame_twi->parent();
         unused_twi->removeChild(frame_twi); // This invokes on_item_changed
         delete frame_twi;

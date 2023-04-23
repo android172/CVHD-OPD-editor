@@ -198,10 +198,10 @@ void MainWindow::load_hitbox(const HitBoxPtr hitbox) {
     bool parent_redrawing = _redrawing_frame;
     _redrawing_frame      = true;
 
-    ui->spin_hitbox_pos_x->setValue(hitbox->x_position);
-    ui->spin_hitbox_pos_y->setValue(hitbox->y_position);
-    ui->spin_hitbox_width->setValue(hitbox->width);
-    ui->spin_hitbox_height->setValue(hitbox->height);
+    change_ui(spin_hitbox_pos_x, setValue(hitbox->x_position));
+    change_ui(spin_hitbox_pos_y, setValue(hitbox->y_position));
+    change_ui(spin_hitbox_width, setValue(hitbox->width));
+    change_ui(spin_hitbox_height, setValue(hitbox->height));
 
     // Redraw
     if (parent_redrawing == false) {

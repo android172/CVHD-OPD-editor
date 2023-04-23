@@ -69,6 +69,9 @@ class MainWindow : public QMainWindow {
     void on_bt_reset_view_anim_pressed();
     void on_bt_grid_visible_anim_pressed();
     void on_bt_change_mode_anim_pressed();
+    void on_bt_reset_view_sprite_pressed();
+    void on_bt_grid_visible_sprite_pressed();
+    void on_bt_change_mode_sprite_pressed();
 
     // OPD
     void on_bt_open_opd_clicked();
@@ -292,7 +295,6 @@ class MainWindow : public QMainWindow {
     void clear_sprite();
     void on_bt_sprite_col_clicked(PaletteButton* const button);
     void set_sprite_edit_enabled(bool enabled);
-    void on_activate_sprite_move_mode();
     void redraw_sprite();
 
     // Image

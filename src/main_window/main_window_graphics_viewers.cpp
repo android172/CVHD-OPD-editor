@@ -84,6 +84,88 @@ void MainWindow::on_bt_change_mode_anim_pressed() {
     };
 }
 
+void MainWindow::on_bt_reset_view_sprite_pressed() {
+    ui->gv_sprite->reset_view();
+}
+void MainWindow::on_bt_grid_visible_sprite_pressed() {
+    const auto mod = ui->gv_sprite->get_current_grid_mod();
+    const auto bt  = ui->bt_grid_visible_sprite;
+
+    if (grid_is_disabled) {
+        bt->setIcon(ICON_AXIS);
+        ui->gv_sprite->grid_set_xy();
+    } else if (grid_is_xy_axis) {
+        bt->setIcon(ICON_GRID);
+        ui->gv_sprite->grid_set_full();
+    } else {
+        bt->setIcon(ICON_BLANK);
+        ui->gv_sprite->grid_disable();
+    }
+}
+void MainWindow::on_bt_change_mode_sprite_pressed() {
+    const auto mod = ui->gv_sprite->get_current_control_mod();
+    const auto bt  = ui->bt_change_mode_sprite;
+
+    if (mod_is_pan) {
+        bt->setIcon(ICON_MOVE);
+        ui->gv_sprite->activate_move([=](short dx, short dy, bool save) {
+            check_if_valid(_current_sprite);
+            if (save) save_previous_state();
+            if (_current_sprite_import != nullptr) {
+                // Cap min width and height
+                if (_current_sprite_import->width + dx <= 0)
+                    dx = 1 - _current_sprite_import->width;
+                if (_current_sprite_import->height + dy <= 0)
+                    dy = 1 - _current_sprite_import->height;
+
+                // Change values
+                _current_sprite_import->x_pos -= dx;
+                _current_sprite_import->y_pos -= dy;
+                _current_sprite_import->width += dx;
+                _current_sprite_import->height += dy;
+
+                // Change their display
+                change_ui(
+                    spin_sprite_pos_x, setValue(_current_sprite_import->x_pos)
+                );
+                change_ui(
+                    spin_sprite_pos_y, setValue(_current_sprite_import->y_pos)
+                );
+                change_ui(
+                    spin_sprite_width, setValue(_current_sprite_import->width)
+                );
+                change_ui(
+                    spin_sprite_height, setValue(_current_sprite_import->height)
+                );
+            } else {
+                // Cap min width and height
+                if (_current_sprite->width + dx <= 0)
+                    dx = 1 - _current_sprite->width;
+                if (_current_sprite->height + dy <= 0)
+                    dy = 1 - _current_sprite->height;
+
+                // Change values
+                _current_sprite->x_pos -= dx;
+                _current_sprite->y_pos -= dy;
+                _current_sprite->width += dx;
+                _current_sprite->height += dy;
+
+                // Change their display
+                change_ui(spin_sprite_pos_x, setValue(_current_sprite->x_pos));
+                change_ui(spin_sprite_pos_y, setValue(_current_sprite->y_pos));
+                change_ui(spin_sprite_width, setValue(_current_sprite->width));
+                change_ui(
+                    spin_sprite_height, setValue(_current_sprite->height)
+                );
+            }
+            redraw_sprite();
+        });
+    } else {
+        bt->setIcon(ICON_EXPAND);
+        ui->gv_sprite->activate_pan();
+    };
+}
+
 // //////////////////////////////////////////// //
 // MAIN WINDOW GRAPHICS VIEWERS PRIVATE METHODS //
 // //////////////////////////////////////////// //

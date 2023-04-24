@@ -20,7 +20,7 @@ void NewFrameDialog::on_list_frames_currentItemChanged(
 ) {
     auto frame_lwi = dynamic_cast<FrameLwi*>(current);
     if (frame_lwi == nullptr) return;
-    ui->gv_frame->show_frame(*frame_lwi->frame, -1);
+    ui->gv_frame->show_frame(*frame_lwi->frame, -1, 0);
 }
 
 // //////////////////////////////// //

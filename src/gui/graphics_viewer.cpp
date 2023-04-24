@@ -156,7 +156,7 @@ void GraphicsViewer::mouseReleaseEvent(QMouseEvent* event) {
 // ////////////////////////////// //
 
 void GraphicsViewer::show_frame(
-    const Frame& frame, const ushort current_index, const bool with_hitbox
+    const Frame& frame, const ushort current_index, const uint mode
 ) {
     auto scene = this->scene();
     clear_state();
@@ -183,7 +183,7 @@ void GraphicsViewer::show_frame(
 
         scene->addItem(pixmap_gpi);
 
-        if (!with_hitbox && part.index == current_index) {
+        if (mode == 1 && part.index == current_index) {
             // Show currently selected frame part
             // Only visible if move control mode is active
             add_selection(
@@ -199,7 +199,7 @@ void GraphicsViewer::show_frame(
     }
 
     // Draw hitboxes
-    if (with_hitbox) {
+    if (mode == 2) {
         for (auto const& hitbox : frame.hitboxes) {
             auto hitbox_rectangle = new QGraphicsRectItem(
                 hitbox.x_position,

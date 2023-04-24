@@ -21,9 +21,7 @@ class GraphicsViewer : public QGraphicsView {
 
     // Show element
     void show_frame(
-        const Frame& frame,
-        const ushort current_index,
-        const bool   with_hitbox = false
+        const Frame& frame, const ushort current_index, const uint mode
     );
     void show_sprite(const Sprite& sprite, const Palette& palette);
     void show_image(const PixelMap& pixels, const Palette& palette);

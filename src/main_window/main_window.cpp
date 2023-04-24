@@ -12,7 +12,6 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-    qApp->installEventFilter(this);
     setWindowTitle("CVHD OPD editor");
     setAcceptDrops(true);
     load_app_state();
@@ -38,20 +37,6 @@ MainWindow::~MainWindow() { delete ui; }
 // ///////////////// //
 // MAIN WINDOW SLOTS //
 // ///////////////// //
-
-bool MainWindow::eventFilter(QObject* obj, QEvent* event) {
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
-        if (key_event->modifiers() == Qt::ControlModifier) {
-            switch (key_event->key()) {
-            case Qt::Key_Z: undo(); return true;
-            case Qt::Key_Y: redo(); return true;
-            default: break;
-            }
-        }
-    }
-    return QMainWindow::eventFilter(obj, event);
-}
 
 // -----------------------------------------------------------------------------
 // Drag and drop

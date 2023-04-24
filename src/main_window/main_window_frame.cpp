@@ -377,6 +377,8 @@ void MainWindow::set_frame_edit_enabled(bool enabled) {
     ui->spin_frame_pos_x->setEnabled(enabled);
     ui->spin_frame_pos_y->setEnabled(enabled);
     ui->bt_remove_frame->setEnabled(enabled);
+    ui->bt_flip_frame_x->setEnabled(enabled);
+    ui->bt_flip_frame_y->setEnabled(enabled);
 
     // Part & hitbox list can be added if frame editing is disabled
     ui->bt_add_hitbox->setEnabled(enabled);
@@ -409,8 +411,9 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
 
 void MainWindow::redraw_frame() {
     if (_redrawing_frame) return;
-    if (ui->tool_box_frame->currentIndex() == 0)
-        ui->gv_frame->show_frame(*_current_frame, _current_frame_part->index);
-    else
-        ui->gv_frame->show_frame(*_current_frame, _current_hitbox->index, true);
+    ui->gv_frame->show_frame(
+        *_current_frame,
+        _current_frame_part->index,
+        ui->tool_box_frame->currentIndex()
+    );
 }

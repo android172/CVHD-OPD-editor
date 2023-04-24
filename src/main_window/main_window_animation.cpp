@@ -184,9 +184,11 @@ void MainWindow::animate_frame(const Animation& animation, ushort frame_count) {
     const auto frame = get_val_at(animation.frames, frame_count);
 
     // Show current frame
-    if (ui->tool_box_frame->currentIndex() == 0)
-        ui->gv_frame->show_frame(*frame.data, _current_frame_part->index);
-    else ui->gv_frame->show_frame(*frame.data, _current_hitbox->index, true);
+    ui->gv_frame->show_frame(
+        *frame.data,
+        _current_frame_part->index,
+        ui->tool_box_frame->currentIndex()
+    );
 
     // Update frame count
     frame_count++;

@@ -23,6 +23,9 @@ void MainWindow::on_action_exit_triggered() {
     exit(EXIT_SUCCESS); // :D
 }
 
+void MainWindow::on_action_undo_triggered() { undo(); }
+void MainWindow::on_action_redo_triggered() { redo(); }
+
 void MainWindow::on_action_change_value_globally_triggered() {
     const auto tree = ui->tree_animations;
 
@@ -35,11 +38,15 @@ void MainWindow::on_action_change_value_globally_triggered() {
         animation_list.push_back(tree->topLevelItem(i));
 
     // Create a global change dialog
-    GlobalChangeDialog dialog { animation_list };
+    GlobalChangeDialog dialog { _opd };
     dialog.setModal(true);
     save_previous_state();
     if (dialog.exec()) on_tree_animations_itemPressed(tree->currentItem(), 0);
 }
+
+void MainWindow::on_action_flip_x_triggered() {}
+void MainWindow::on_action_flip_y_triggered() {}
+void MainWindow::on_action_trim_all_sprites_triggered() {}
 
 // //////////////////////////////////// //
 // MAIN WINDOW MENU BAR PRIVATE METHODS //
@@ -98,5 +105,10 @@ void MainWindow::update_recent_menubar() {
 void MainWindow::set_menu_bar_edit_enabled(bool enabled) {
     ui->action_save_opd->setEnabled(enabled);
     ui->action_save_opd->setEnabled(enabled);
+    ui->action_undo->setEnabled(enabled);
+    ui->action_redo->setEnabled(enabled);
     ui->action_change_value_globally->setEnabled(enabled);
+    ui->action_flip_x->setEnabled(enabled);
+    ui->action_flip_y->setEnabled(enabled);
+    ui->action_trim_all_sprites->setEnabled(enabled);
 }

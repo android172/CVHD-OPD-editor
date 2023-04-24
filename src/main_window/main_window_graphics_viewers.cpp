@@ -41,7 +41,8 @@ void MainWindow::on_bt_change_mode_anim_pressed() {
     if (mod_is_pan) {
         bt->setIcon(ICON_MOVE);
         ui->gv_frame->activate_move([=](short dx, short dy, bool save) {
-            if (ui->tool_box_frame->currentIndex() == 0) {
+            const auto mode = ui->tool_box_frame->currentIndex();
+            if (mode == 1) {
                 check_if_valid(_current_frame_part);
                 if (save) save_previous_state();
 
@@ -58,7 +59,7 @@ void MainWindow::on_bt_change_mode_anim_pressed() {
                     spin_frame_part_off_y,
                     setValue(ui->spin_frame_part_off_y->value() + dy)
                 );
-            } else {
+            } else if (mode == 2) {
                 check_if_valid(_current_hitbox);
                 if (save) save_previous_state();
 

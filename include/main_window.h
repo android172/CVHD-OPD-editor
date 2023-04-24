@@ -51,8 +51,6 @@ class MainWindow : public QMainWindow {
     ~MainWindow();
 
   private slots:
-    // General
-    bool eventFilter(QObject* obj, QEvent* event) override;
     // Drag and drop
     void dropEvent(QDropEvent*) override;
     void dragEnterEvent(QDragEnterEvent*) override;
@@ -63,7 +61,12 @@ class MainWindow : public QMainWindow {
     void on_action_open_opd_triggered();
     void on_action_save_opd_triggered();
     void on_action_exit_triggered();
+    void on_action_undo_triggered();
+    void on_action_redo_triggered();
     void on_action_change_value_globally_triggered();
+    void on_action_flip_x_triggered();
+    void on_action_flip_y_triggered();
+    void on_action_trim_all_sprites_triggered();
 
     // Graphics viewers
     void on_bt_reset_view_anim_pressed();

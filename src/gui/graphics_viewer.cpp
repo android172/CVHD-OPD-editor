@@ -177,7 +177,10 @@ void GraphicsViewer::show_frame(
         t.translate(1.0 * sprite.width / 2, 1.0 * sprite.height / 2);
         t.scale(flip_x, flip_y);
         t.translate(-1.0 * sprite.width / 2, -1.0 * sprite.height / 2);
-        t.translate(flip_x * part.x_offset, flip_y * part.y_offset);
+        t.translate(
+            flip_x * (part.x_offset - frame.x_offset),
+            flip_y * (part.y_offset - frame.y_offset)
+        );
 
         pixmap_gpi->setTransform(t);
 
@@ -187,8 +190,8 @@ void GraphicsViewer::show_frame(
             // Show currently selected frame part
             // Only visible if move control mode is active
             add_selection(
-                part.x_offset,
-                part.y_offset,
+                part.x_offset - frame.x_offset,
+                part.y_offset - frame.y_offset,
                 part.sprite->width,
                 part.sprite->height
             );
@@ -202,8 +205,8 @@ void GraphicsViewer::show_frame(
     if (mode == 2) {
         for (auto const& hitbox : frame.hitboxes) {
             auto hitbox_rectangle = new QGraphicsRectItem(
-                hitbox.x_position,
-                hitbox.y_position,
+                hitbox.x_position - frame.x_offset,
+                hitbox.y_position - frame.y_offset,
                 hitbox.width,
                 hitbox.height
             );
@@ -215,8 +218,8 @@ void GraphicsViewer::show_frame(
             // Only visible if move control mode is active
             if (hitbox.index == current_index) {
                 add_selection(
-                    hitbox.x_position,
-                    hitbox.y_position,
+                    hitbox.x_position - frame.x_offset,
+                    hitbox.y_position - frame.y_offset,
                     hitbox.width,
                     hitbox.height
                 );

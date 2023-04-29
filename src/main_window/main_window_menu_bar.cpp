@@ -44,8 +44,22 @@ void MainWindow::on_action_change_value_globally_triggered() {
     if (dialog.exec()) on_tree_animations_itemPressed(tree->currentItem(), 0);
 }
 
-void MainWindow::on_action_flip_x_triggered() {}
-void MainWindow::on_action_flip_y_triggered() {}
+void MainWindow::on_action_flip_x_triggered() {
+    // === UPDATE VALUES ===
+    save_previous_state();
+    ForEach(frame, _opd->frames) flip_frame_x(frame);
+
+    // === UPDATE GUI ===
+    redraw_frame();
+}
+void MainWindow::on_action_flip_y_triggered() {
+    // === UPDATE VALUES ===
+    save_previous_state();
+    ForEach(frame, _opd->frames) flip_frame_y(frame);
+
+    // === UPDATE GUI ===
+    redraw_frame();
+}
 void MainWindow::on_action_trim_all_sprites_triggered() {}
 
 // //////////////////////////////////// //

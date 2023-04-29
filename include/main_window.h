@@ -104,6 +104,8 @@ class MainWindow : public QMainWindow {
     void on_spin_frame_off_x_valueChanged(int new_value);
     void on_spin_frame_off_y_valueChanged(int new_value);
     void on_spin_frame_delay_valueChanged(int new_value);
+    void on_bt_flip_frame_x_clicked();
+    void on_bt_flip_frame_y_clicked();
 
     // Frame part
     void on_list_frame_parts_itemPressed(QListWidgetItem* current);
@@ -272,6 +274,8 @@ class MainWindow : public QMainWindow {
         const FramePtr frame_info, const AnimationFramePtr animation_info
     );
     void clear_frame();
+    void flip_frame_x(const FramePtr frame);
+    void flip_frame_y(const FramePtr frame);
     void set_frame_edit_enabled(bool enabled);
     void set_frame_movement_enabled(bool enabled);
     void redraw_frame();

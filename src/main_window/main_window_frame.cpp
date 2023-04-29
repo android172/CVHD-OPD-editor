@@ -306,6 +306,27 @@ void MainWindow::on_spin_frame_delay_valueChanged(int new_value) {
     _current_anim_frame->delay = new_value;
 }
 
+void MainWindow::on_bt_flip_frame_x_clicked() {
+    check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    flip_frame_x(_current_frame);
+
+    // === UPDATE GUI ===
+    redraw_frame();
+}
+void MainWindow::on_bt_flip_frame_y_clicked() {
+    check_if_valid(_current_frame);
+
+    // === UPDATE VALUE ===
+    save_previous_state();
+    flip_frame_y(_current_frame);
+
+    // === UPDATE GUI ===
+    redraw_frame();
+}
+
 // ///////////////////////////////// //
 // MAIN WINDOW FRAME PRIVATE METHODS //
 // ///////////////////////////////// //
@@ -370,6 +391,47 @@ void MainWindow::clear_frame() {
 
     // Stop playing animation
     if (_in_animation) stop_animation();
+}
+
+void MainWindow::flip_frame_x(const FramePtr frame) {
+    // Compute center line
+    short left_bound  = SHRT_MAX;
+    short right_bound = SHRT_MIN;
+    for (auto& part : frame->parts) {
+        const short left  = part.x_offset;
+        const short right = part.x_offset + part.sprite->width;
+        if (left < left_bound) left_bound = left;
+        if (right > right_bound) right_bound = right;
+    }
+    const short center_line = left_bound + (right_bound - left_bound) / 2;
+
+    // Flip all frame parts around the center line
+    for (auto& part : frame->parts) {
+        const short part_center     = part.x_offset + part.sprite->width / 2;
+        const auto  center_distance = center_line - part_center;
+        part.x_offset += 2 * center_distance;
+        part.flip_mode ^= 0b10;
+    }
+}
+void MainWindow::flip_frame_y(const FramePtr frame) {
+    // Compute center line
+    short up_bound   = SHRT_MAX;
+    short down_bound = SHRT_MIN;
+    for (auto& part : frame->parts) {
+        const short up   = part.y_offset;
+        const short down = part.y_offset + part.sprite->height;
+        if (up < up_bound) up_bound = up;
+        if (down > down_bound) down_bound = down;
+    }
+    const short center_line = up_bound + (down_bound - up_bound) / 2;
+
+    // Flip all frame parts around the center line
+    for (auto& part : frame->parts) {
+        const short part_center     = part.y_offset + part.sprite->height / 2;
+        const auto  center_distance = center_line - part_center;
+        part.y_offset += 2 * center_distance;
+        part.flip_mode ^= 0b01;
+    }
 }
 
 void MainWindow::set_frame_edit_enabled(bool enabled) {

@@ -226,10 +226,10 @@ void MainWindow::on_bt_merge_frame_parts_clicked() {
 
     // === UPDATE UI ===
     // Remove now unused frame parts
+    ui->list_frame_parts->setCurrentRow(-1);
     for (const auto& lwi : selected_lwi) {
-        const auto frame_part_lwi = dynamic_cast<FramePartLwi*>(lwi);
-        ui->list_frame_parts->removeItemWidget(frame_part_lwi);
-        delete frame_part_lwi;
+        ui->list_frame_parts->removeItemWidget(lwi);
+        delete lwi;
     }
 
     // Add new lwi

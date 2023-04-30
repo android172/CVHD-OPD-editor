@@ -473,9 +473,10 @@ void MainWindow::set_frame_movement_enabled(bool enabled) {
 
 void MainWindow::redraw_frame() {
     if (_redrawing_frame) return;
+    const auto mode = ui->tool_box_frame->currentIndex();
+    const auto current_index =
+        (mode == 2) ? _current_hitbox->index : _current_frame_part->index;
     ui->gv_frame->show_frame(
-        *_current_frame,
-        _current_frame_part->index,
-        ui->tool_box_frame->currentIndex()
+        *_current_frame, current_index, ui->tool_box_frame->currentIndex()
     );
 }

@@ -60,7 +60,31 @@ void MainWindow::on_action_flip_y_triggered() {
     // === UPDATE GUI ===
     redraw_frame();
 }
-void MainWindow::on_action_trim_all_sprites_triggered() {}
+void MainWindow::on_action_trim_all_sprites_triggered() {
+    // === UPDATE VALUES ===
+    save_previous_state();
+    for (auto& sprite : _opd->sprites) {
+        const auto x_diff = -sprite.x_pos;
+        const auto y_diff = -sprite.y_pos;
+
+        // Trim sprite
+        sprite.trim();
+
+        // Adjust all the frames which use this sprite
+        for (auto& frame : _opd->frames) {
+            for (auto& part : frame.parts) {
+                if (part.sprite->index == sprite.index) {
+                    part.x_offset += x_diff;
+                    part.y_offset += y_diff;
+                }
+            }
+        }
+    }
+
+    // === UPDATE GUI ===
+    redraw_frame();
+    redraw_sprite();
+}
 
 // //////////////////////////////////// //
 // MAIN WINDOW MENU BAR PRIVATE METHODS //

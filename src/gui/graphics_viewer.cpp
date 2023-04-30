@@ -167,9 +167,11 @@ void GraphicsViewer::show_frame(
         const auto& sprite  = *part.sprite;
         const auto& palette = *part.palette;
 
+        // Compute pixmap for sprite
         const auto pixmap     = QPixmap::fromImage(sprite.to_image(palette));
         const auto pixmap_gpi = new QGraphicsPixmapItem(pixmap);
 
+        // Transform pixmap properly
         const auto flip_x = (part.flip_mode & 2) ? -1 : 1;
         const auto flip_y = (part.flip_mode & 1) ? -1 : 1;
 
@@ -184,26 +186,14 @@ void GraphicsViewer::show_frame(
 
         pixmap_gpi->setTransform(t);
 
+        // Add to scene
         scene->addItem(pixmap_gpi);
-
-        if (mode == 1 && part.index == current_index) {
-            // Show currently selected frame part
-            // Only visible if move control mode is active
-            add_selection(
-                part.x_offset - frame.x_offset,
-                part.y_offset - frame.y_offset,
-                part.sprite->width,
-                part.sprite->height
-            );
-            _selection_rect->setVisible(
-                _current_control_mode == ControlMode::Move
-            );
-        }
     }
 
     // Draw hitboxes
     if (mode == 2) {
         for (auto const& hitbox : frame.hitboxes) {
+            // Add hitbox rectangle
             auto hitbox_rectangle = new QGraphicsRectItem(
                 hitbox.x_position - frame.x_offset,
                 hitbox.y_position - frame.y_offset,
@@ -228,6 +218,23 @@ void GraphicsViewer::show_frame(
                 );
             }
         }
+    }
+    // Add selection box if required (NOTE: Needs to be added at the end)
+    else if (mode == 1) {
+        for (auto const& part : frame.parts)
+            if (part.index == current_index) {
+                // Show currently selected frame part
+                // Only visible if move control mode is active
+                add_selection(
+                    part.x_offset - frame.x_offset,
+                    part.y_offset - frame.y_offset,
+                    part.sprite->width,
+                    part.sprite->height
+                );
+                _selection_rect->setVisible(
+                    _current_control_mode == ControlMode::Move
+                );
+            }
     }
 
     // Set rectangle

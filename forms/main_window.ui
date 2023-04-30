@@ -669,6 +669,14 @@ border: none;</string>
                    <number>0</number>
                   </property>
                   <widget class="QWidget" name="Frame">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>0</y>
+                     <width>367</width>
+                     <height>279</height>
+                    </rect>
+                   </property>
                    <attribute name="label">
                     <string>Frame</string>
                    </attribute>
@@ -1541,7 +1549,7 @@ border: none;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>377</width>
+                     <width>367</width>
                      <height>279</height>
                     </rect>
                    </property>
@@ -3787,6 +3795,7 @@ border: none;</string>
     <addaction name="action_change_value_globally"/>
     <addaction name="action_flip_x"/>
     <addaction name="action_flip_y"/>
+    <addaction name="action_merge_where_possible"/>
     <addaction name="action_trim_all_sprites"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -3850,6 +3859,14 @@ border: none;</string>
   <action name="action_trim_all_sprites">
    <property name="text">
     <string>Trim all sprites</string>
+   </property>
+  </action>
+  <action name="action_merge_where_possible">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Merge where possible</string>
    </property>
   </action>
  </widget>

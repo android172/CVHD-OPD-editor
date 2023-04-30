@@ -235,6 +235,7 @@ class MainWindow : public QMainWindow {
     void load_ui();
     void reload_ui();
     void set_general_edit_enabled(bool enabled);
+    void setup_shortcuts();
     void prompt_color_dialog(Color& color) const;
     void save_PNG(const QImage& image);
     // (De)Serialization
@@ -250,6 +251,16 @@ class MainWindow : public QMainWindow {
     void save_previous_state();
     void undo();
     void redo();
+
+    // Shortcuts
+    void on_copy_frame();
+    void on_copy_frame_part();
+    void on_copy_hitbox();
+    void on_copy_sprite();
+    void on_paste_frame();
+    void on_paste_frame_part();
+    void on_paste_hitbox();
+    void on_paste_sprite();
 
     // Menubar
     void add_to_recent(const QString opd_path);

@@ -3,11 +3,14 @@
 
 #include "gui/twi/frame_twi.h"
 #include "gui/twi/animation_twi.h"
+#include "gui/lwi/sprite_lwi.h"
 
 #include <QFileDialog>
 #include <QColorDialog>
 #include <QMimeData>
 #include <QScrollBar>
+#include <QShortcut>
+#include <QClipboard>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -15,6 +18,7 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("CVHD OPD editor");
     setAcceptDrops(true);
     load_app_state();
+    setup_shortcuts();
 
     // Initially disable editing
     set_general_edit_enabled(false);
@@ -78,6 +82,167 @@ void MainWindow::dragMoveEvent(QDragMoveEvent* event) {
     event->acceptProposedAction();
 }
 void MainWindow::dragLeaveEvent(QDragLeaveEvent* event) { event->accept(); }
+
+// -----------------------------------------------------------------------------
+// Shortcuts
+// -----------------------------------------------------------------------------
+
+#include <QDebug>
+
+#define mime_set(for_, prop) mime_data->setProperty(#prop, for_->prop)
+#define mime_get_ss(for_, prop)                                                \
+    for_->prop = (short) mime_data->property(#prop).toInt()
+#define mime_get_us(for_, prop)                                                \
+    for_->prop = (ushort) mime_data->property(#prop).toUInt()
+#define mime_get_uc(for_, prop)                                                \
+    for_->prop = (uchar) mime_data->property(#prop).toUInt()
+#define mime_get_index(prop) mime_data->property(#prop).toInt()
+
+void MainWindow::on_copy_frame() {}
+void MainWindow::on_copy_frame_part() {
+    check_if_valid(_current_frame_part);
+
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText("Part" + QString::number(_current_frame_part->index));
+
+    QMimeData* mime_data = new QMimeData;
+    mime_data->setProperty("type", 1);
+    mime_set(_current_frame_part, x_offset);
+    mime_set(_current_frame_part, y_offset);
+    mime_set(_current_frame_part, flip_mode);
+    mime_set(_current_frame_part, palette->index);
+    mime_set(_current_frame_part, sprite->index);
+
+    clipboard->setMimeData(mime_data);
+}
+void MainWindow::on_copy_hitbox() {
+    check_if_valid(_current_hitbox);
+
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText("Hitbox" + QString::number(_current_hitbox->index));
+
+    QMimeData* mime_data = new QMimeData;
+    mime_data->setProperty("type", 2);
+    mime_set(_current_hitbox, x_position);
+    mime_set(_current_hitbox, y_position);
+    mime_set(_current_hitbox, width);
+    mime_set(_current_hitbox, height);
+
+    clipboard->setMimeData(mime_data);
+}
+void MainWindow::on_copy_sprite() {
+    check_if_valid(_current_sprite);
+
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText("Sprite" + QString::number(_current_sprite->index));
+
+    QMimeData* mime_data = new QMimeData;
+    mime_data->setProperty("type", 3);
+    mime_set(_current_sprite, x_pos);
+    mime_set(_current_sprite, y_pos);
+    mime_set(_current_sprite, width);
+    mime_set(_current_sprite, height);
+
+    // Set pixmap
+    const auto& pixels = _current_sprite->pixels;
+    QByteArray  pixmap_bytes(0);
+    for (const auto& row : pixels) {
+        pixmap_bytes.append(
+            reinterpret_cast<const char*>(row.constData()),
+            sizeof(uchar) * row.size()
+        );
+    }
+    mime_data->setProperty("pixmap_h", (uint) pixels.size());
+    mime_data->setProperty("pixmap_w", (uint) pixels[0].size());
+    mime_data->setData("application/pixmap", pixmap_bytes);
+
+    clipboard->setMimeData(mime_data);
+}
+void MainWindow::on_paste_frame() {}
+void MainWindow::on_paste_frame_part() {
+    QClipboard*      clipboard = QApplication::clipboard();
+    const QMimeData* mime_data = clipboard->mimeData();
+
+    const auto type = mime_data->property("type");
+    if (type.isValid() && type.toInt() == 1) {
+        check_if_valid(_current_frame);
+
+        // === UPDATE VALUE ===
+        save_previous_state();
+
+        const auto sprite =
+            get_it_at(_opd->sprites, mime_get_index(sprite->index));
+        const auto palette =
+            get_it_at(_opd->palettes, mime_get_index(palette->index));
+
+        auto new_part =
+            _opd->add_new_frame_part(_current_frame, sprite, palette);
+        mime_get_ss(new_part, x_offset);
+        mime_get_ss(new_part, y_offset);
+        mime_get_us(new_part, flip_mode);
+
+        // === UPDATE GUI ===
+        ui->tree_animations->itemPressed(ui->tree_animations->currentItem(), 0);
+        ui->list_frame_parts->setCurrentRow(ui->list_frame_parts->count() - 1);
+    }
+}
+void MainWindow::on_paste_hitbox() {
+    QClipboard*      clipboard = QApplication::clipboard();
+    const QMimeData* mime_data = clipboard->mimeData();
+
+    const auto type = mime_data->property("type");
+    if (type.isValid() && type.toInt() == 2) {
+        check_if_valid(_current_frame);
+
+        // === UPDATE VALUE ===
+        save_previous_state();
+        auto new_hitbox = _opd->add_new_hitbox(_current_frame);
+        mime_get_ss(new_hitbox, x_position);
+        mime_get_ss(new_hitbox, y_position);
+        mime_get_us(new_hitbox, width);
+        mime_get_us(new_hitbox, height);
+
+        // === UPDATE GUI ===
+        ui->tree_animations->itemPressed(ui->tree_animations->currentItem(), 0);
+        ui->list_hitboxes->setCurrentRow(ui->list_hitboxes->count() - 1);
+    }
+}
+void MainWindow::on_paste_sprite() {
+    QClipboard*      clipboard = QApplication::clipboard();
+    const QMimeData* mime_data = clipboard->mimeData();
+
+    const auto type = mime_data->property("type");
+    if (type.isValid() && type.toInt() == 3) {
+        // === UPDATE VALUE ===
+        save_previous_state();
+        auto new_sprite = _opd->add_new_sprite();
+        mime_get_ss(new_sprite, x_pos);
+        mime_get_ss(new_sprite, y_pos);
+        mime_get_us(new_sprite, width);
+        mime_get_us(new_sprite, height);
+
+        // Set gfx page to invalid
+        new_sprite->gfx_page = Invalid::gfx_page;
+
+        // Set sprite pixels
+        const auto pixmap_height = mime_data->property("pixmap_h").toUInt();
+        const auto pixmap_width  = mime_data->property("pixmap_w").toUInt();
+        const auto pixmap_bytes  = mime_data->data("application/pixmap");
+
+        new_sprite->pixels.resize(pixmap_height);
+        for (auto i = 0; i < pixmap_height; i++) {
+            auto& row = new_sprite->pixels[i];
+            row.resize(pixmap_width);
+            for (auto j = 0; j < pixmap_width; j++)
+                row[j] = pixmap_bytes[i * pixmap_width + j];
+        }
+
+        // === UPDATE GUI ===
+        const auto new_sprite_lwi = new SpriteLwi(new_sprite);
+        ui->list_sprites->addItem(new_sprite_lwi);
+        ui->list_sprites->setCurrentRow(ui->list_sprites->count() - 1);
+    }
+}
 
 // /////////////////////////// //
 // MAIN WINDOW PRIVATE METHODS //
@@ -184,6 +349,33 @@ void MainWindow::set_general_edit_enabled(bool enabled) {
     set_hitbox_edit_enabled(enabled);
     set_image_edit_enabled(enabled);
     set_csr_edit_enabled(enabled);
+}
+
+#define shortcut_copy_past(type, for)                                          \
+    QShortcut* shortcut_copy_##type =                                          \
+        new QShortcut(QKeySequence::Copy, ui->for);                            \
+    QShortcut* shortcut_paste_##type =                                         \
+        new QShortcut(QKeySequence::Paste, ui->for);                           \
+                                                                               \
+    connect(                                                                   \
+        shortcut_copy_##type,                                                  \
+        &QShortcut::activated,                                                 \
+        this,                                                                  \
+        &MainWindow::on_copy_##type                                            \
+    );                                                                         \
+    connect(                                                                   \
+        shortcut_paste_##type,                                                 \
+        &QShortcut::activated,                                                 \
+        this,                                                                  \
+        &MainWindow::on_paste_##type                                           \
+    );
+
+void MainWindow::setup_shortcuts() {
+    // COPY / PASTE
+    // shortcut_copy_past(frame, tree_animations);
+    shortcut_copy_past(frame_part, list_frame_parts);
+    shortcut_copy_past(hitbox, list_hitboxes);
+    shortcut_copy_past(sprite, list_sprites);
 }
 
 void MainWindow::prompt_color_dialog(Color& color) const {

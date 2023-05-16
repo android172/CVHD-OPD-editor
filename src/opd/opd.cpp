@@ -519,7 +519,8 @@ FramePtr Opd::add_new_frame() {
 }
 SpritePtr Opd::add_new_sprite() {
     Sprite new_spr {};
-    new_spr.index = sprites.size();
+    new_spr.index    = sprites.size();
+    new_spr.gfx_page = Invalid::gfx_page;
 
     sprites.push_back(new_spr);
     auto new_sprite = sprites.end();

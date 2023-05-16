@@ -295,6 +295,10 @@ void MainWindow::reload_ui() {
     int list_sp_item = selected_list_item(list_sprites);
     int list_cs_item = selected_list_item(list_csrs);
 
+    // Get current sprite selection
+    const auto current_sprite_palette = ui->cb_sprite_palette->currentIndex();
+    const auto current_csr_palette    = ui->cb_csr_palette->currentIndex();
+
     // Get current scroll values
     const auto tree_scroll = tree->verticalScrollBar()->value();
     const auto list_fp_scroll =
@@ -332,6 +336,12 @@ void MainWindow::reload_ui() {
     if (list_hb_item != -1) ui->list_hitboxes->setCurrentRow(list_hb_item);
     if (list_sp_item != -1) ui->list_sprites->setCurrentRow(list_sp_item);
     if (list_cs_item != -1) ui->list_csrs->setCurrentRow(list_cs_item);
+
+    // Recover current palette selection
+    if (current_sprite_palette && current_csr_palette < _opd->palette_count)
+        ui->cb_sprite_palette->setCurrentIndex(current_sprite_palette);
+    if (current_csr_palette && current_csr_palette < _opd->palette_count)
+        ui->cb_csr_palette->setCurrentIndex(current_csr_palette);
 
     // Recover scroll
     tree->verticalScrollBar()->setValue(tree_scroll);
